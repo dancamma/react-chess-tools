@@ -1,0 +1,13 @@
+{
+  "git": {
+    "changelog": "git log --pretty=format:'* %s (%h)' [REV_RANGE]",
+    "commitMessage": "chore: release ${version}",
+    "tagAnnotation": "Release ${version}"
+  },
+  "github": {
+    "release": true
+  },
+  "npm": {
+    "publish": false
+  }
+}
