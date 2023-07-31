@@ -1,13 +1,13 @@
 {
   "name": "@react-chess-tools/react-chess-game",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "react-chess-game is a React component bridging chess.js with react-chessboard to offer a full-featured, ready-to-integrate chess board experience.",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsup src/index.ts",
-    "release": "npm run build &&     qrelease-it --npm.publish=true",
+    "release": "npm run build && release-it --npm.publish=true",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -25,6 +25,23 @@
     "UI",
     "boardgame"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Daniele Cammareri <daniele.cammareri@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "chess.js": "^1.0.0-beta.6",
+    "lodash": "^4.17.21",
+    "react-chessboard": "^3.2.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dancamma/react-chess-tools.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dancamma/react-chess-tools/issues"
+  },
+  "homepage": "https://github.com/dancamma/react-chess-tools#readme"
 }

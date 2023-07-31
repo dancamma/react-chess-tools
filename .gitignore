@@ -22,6 +22,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+storybook-static
+
 # local env files
 .env
 .env.local
@@ -34,3 +36,5 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+**/dist
