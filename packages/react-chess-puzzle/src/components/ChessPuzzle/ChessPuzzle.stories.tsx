@@ -11,7 +11,7 @@ const puzzles = [
     makeFirstMove: false,
   },
   {
-    fen: "q3k1nr/1pp1nQpp/3p4/1P2p3/4P3/B1PP1b2/B5PP/5K2 b k - 0 17",
+    fen: "6k1/5p1p/p1q1p1p1/1pB1P3/1Pr3Pn/P4P1P/4Q3/3R2K1 b - - 0 31",
     moves: ["h4f3", "e2f3", "c4c5", "d1d8", "g8g7", "f3f6"],
     makeFirstMove: true,
   },

@@ -16,32 +16,39 @@ export const usePuzzle = (
     initializePuzzle,
   );
 
-  useEffect(() => {
-    if (gameContext && state.status === "not-started" && state.needCpuMove) {
-      dispatch({
-        type: "CPU_MOVE",
-        payload: {
-          makeMove: gameContext.methods.makeMove,
-        },
-      });
-    }
-  }, [gameContext, state.status, state.needCpuMove]);
-
-  if (!gameContext) {
-    throw new Error("usePuzzle must be used within a ChessGameContext");
-  }
-
   const {
     game,
     methods: { makeMove, setPosition },
   } = gameContext;
+
+  useEffect(() => {
+    if (gameContext && game.fen() === puzzle.fen && state.needCpuMove) {
+      setTimeout(
+        () =>
+          dispatch({
+            type: "CPU_MOVE",
+            payload: {
+              makeMove,
+            },
+          }),
+        0,
+      );
+    }
+  }, [gameContext, state.needCpuMove]);
+
+  if (!gameContext) {
+    throw new Error("usePuzzle must be used within a ChessGameContext");
+  }
 
   const changePuzzle = (puzzle: Puzzle) => {
     dispatch({ type: "INITIALIZE", payload: { puzzle, setPosition } });
   };
 
   useEffect(() => {
-    if (game.history().length % 2 === 1) {
+    if (game?.history()?.length <= 0 + (puzzle.makeFirstMove ? 1 : 0)) {
+      return;
+    }
+    if (game.history().length % 2 === (puzzle.makeFirstMove ? 0 : 1)) {
       dispatch({
         type: "PLAYER_MOVE",
         payload: {
@@ -56,7 +63,7 @@ export const usePuzzle = (
       dispatch({
         type: "CPU_MOVE",
         payload: {
-          makeMove: makeMove,
+          makeMove,
         },
       });
     }

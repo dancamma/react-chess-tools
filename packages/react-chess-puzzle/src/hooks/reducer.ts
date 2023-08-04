@@ -110,7 +110,9 @@ export const reducer = (state: State, action: Action): State => {
     case "PLAYER_MOVE": {
       const { move, onSolve, onFail, changePuzzle } = action.payload;
 
-      const isMoveRight = move?.san === state.nextMove;
+      const isMoveRight = [move?.san, move?.lan].includes(
+        state?.nextMove || "",
+      );
       const isPuzzleSolved =
         state.currentMoveIndex === state.puzzle.moves.length - 1;
 

@@ -19,8 +19,8 @@ export const useChessGame = ({
   const setPosition = (fen: string, orientation: Color) => {
     const newGame = new Chess();
     newGame.load(fen);
-    setGame(newGame);
     setOrientation(orientation);
+    setGame(newGame);
   };
 
   const makeMove = (move: Parameters<Chess["move"]>[0]): boolean => {
@@ -28,8 +28,10 @@ export const useChessGame = ({
       const copy = cloneGame(game);
       copy.move(move);
       setGame(copy);
+
       return true;
     } catch (e) {
+      console.error(e);
       return false;
     }
   };
