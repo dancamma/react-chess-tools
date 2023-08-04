@@ -1,10 +1,10 @@
 {
-  "name": "@react-chess-tools/react-chess-game",
+  "name": "@react-chess-tools/react-chess-puzzle",
   "version": "0.0.2",
-  "description": "react-chess-game is a React component bridging chess.js with react-chessboard to offer a full-featured, ready-to-integrate chess board experience.",
+  "description": "A lightweight, customizable React component library for rendering and interacting with chess puzzles.",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
-  "types": "dist/index.d.mts",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsup src/index.ts",
     "release": "npm run build && release-it --npm.publish=true",
@@ -23,7 +23,9 @@
     "checkmate",
     "interactive",
     "UI",
-    "boardgame"
+    "boardgame",
+    "puzzle",
+    "puzzles"
   ],
   "publishConfig": {
     "access": "public"
@@ -31,9 +33,9 @@
   "author": "Daniele Cammareri <daniele.cammareri@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@react-chess-tools/react-chess-game": "^0.0.2",
     "chess.js": "^1.0.0-beta.6",
-    "lodash": "^4.17.21",
-    "react-chessboard": "^3.2.0"
+    "lodash": "^4.17.21"
   },
   "repository": {
     "type": "git",
