@@ -60,14 +60,16 @@ export const useChessPuzzle = (
         },
       });
 
-      dispatch({
-        type: "CPU_MOVE",
-        payload: {
-          makeMove,
-        },
-      });
+      setTimeout(() => {
+        dispatch({
+          type: "CPU_MOVE",
+          payload: {
+            makeMove,
+          },
+        });
+      }, 150);
     }
-  }, [game, game?.history()?.length]);
+  }, [game?.history()?.length]);
 
   const onHint = () => {
     dispatch({ type: "TOGGLE_HINT" });

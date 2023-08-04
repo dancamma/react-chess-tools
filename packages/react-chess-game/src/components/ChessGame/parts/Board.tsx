@@ -98,7 +98,7 @@ export const Board: React.FC<ChessGameProps> = ({
       position={game.fen()}
       showPromotionDialog={!!promotionMove}
       onPromotionPieceSelect={
-        !!promotionMove ? onPromotionPieceSelect : undefined
+        promotionMove ? onPromotionPieceSelect : undefined
       }
       onPieceDragBegin={(_, square) => {
         setActiveSquare(square);
@@ -110,7 +110,7 @@ export const Board: React.FC<ChessGameProps> = ({
         makeMove({
           from: sourceSquare,
           to: targetSquare,
-          promotion: piece?.[1] || "q",
+          promotion: piece?.[1].toLowerCase() || "q",
         })
       }
       onSquareClick={onSquareClick}

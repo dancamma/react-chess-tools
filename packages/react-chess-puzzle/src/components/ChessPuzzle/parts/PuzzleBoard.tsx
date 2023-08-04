@@ -24,6 +24,7 @@ export const PuzzleBoard: React.FC<PuzzleBoardProps> = ({ ...rest }) => {
 
   return (
     <ChessGame.Board
+      animationDuration={150}
       customSquareStyles={getCustomSquareStyles(
         status,
         hint,
