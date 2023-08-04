@@ -60,14 +60,12 @@ export const useChessPuzzle = (
         },
       });
 
-      setTimeout(() => {
-        dispatch({
-          type: "CPU_MOVE",
-          payload: {
-            makeMove,
-          },
-        });
-      }, 150);
+      dispatch({
+        type: "CPU_MOVE",
+        payload: {
+          makeMove,
+        },
+      });
     }
   }, [game?.history()?.length]);
 
