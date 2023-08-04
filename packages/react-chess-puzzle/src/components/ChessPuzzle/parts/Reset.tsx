@@ -1,6 +1,6 @@
-import React, { useContext } from "react";
-import { PuzzleContext } from "./Root";
+import React from "react";
 import { isClickableElement, type Puzzle, type Status } from "../../../utils";
+import { useChessPuzzleContext } from "../../..";
 
 export interface ResetProps {
   asChild?: boolean;
@@ -18,7 +18,7 @@ export const Reset: React.FC<React.PropsWithChildren<ResetProps>> = ({
   onReset,
   showOn = defaultShowOn,
 }) => {
-  const puzzleContext = useContext(PuzzleContext);
+  const puzzleContext = useChessPuzzleContext();
   if (!puzzleContext) {
     throw new Error("PuzzleContext not found");
   }

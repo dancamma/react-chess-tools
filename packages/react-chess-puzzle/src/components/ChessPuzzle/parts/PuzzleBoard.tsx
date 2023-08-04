@@ -1,15 +1,15 @@
-import React, { useContext } from "react";
+import React from "react";
 import {
   ChessGame,
   useChessGameContext,
 } from "@react-chess-tools/react-chess-game";
-import { PuzzleContext } from "./Root";
 import { getCustomSquareStyles, stringToMove } from "../../../utils";
+import { useChessPuzzleContext } from "../../..";
 
 export interface PuzzleBoardProps
   extends React.ComponentProps<typeof ChessGame.Board> {}
 export const PuzzleBoard: React.FC<PuzzleBoardProps> = ({ ...rest }) => {
-  const puzzleContext = useContext(PuzzleContext);
+  const puzzleContext = useChessPuzzleContext();
   const gameContext = useChessGameContext();
 
   if (!puzzleContext) {

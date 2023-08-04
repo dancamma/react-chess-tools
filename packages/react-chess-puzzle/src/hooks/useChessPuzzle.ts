@@ -3,7 +3,7 @@ import { initializePuzzle, reducer } from "./reducer";
 import { type Puzzle } from "../utils";
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
 
-export const usePuzzle = (
+export const useChessPuzzle = (
   puzzle: Puzzle,
   onSolve?: (changePuzzle: (puzzle: Puzzle) => void) => void,
   onFail?: (changePuzzle: (puzzle: Puzzle) => void) => void,
@@ -37,7 +37,7 @@ export const usePuzzle = (
   }, [gameContext, state.needCpuMove]);
 
   if (!gameContext) {
-    throw new Error("usePuzzle must be used within a ChessGameContext");
+    throw new Error("useChessPuzzle must be used within a ChessGameContext");
   }
 
   const changePuzzle = (puzzle: Puzzle) => {

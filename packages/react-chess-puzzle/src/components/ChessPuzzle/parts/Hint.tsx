@@ -1,6 +1,6 @@
-import React, { useContext } from "react";
-import { PuzzleContext } from "./Root";
+import React from "react";
 import { Status, isClickableElement } from "../../../utils";
+import { useChessPuzzleContext } from "../../..";
 
 export interface HintProps {
   asChild?: boolean;
@@ -14,7 +14,7 @@ export const Hint: React.FC<React.PropsWithChildren<HintProps>> = ({
   asChild,
   showOn = defaultShowOn,
 }) => {
-  const puzzleContext = useContext(PuzzleContext);
+  const puzzleContext = useChessPuzzleContext();
   if (!puzzleContext) {
     throw new Error("PuzzleContext not found");
   }

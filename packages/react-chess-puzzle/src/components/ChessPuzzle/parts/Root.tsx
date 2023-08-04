@@ -1,7 +1,8 @@
 import React from "react";
 import { Puzzle, getOrientation } from "../../../utils";
-import { usePuzzle } from "../../../hooks/usePuzzle";
+import { useChessPuzzle } from "../../../hooks/useChessPuzzle";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
+import { ChessPuzzleContext } from "../../../hooks/useChessPuzzleContext";
 
 export interface RootProps {
   puzzle: Puzzle;
@@ -9,20 +10,18 @@ export interface RootProps {
   onFail?: (changePuzzle: (puzzle: Puzzle) => void) => void;
 }
 
-export const PuzzleContext = React.createContext<ReturnType<
-  typeof usePuzzle
-> | null>(null);
-
 const PuzzleRoot: React.FC<React.PropsWithChildren<RootProps>> = ({
   puzzle,
   onSolve,
   onFail,
   children,
 }) => {
-  const context = usePuzzle(puzzle, onSolve, onFail);
+  const context = useChessPuzzle(puzzle, onSolve, onFail);
 
   return (
-    <PuzzleContext.Provider value={context}>{children}</PuzzleContext.Provider>
+    <ChessPuzzleContext.Provider value={context}>
+      {children}
+    </ChessPuzzleContext.Provider>
   );
 };
 
