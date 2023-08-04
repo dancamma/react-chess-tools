@@ -4,9 +4,10 @@
   "description": "",
   "main": ".eslintrc.js",
   "scripts": {
+    "build": "npm run build --ws",
     "test": "echo \"Error: no test specified\" && exit 1",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
+    "build-storybook": "npm run build && storybook build",
     "prepare": "husky install"
   },
   "keywords": [],
