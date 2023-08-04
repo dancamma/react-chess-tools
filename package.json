@@ -4,9 +4,10 @@
   "description": "",
   "main": ".eslintrc.js",
   "scripts": {
+    "build": "npm run build --ws",
     "test": "echo \"Error: no test specified\" && exit 1",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
+    "build-storybook": "npm run build && storybook build",
     "prepare": "husky install"
   },
   "keywords": [],
@@ -30,6 +31,10 @@
     "@storybook/react": "^7.1.0",
     "@storybook/react-webpack5": "^7.1.0",
     "@storybook/testing-library": "^0.2.0",
+    "@typescript-eslint/eslint-plugin": "^6.2.1",
+    "@typescript-eslint/parser": "^6.2.1",
+    "eslint": "^8.46.0",
+    "eslint-plugin-react": "^7.33.1",
     "eslint-plugin-storybook": "^0.6.12",
     "husky": "^8.0.3",
     "lint-staged": "^13.2.3",

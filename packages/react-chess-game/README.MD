@@ -86,13 +86,13 @@ The `ChessGame.Sounds` component accepts the following props:
 | capture  | string |         | The sound to play when a player captures a piece. |
 | gameOver | string |         | The sound to play when the game is over.          |
 
-### useChessGame
+### useChessGameContext
 
-The `useChessGame` hook is used to get the `ChessGameContext` from the `ChessGame.Root` component. It can be used to customize the chess game.
+The `useChessGameContext` hook is used to get the `ChessGameContext` from the `ChessGame.Root` component. It can be used to customize the chess game.
 
 #### Returns
 
-The `useChessGame` hook returns the following values:
+The `useChessGameContext` hook returns the following values:
 
 | Name        | Type       | Description                                                                            |
 | ----------- | ---------- | -------------------------------------------------------------------------------------- |
@@ -103,7 +103,7 @@ The `useChessGame` hook returns the following values:
 
 #### Methods
 
-The `useChessGame` hook returns the following methods:
+The `useChessGameContextContext` hook returns the following methods:
 
 | Name       | Type                   | Description                          |
 | ---------- | ---------------------- | ------------------------------------ |
@@ -113,7 +113,7 @@ The `useChessGame` hook returns the following methods:
 
 #### Info
 
-The `useChessGame` hook returns the following info:
+The `useChessGameContext` hook returns the following info:
 
 turn,
 isPlayerTurn,
