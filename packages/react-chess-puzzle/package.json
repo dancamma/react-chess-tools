@@ -1,6 +1,6 @@
 {
   "name": "@react-chess-tools/react-chess-puzzle",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "A lightweight, customizable React component library for rendering and interacting with chess puzzles.",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
