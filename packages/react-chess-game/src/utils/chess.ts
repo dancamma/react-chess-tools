@@ -1,5 +1,5 @@
 import { Chess, Color, Square } from "chess.js";
-import { last } from "lodash";
+import _ from "lodash";
 
 /**
  * Creates a clone of the given Chess.js instance. This is needed to update the state
@@ -25,7 +25,7 @@ export const getGameInfo = (game: Chess, orientation: Color) => {
   const isPlayerTurn = turn === orientation;
   const isOpponentTurn = !isPlayerTurn;
   const moveNumber = game.history().length;
-  const lastMove = last(game.history({ verbose: true }));
+  const lastMove = _.last(game.history({ verbose: true }));
   const isCheck = game.isCheck();
   const isCheckmate = game.isCheckmate();
   const isDraw = game.isDraw();

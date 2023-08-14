@@ -1,6 +1,6 @@
 import { type Color, Chess, Move } from "chess.js";
 import React, { CSSProperties, ReactElement, ReactNode } from "react";
-import { last } from "lodash";
+import _ from "lodash";
 
 export type Status = "not-started" | "in-progress" | "solved" | "failed";
 
@@ -45,7 +45,7 @@ export const getCustomSquareStyles = (
 ) => {
   const customSquareStyles: Record<string, CSSProperties> = {};
 
-  const lastMove = last(game.history({ verbose: true }));
+  const lastMove = _.last(game.history({ verbose: true }));
 
   if (status === "failed" && lastMove) {
     customSquareStyles[lastMove.from] = {
