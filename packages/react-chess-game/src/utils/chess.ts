@@ -1,5 +1,5 @@
 import { Chess, Color, Square } from "chess.js";
-import last from "lodash/last";
+import { last } from "lodash";
 
 /**
  * Creates a clone of the given Chess.js instance. This is needed to update the state
