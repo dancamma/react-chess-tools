@@ -1,6 +1,6 @@
 import { type Color, Chess, Move } from "chess.js";
 import React, { CSSProperties, ReactElement, ReactNode } from "react";
-import last from "lodash/last";
+import { last } from "lodash";
 
 export type Status = "not-started" | "in-progress" | "solved" | "failed";
 

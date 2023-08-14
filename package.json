@@ -17,7 +17,7 @@
     "packages/*"
   ],
   "lint-staged": {
-    "**/*": "prettier --write --ignore-unknown"
+    "**/*": "prettier . --write --ignore-unknown"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.22.9",
