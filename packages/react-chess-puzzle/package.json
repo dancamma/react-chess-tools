@@ -1,6 +1,6 @@
 {
   "name": "@react-chess-tools/react-chess-puzzle",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "A lightweight, customizable React component library for rendering and interacting with chess puzzles.",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
@@ -32,7 +32,7 @@
   "author": "Daniele Cammareri <daniele.cammareri@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@react-chess-tools/react-chess-game": "0.1.4",
+    "@react-chess-tools/react-chess-game": "0.2.0",
     "chess.js": "^1.0.0-beta.6",
     "lodash": "^4.17.21"
   },

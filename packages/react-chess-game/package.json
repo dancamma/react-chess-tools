@@ -1,6 +1,6 @@
 {
   "name": "@react-chess-tools/react-chess-game",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "react-chess-game is a React component bridging chess.js with react-chessboard to offer a full-featured, ready-to-integrate chess board experience.",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
