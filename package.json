@@ -8,7 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "npm run build && storybook build",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "release": "npm run build && changeset version"
   },
   "keywords": [],
   "author": "Daniele Cammareri <daniele.cammareri@gmail.com>",
@@ -23,6 +24,7 @@
     "@babel/preset-env": "^7.22.9",
     "@babel/preset-react": "^7.22.5",
     "@babel/preset-typescript": "^7.22.5",
+    "@changesets/cli": "^2.26.2",
     "@storybook/addon-essentials": "^7.1.0",
     "@storybook/addon-interactions": "^7.1.0",
     "@storybook/addon-links": "^7.1.0",
@@ -45,5 +47,6 @@
     "storybook": "^7.1.0",
     "tsup": "^7.1.0",
     "typescript": "^5.1.6"
-  }
+  },
+  "dependencies": {}
 }
