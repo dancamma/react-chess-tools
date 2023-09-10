@@ -1,11 +1,11 @@
 import { Chess, Move } from "chess.js";
-import { useChessGame } from "@react-chess-tools/react-chess-game";
-import { getOrientation, type Puzzle, type Hint, type Status } from "../utils";
+import { type Puzzle, type Hint, type Status } from "../utils";
 
 export type State = {
   puzzle: Puzzle;
   currentMoveIndex: number;
   status: Status;
+  cpuMove?: string | null;
   nextMove?: string | null;
   hint: Hint;
   needCpuMove: boolean;
@@ -17,21 +17,14 @@ export type Action =
       type: "INITIALIZE";
       payload: {
         puzzle: Puzzle;
-        setPosition: ReturnType<typeof useChessGame>["methods"]["setPosition"];
       };
     }
   | {
       type: "RESET";
-      payload: {
-        setPosition: ReturnType<typeof useChessGame>["methods"]["setPosition"];
-      };
     }
   | { type: "TOGGLE_HINT" }
   | {
       type: "CPU_MOVE";
-      payload: {
-        makeMove?: ReturnType<typeof useChessGame>["methods"]["makeMove"];
-      };
     }
   | {
       type: "PLAYER_MOVE";
@@ -44,14 +37,7 @@ export type Action =
       };
     };
 
-export const initializePuzzle = ({
-  puzzle,
-  setPosition,
-}: {
-  puzzle: Puzzle;
-  setPosition: ReturnType<typeof useChessGame>["methods"]["setPosition"];
-}): State => {
-  setPosition(puzzle.fen, getOrientation(puzzle));
+export const initializePuzzle = ({ puzzle }: { puzzle: Puzzle }): State => {
   return {
     puzzle,
     currentMoveIndex: 0,
@@ -75,7 +61,6 @@ export const reducer = (state: State, action: Action): State => {
         ...state,
         ...initializePuzzle({
           puzzle: state.puzzle,
-          setPosition: action.payload.setPosition,
         }),
       };
     case "TOGGLE_HINT":
@@ -91,13 +76,10 @@ export const reducer = (state: State, action: Action): State => {
         return state;
       }
 
-      if (state.nextMove) {
-        action.payload.makeMove?.(state.nextMove);
-      }
-
       return {
         ...state,
         currentMoveIndex: state.currentMoveIndex + 1,
+        cpuMove: state.puzzle.moves[state.currentMoveIndex],
         nextMove:
           state.currentMoveIndex < state.puzzle.moves.length - 1
             ? state.puzzle.moves[state.currentMoveIndex + 1]

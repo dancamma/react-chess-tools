@@ -31,7 +31,6 @@ export const useChessGame = ({
 
       return true;
     } catch (e) {
-      console.error(e);
       return false;
     }
   };
