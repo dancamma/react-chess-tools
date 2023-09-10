@@ -1,5 +1,11 @@
 # @react-chess-tools/react-chess-game
 
+## 0.2.1
+
+### Patch Changes
+
+- a2ff2f3: fixed Cannot update a component (Root) while rendering a different component (PuzzleRoot) error
+
 ## 0.2.0
 
 ### Minor Changes
