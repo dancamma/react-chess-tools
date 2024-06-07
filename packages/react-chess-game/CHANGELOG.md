@@ -1,5 +1,11 @@
 # @react-chess-tools/react-chess-game
 
+## 0.3.0
+
+### Minor Changes
+
+- 3a9745f: Upgrade dependencies (June 2024)
+
 ## 0.2.1
 
 ### Patch Changes
