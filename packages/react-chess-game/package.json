@@ -32,7 +32,7 @@
   "dependencies": {
     "chess.js": "^1.0.0-beta.8",
     "lodash": "^4.17.21",
-    "react-chessboard": "^3.2.0"
+    "react-chessboard": "^4.6.0"
   },
   "devDependencies": {
     "react": "^18.3.1",
