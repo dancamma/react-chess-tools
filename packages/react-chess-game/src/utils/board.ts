@@ -12,7 +12,7 @@ export const getCustomSquareStyles = (
 ) => {
   const customSquareStyles: Record<string, CSSProperties> = {};
 
-  const { lastMove, isCheck } = info;
+  const { lastMove, isCheck, turn } = info;
 
   if (lastMove) {
     customSquareStyles[lastMove.from] = {
@@ -34,7 +34,9 @@ export const getCustomSquareStyles = (
     destinationSquares.forEach((square) => {
       customSquareStyles[square] = {
         background:
-          "radial-gradient(circle, rgba(0, 0, 0, 0.1) 25%, transparent 25%",
+          game.get(square) && game.get(square).color !== turn
+            ? "radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)"
+            : "radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)",
       };
     });
   }
