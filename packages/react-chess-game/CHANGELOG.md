@@ -1,5 +1,11 @@
 # @react-chess-tools/react-chess-game
 
+## 0.3.1
+
+### Patch Changes
+
+- 17805de: fix: fix captures highlight
+
 ## 0.3.0
 
 ### Minor Changes
