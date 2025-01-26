@@ -37,4 +37,4 @@ storybook-static
 # vercel
 .vercel
 
-**/dist
+**/dist 
