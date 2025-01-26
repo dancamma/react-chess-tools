@@ -44,6 +44,7 @@ export const initializePuzzle = ({ puzzle }: { puzzle: Puzzle }): State => {
     status: "not-started",
     nextMove: puzzle.moves[0],
     hint: "none",
+    cpuMove: null,
     needCpuMove: !!puzzle.makeFirstMove,
     isPlayerTurn: !puzzle.makeFirstMove,
   };
