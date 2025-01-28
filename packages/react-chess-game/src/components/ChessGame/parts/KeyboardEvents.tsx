@@ -21,7 +21,6 @@ type KeyboardEventsProps = {
 };
 
 export const KeyboardEvents: React.FC<KeyboardEventsProps> = ({ events }) => {
-  console.log("events", events);
   const gameContext = useChessGameContext();
   if (!gameContext) {
     throw new Error("ChessGameContext not found");

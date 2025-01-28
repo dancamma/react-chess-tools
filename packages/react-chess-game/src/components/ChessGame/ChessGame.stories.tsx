@@ -38,8 +38,24 @@ export const Default = () => {
 export const WithSounds = () => {
   return (
     <ChessGame.Root>
-      <ChessGame.KeyboardEvents />
       <ChessGame.Sounds />
+      <ChessGame.Board />
+    </ChessGame.Root>
+  );
+};
+
+export const WithKeyboardEvents = () => {
+  return (
+    <ChessGame.Root>
+      <ChessGame.KeyboardEvents
+        events={{
+          f: (context) => context.methods.flipBoard(),
+          w: (context) => context.methods.goToStart(),
+          s: (context) => context.methods.goToEnd(),
+          a: (context) => context.methods.goToPreviousMove(),
+          d: (context) => context.methods.goToNextMove(),
+        }}
+      />
       <ChessGame.Board />
     </ChessGame.Root>
   );

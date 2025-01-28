@@ -60,7 +60,6 @@ export const useChessGame = ({
   const goToPreviousMove = () => goToMove(currentMoveIndex - 1);
   const goToNextMove = () => goToMove(currentMoveIndex + 1);
 
-  console.log("currentMoveIndex", currentMoveIndex);
   return {
     game,
     currentFen: getCurrentFen(fen, game, currentMoveIndex),
