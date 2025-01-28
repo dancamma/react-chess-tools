@@ -1,5 +1,7 @@
 import { Chess, Color, Square } from "chess.js";
 import _ from "lodash";
+import React from "react";
+import { useChessGameProps } from "../hooks/useChessGame";
 
 /**
  * Creates a clone of the given Chess.js instance. This is needed to update the state
@@ -87,4 +89,24 @@ export const requiresPromotion = (
 export const getDestinationSquares = (game: Chess, square: Square) => {
   const moves = game.moves({ square, verbose: true });
   return moves.map((move) => move.to);
+};
+
+export const getCurrentFen = (
+  fen: string | undefined,
+  game: Chess,
+  currentMoveIndex: number,
+) => {
+  const tempGame = new Chess();
+  if (currentMoveIndex === -1) {
+    if (fen) {
+      tempGame.load(fen);
+    }
+  } else {
+    const moves = game.history().slice(0, currentMoveIndex + 1);
+    if (fen) {
+      tempGame.load(fen);
+    }
+    moves.forEach((move) => tempGame.move(move));
+  }
+  return tempGame.fen();
 };

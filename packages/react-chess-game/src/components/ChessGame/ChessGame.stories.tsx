@@ -29,6 +29,7 @@ export default meta;
 export const Default = () => {
   return (
     <ChessGame.Root>
+      <ChessGame.KeyboardEvents />
       <ChessGame.Board />
     </ChessGame.Root>
   );
@@ -37,6 +38,7 @@ export const Default = () => {
 export const WithSounds = () => {
   return (
     <ChessGame.Root>
+      <ChessGame.KeyboardEvents />
       <ChessGame.Sounds />
       <ChessGame.Board />
     </ChessGame.Root>

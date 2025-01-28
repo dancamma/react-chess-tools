@@ -21,6 +21,7 @@ export const Board: React.FC<ChessGameProps> = ({
 
   const {
     game,
+    currentFen,
     orientation,
     info,
     methods: { makeMove },
@@ -95,7 +96,7 @@ export const Board: React.FC<ChessGameProps> = ({
         ...customSquareStyles,
       }}
       boardOrientation={orientation === "b" ? "black" : "white"}
-      position={game.fen()}
+      position={currentFen}
       showPromotionDialog={!!promotionMove}
       onPromotionPieceSelect={
         promotionMove ? onPromotionPieceSelect : undefined
