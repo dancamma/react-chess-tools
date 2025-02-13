@@ -1,17 +1,19 @@
 import { useEffect } from "react";
-import { defaultKeyboardEvents } from "../components/ChessGame/parts/KeyboardEvents";
+import {
+  defaultKeyboardControls,
+  KeyboardControls,
+} from "../components/ChessGame/parts/KeyboardControls";
 import { useChessGameContext } from "./useChessGameContext";
-import { KeyboardEvents } from "../components/ChessGame/parts/KeyboardEvents";
 
-export const useKeyboardEvents = (events?: KeyboardEvents) => {
+export const useKeyboardControls = (controls?: KeyboardControls) => {
   const gameContext = useChessGameContext();
   if (!gameContext) {
     throw new Error("ChessGameContext not found");
   }
-  const keyboardEvents = { ...defaultKeyboardEvents, ...events };
+  const keyboardControls = { ...defaultKeyboardControls, ...controls };
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const handler = keyboardEvents[event.key];
+      const handler = keyboardControls[event.key];
       if (handler) {
         event.preventDefault();
         handler(gameContext);

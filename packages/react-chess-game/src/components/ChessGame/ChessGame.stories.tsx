@@ -29,7 +29,7 @@ export default meta;
 export const Default = () => {
   return (
     <ChessGame.Root>
-      <ChessGame.KeyboardEvents />
+      <ChessGame.KeyboardControls />
       <ChessGame.Board />
     </ChessGame.Root>
   );
@@ -44,11 +44,11 @@ export const WithSounds = () => {
   );
 };
 
-export const WithKeyboardEvents = () => {
+export const WithKeyboardControls = () => {
   return (
     <ChessGame.Root>
-      <ChessGame.KeyboardEvents
-        events={{
+      <ChessGame.KeyboardControls
+        controls={{
           f: (context) => context.methods.flipBoard(),
           w: (context) => context.methods.goToStart(),
           s: (context) => context.methods.goToEnd(),

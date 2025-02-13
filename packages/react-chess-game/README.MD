@@ -16,6 +16,7 @@ This project is a React-based chess game that allows users to play chess online.
 - Sounds
 - Move-by-click
 - Square highlighting
+- Keyboard controls
 
 It is build using an approach similar to the one used in the `radix-ui`, where the `ChessGame` component is built using a `ChessGameContext` that you can use to customize and ehance the component game. Is also provides a set of default components that you can use to build your next chess app.
 
@@ -86,6 +87,18 @@ The `ChessGame.Sounds` component accepts the following props:
 | capture  | string |         | The sound to play when a player captures a piece. |
 | gameOver | string |         | The sound to play when the game is over.          |
 
+### ChessGame.KeyboardControls
+
+The `ChessGame.KeyboardControls` component is used to provide keyboard controls for navigating through the chess game. By default, it enables arrow key controls for moving through game history, but you can customize the key bindings.
+
+#### Props
+
+The `ChessGame.KeyboardControls` component accepts the following props:
+
+| Name     | Type             | Default                 | Description                                                                                                                                                              |
+| -------- | ---------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| controls | KeyboardControls | defaultKeyboardControls | Object mapping key names to handler functions. The default controls are: ArrowLeft (previous move), ArrowRight (next move), ArrowUp (go to start), ArrowDown (go to end) |
+
 ### useChessGameContext
 
 The `useChessGameContext` hook is used to get the `ChessGameContext` from the `ChessGame.Root` component. It can be used to customize the chess game.
@@ -105,49 +118,43 @@ The `useChessGameContext` hook returns the following values:
 
 The `useChessGameContextContext` hook returns the following methods:
 
-| Name       | Type                   | Description                          |
-| ---------- | ---------------------- | ------------------------------------ |
-| makeMove   | (move: string) => void | Makes a move in the chess game.      |
-| setPostion | (fen: string) => void  | Sets the position of the chess game. |
-| flipBoard  | () => void             | Flips the board.                     |
+| Name             | Type                        | Description                                  |
+| ---------------- | --------------------------- | -------------------------------------------- |
+| makeMove         | (move: string) => void      | Makes a move in the chess game.              |
+| setPostion       | (fen: string) => void       | Sets the position of the chess game.         |
+| flipBoard        | () => void                  | Flips the board.                             |
+| goToMove         | (moveIndex: number) => void | Goes to a specific move in the game history. |
+| goToStart        | () => void                  | Goes to the starting position.               |
+| goToEnd          | () => void                  | Goes to the latest position.                 |
+| goToPreviousMove | () => void                  | Goes to the previous move.                   |
+| goToNextMove     | () => void                  | Goes to the next move.                       |
 
 #### Info
 
 The `useChessGameContext` hook returns the following info:
 
-turn,
-isPlayerTurn,
-isOpponentTurn,
-moveNumber,
-lastMove,
-isCheck,
-isCheckmate,
-isDraw,
-isStalemate,
-isThreefoldRepetition,
-isInsufficientMaterial,
-isGameOver,
-isDrawn,
-hasPlayerWon,
-hasPlayerLost,
-
 | Name                   | Type       | Description                                                                |
 | ---------------------- | ---------- | -------------------------------------------------------------------------- |
-| turn                   | "w" \| "b" | The turn of the chess game.                                                |
-| isPlayerTurn           | boolean    | Whether it is the player's turn.                                           |
-| isOpponentTurn         | boolean    | Whether it is the opponent's turn.                                         |
-| moveNumber             | number     | The number of the current move.                                            |
-| lastMove               | Move       | The last move made in the chess game.                                      |
-| isCheck                | boolean    | Whether the player is in check.                                            |
-| isCheckmate            | boolean    | Whether the player is in checkmate.                                        |
-| isDraw                 | boolean    | Whether the game is a draw.                                                |
-| isStalemate            | boolean    | Whether the game is a stalemate.                                           |
-| isThreefoldRepetition  | boolean    | Whether the game is a threefold repetition.                                |
-| isInsufficientMaterial | boolean    | Whether the game is a insufficient material.                               |
-| isGameOver             | boolean    | Whether the game is over.                                                  |
-| isDrawn                | boolean    | Whether the game is drawn.                                                 |
-| hasPlayerWon           | boolean    | Whether the player (the side specified in the `orientation` prop) has won. |
+| turn                   | "w" \| "b" | The turn of the chess game                                                 |
+| isPlayerTurn           | boolean    | Whether it is the player's turn                                            |
+| isOpponentTurn         | boolean    | Whether it is the opponent's turn                                          |
+| moveNumber             | number     | The number of the current move                                             |
+| lastMove               | Move       | The last move made in the chess game                                       |
+| isCheck                | boolean    | Whether the player is in check                                             |
+| isCheckmate            | boolean    | Whether the player is in checkmate                                         |
+| isDraw                 | boolean    | Whether the game is a draw                                                 |
+| isStalemate            | boolean    | Whether the game is a stalemate                                            |
+| isThreefoldRepetition  | boolean    | Whether the game is a threefold repetition                                 |
+| isInsufficientMaterial | boolean    | Whether the game is a insufficient material                                |
+| isGameOver             | boolean    | Whether the game is over                                                   |
+| isDrawn                | boolean    | Whether the game is drawn                                                  |
+| hasPlayerWon           | boolean    | Whether the player (the side specified in the `orientation` prop) has won  |
 | hasPlayerLost          | boolean    | Whether the player (the side specified in the `orientation` prop) has lost |
+| currentFen             | string     | The current FEN string representing the board position                     |
+| currentPosition        | string     | The current move in the game history                                       |
+| currentMoveIndex       | number     | The index of the current move in the game history                          |
+| isLatestMove           | boolean    | Whether the current position is the latest move in the game                |
+| game                   | Chess      | The underlying Chess.js instance                                           |
 
 ## 📝 License
 

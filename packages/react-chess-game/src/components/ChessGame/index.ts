@@ -1,11 +1,11 @@
 import { Root } from "./parts/Root";
 import { Board } from "./parts/Board";
 import { Sounds } from "./parts/Sounds";
-import { KeyboardEvents } from "./parts/KeyboardEvents";
+import { KeyboardControls } from "./parts/KeyboardControls";
 
 export const ChessGame = {
   Root,
   Board,
   Sounds,
-  KeyboardEvents,
+  KeyboardControls,
 };

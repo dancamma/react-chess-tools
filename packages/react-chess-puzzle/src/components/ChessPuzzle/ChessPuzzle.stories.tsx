@@ -94,11 +94,11 @@ export const WithSounds = (args: RootProps) => {
   );
 };
 
-export const WithKeyboardEvents = (args: RootProps) => {
+export const WithKeyboardControls = (args: RootProps) => {
   return (
     <ChessPuzzle.Root {...args} puzzle={puzzles[0]}>
-      <ChessGame.KeyboardEvents
-        events={{
+      <ChessGame.KeyboardControls
+        controls={{
           f: (context) => context.methods.flipBoard(),
           w: (context) => context.methods.goToStart(),
           s: (context) => context.methods.goToEnd(),
