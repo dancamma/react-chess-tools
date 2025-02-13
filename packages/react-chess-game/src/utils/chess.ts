@@ -1,7 +1,5 @@
 import { Chess, Color, Square } from "chess.js";
 import _ from "lodash";
-import React from "react";
-import { useChessGameProps } from "../hooks/useChessGame";
 
 /**
  * Creates a clone of the given Chess.js instance. This is needed to update the state
