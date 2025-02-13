@@ -3,6 +3,7 @@ import type { Meta } from "@storybook/react";
 import React from "react";
 import { RootProps } from "./parts/Root";
 import { ChessPuzzle } from ".";
+import { ChessGame } from "@react-chess-tools/react-chess-game";
 
 const puzzles = [
   {
@@ -81,5 +82,31 @@ export const Underpromotion = (args: RootProps) => {
         </ChessPuzzle.Reset>
       </ChessPuzzle.Root>
     </div>
+  );
+};
+
+export const WithSounds = (args: RootProps) => {
+  return (
+    <ChessPuzzle.Root {...args} puzzle={puzzles[0]}>
+      <ChessGame.Sounds />
+      <ChessPuzzle.Board />
+    </ChessPuzzle.Root>
+  );
+};
+
+export const WithKeyboardControls = (args: RootProps) => {
+  return (
+    <ChessPuzzle.Root {...args} puzzle={puzzles[0]}>
+      <ChessGame.KeyboardControls
+        controls={{
+          f: (context) => context.methods.flipBoard(),
+          w: (context) => context.methods.goToStart(),
+          s: (context) => context.methods.goToEnd(),
+          a: (context) => context.methods.goToPreviousMove(),
+          d: (context) => context.methods.goToNextMove(),
+        }}
+      />
+      <ChessPuzzle.Board />
+    </ChessPuzzle.Root>
   );
 };

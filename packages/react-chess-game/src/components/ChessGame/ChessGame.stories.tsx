@@ -29,6 +29,7 @@ export default meta;
 export const Default = () => {
   return (
     <ChessGame.Root>
+      <ChessGame.KeyboardControls />
       <ChessGame.Board />
     </ChessGame.Root>
   );
@@ -38,6 +39,23 @@ export const WithSounds = () => {
   return (
     <ChessGame.Root>
       <ChessGame.Sounds />
+      <ChessGame.Board />
+    </ChessGame.Root>
+  );
+};
+
+export const WithKeyboardControls = () => {
+  return (
+    <ChessGame.Root>
+      <ChessGame.KeyboardControls
+        controls={{
+          f: (context) => context.methods.flipBoard(),
+          w: (context) => context.methods.goToStart(),
+          s: (context) => context.methods.goToEnd(),
+          a: (context) => context.methods.goToPreviousMove(),
+          d: (context) => context.methods.goToNextMove(),
+        }}
+      />
       <ChessGame.Board />
     </ChessGame.Root>
   );

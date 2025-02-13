@@ -14,3 +14,5 @@ export const useChessGameContext = () => {
   }
   return context;
 };
+
+export type ChessGameContextType = ReturnType<typeof useChessGame>;

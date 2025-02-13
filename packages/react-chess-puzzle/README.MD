@@ -61,6 +61,29 @@ the `puzzle` prop contains the following properties:
 
 The `ChessPuzzle.Board` component is used to render the chess board. It is a wrapper around the `ChessGame.Board` component and accepts the same props.
 
+### Using react-chess-game Components
+
+Since `react-chess-puzzle` is built on top of `react-chess-game`, you can use any of its components within your puzzle interface. This includes:
+
+- `ChessGame.Sounds` - Add sound effects for moves/captures
+- `ChessGame.KeyboardControls` - Add keyboard navigation
+- `useChessGameContext` - Access game state and methods
+
+Example usage with sounds and keyboard controls:
+
+```tsx
+import { ChessPuzzle } from "@react-chess-tools/react-chess-puzzle";
+import { ChessGame } from "@react-chess-tools/react-chess-game";
+
+const App = () => (
+  <ChessPuzzle.Root puzzle={...}>
+    <ChessGame.Sounds />
+    <ChessGame.KeyboardControls />
+    <ChessPuzzle.Board />
+  </ChessPuzzle.Root>
+);
+```
+
 ### `Puzzle.Reset`
 
 A button that changes the puzzle. It can be used, for example, to restart the puzzle or move to the next puzzle.
