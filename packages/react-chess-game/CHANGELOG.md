@@ -1,5 +1,15 @@
 # @react-chess-tools/react-chess-game
 
+## 0.4.0
+
+### Minor Changes
+
+- a161f18: Add keyboard controls
+
+### Patch Changes
+
+- 706b5ec: Upgrade dependencies (June 2024)
+
 ## 0.3.1
 
 ### Patch Changes

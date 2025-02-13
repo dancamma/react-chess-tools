@@ -1,5 +1,19 @@
 # @react-chess-tools/react-chess-puzzle
 
+## 0.4.0
+
+### Minor Changes
+
+- a161f18: Add keyboard controls
+
+### Patch Changes
+
+- 5fc2ee1: fix: makeFirstMove on Puzzle Restart
+- 706b5ec: Upgrade dependencies (June 2024)
+- Updated dependencies [a161f18]
+- Updated dependencies [706b5ec]
+  - @react-chess-tools/react-chess-game@0.4.0
+
 ## 0.3.1
 
 ### Patch Changes
