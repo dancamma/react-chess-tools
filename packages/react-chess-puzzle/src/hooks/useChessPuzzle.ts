@@ -15,6 +15,7 @@ export const useChessPuzzle = (
   const {
     game,
     methods: { makeMove, setPosition },
+    currentFen,
   } = gameContext;
 
   useEffect(() => {
@@ -26,6 +27,10 @@ export const useChessPuzzle = (
   const changePuzzle = (puzzle: Puzzle) => {
     dispatch({ type: "INITIALIZE", payload: { puzzle } });
     setPosition(puzzle.fen, getOrientation(puzzle));
+  };
+
+  const autoRetry = () => {
+    dispatch({ type: "AUTO_RETRY", payload: { puzzle } });
   };
 
   useEffect(() => {
@@ -79,6 +84,8 @@ export const useChessPuzzle = (
   return {
     status: state.status,
     changePuzzle,
+    autoRetry,
+    currentMoveIndex: state.currentMoveIndex,
     puzzle,
     hint: state.hint,
     onHint,

@@ -35,6 +35,12 @@ export type Action =
         changePuzzle: (puzzle: Puzzle) => void;
         game: Chess;
       };
+    }
+  | {
+      type: "AUTO_RETRY";
+      payload: {
+        puzzle: Puzzle;
+      };
     };
 
 export const initializePuzzle = ({ puzzle }: { puzzle: Puzzle }): State => {
@@ -47,6 +53,22 @@ export const initializePuzzle = ({ puzzle }: { puzzle: Puzzle }): State => {
     cpuMove: null,
     needCpuMove: !!puzzle.makeFirstMove,
     isPlayerTurn: !puzzle.makeFirstMove,
+  };
+};
+
+export const autoRetryPuzzle = (
+  { puzzle }: { puzzle: Puzzle },
+  currentMove: number,
+): State => {
+  return {
+    puzzle,
+    currentMoveIndex: currentMove,
+    status: "in-progress",
+    nextMove: puzzle.moves[currentMove],
+    hint: "none",
+    cpuMove: null,
+    needCpuMove: false,
+    isPlayerTurn: true,
   };
 };
 
@@ -134,6 +156,13 @@ export const reducer = (state: State, action: Action): State => {
         status: "in-progress",
         needCpuMove: true,
         isPlayerTurn: false,
+      };
+    }
+
+    case "AUTO_RETRY": {
+      return {
+        ...state,
+        ...autoRetryPuzzle(action.payload, state.currentMoveIndex),
       };
     }
 

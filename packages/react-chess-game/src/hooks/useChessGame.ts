@@ -60,6 +60,18 @@ export const useChessGame = ({
   const goToPreviousMove = () => goToMove(currentMoveIndex - 1);
   const goToNextMove = () => goToMove(currentMoveIndex + 1);
 
+  const undoMove = (): boolean => {
+    try {
+      const copy = cloneGame(game);
+      copy.undo();
+      setGame(copy);
+      setCurrentMoveIndex(copy.history().length - 1);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
   return {
     game,
     currentFen: getCurrentFen(fen, game, currentMoveIndex),
@@ -77,6 +89,7 @@ export const useChessGame = ({
       goToEnd,
       goToPreviousMove,
       goToNextMove,
+      undoMove,
     },
   };
 };
