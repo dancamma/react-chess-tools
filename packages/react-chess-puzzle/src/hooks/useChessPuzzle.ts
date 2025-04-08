@@ -1,13 +1,24 @@
 import { useEffect, useReducer } from "react";
 import { initializePuzzle, reducer } from "./reducer";
-import { getOrientation, type Puzzle } from "../utils";
+import { getOrientation, type Puzzle, type Hint, type Status } from "../utils";
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
+import { useChessPuzzleContext } from "./useChessPuzzleContext";
+
+export type ChessPuzzleContextType = {
+  status: Status;
+  changePuzzle: (puzzle: Puzzle) => void;
+  puzzle: Puzzle;
+  hint: Hint;
+  nextMove?: string | null;
+  isPlayerTurn: boolean;
+  onHint: () => void;
+};
 
 export const useChessPuzzle = (
   puzzle: Puzzle,
-  onSolve?: (changePuzzle: (puzzle: Puzzle) => void) => void,
-  onFail?: (changePuzzle: (puzzle: Puzzle) => void) => void,
-) => {
+  onSolve?: (puzzleContext: ChessPuzzleContextType) => void,
+  onFail?: (puzzleContext: ChessPuzzleContextType) => void,
+): ChessPuzzleContextType => {
   const gameContext = useChessGameContext();
 
   const [state, dispatch] = useReducer(reducer, { puzzle }, initializePuzzle);
@@ -46,6 +57,24 @@ export const useChessPuzzle = (
     }
   }, [state.cpuMove]);
 
+  if (!gameContext) {
+    throw new Error("useChessPuzzle must be used within a ChessGameContext");
+  }
+
+  const onHint = () => {
+    dispatch({ type: "TOGGLE_HINT" });
+  };
+
+  const puzzleContext: ChessPuzzleContextType = {
+    status: state.status,
+    changePuzzle,
+    puzzle,
+    hint: state.hint,
+    onHint,
+    nextMove: state.nextMove,
+    isPlayerTurn: state.isPlayerTurn,
+  };
+
   useEffect(() => {
     if (game?.history()?.length <= 0 + (puzzle.makeFirstMove ? 1 : 0)) {
       return;
@@ -57,7 +86,7 @@ export const useChessPuzzle = (
           move: gameContext?.game?.history({ verbose: true })?.pop() ?? null,
           onSolve,
           onFail,
-          changePuzzle,
+          puzzleContext,
           game: game,
         },
       });
@@ -68,21 +97,5 @@ export const useChessPuzzle = (
     }
   }, [game?.history()?.length]);
 
-  if (!gameContext) {
-    throw new Error("useChessPuzzle must be used within a ChessGameContext");
-  }
-
-  const onHint = () => {
-    dispatch({ type: "TOGGLE_HINT" });
-  };
-
-  return {
-    status: state.status,
-    changePuzzle,
-    puzzle,
-    hint: state.hint,
-    onHint,
-    nextMove: state.nextMove,
-    isPlayerTurn: state.isPlayerTurn,
-  };
+  return puzzleContext;
 };

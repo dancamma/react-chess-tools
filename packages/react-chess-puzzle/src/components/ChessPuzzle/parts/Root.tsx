@@ -1,13 +1,16 @@
 import React from "react";
 import { Puzzle, getOrientation } from "../../../utils";
-import { useChessPuzzle } from "../../../hooks/useChessPuzzle";
+import {
+  ChessPuzzleContextType,
+  useChessPuzzle,
+} from "../../../hooks/useChessPuzzle";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 import { ChessPuzzleContext } from "../../../hooks/useChessPuzzleContext";
 
 export interface RootProps {
   puzzle: Puzzle;
-  onSolve?: (changePuzzle: (puzzle: Puzzle) => void) => void;
-  onFail?: (changePuzzle: (puzzle: Puzzle) => void) => void;
+  onSolve?: (puzzleContext: ChessPuzzleContextType) => void;
+  onFail?: (puzzleContext: ChessPuzzleContextType) => void;
 }
 
 const PuzzleRoot: React.FC<React.PropsWithChildren<RootProps>> = ({
