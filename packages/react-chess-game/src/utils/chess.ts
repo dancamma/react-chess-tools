@@ -33,8 +33,8 @@ export const getGameInfo = (game: Chess, orientation: Color) => {
   const isThreefoldRepetition = game.isThreefoldRepetition();
   const isInsufficientMaterial = game.isInsufficientMaterial();
   const isGameOver = game.isGameOver();
-  const hasPlayerWon = isPlayerTurn && isGameOver && !isDraw;
-  const hasPlayerLost = isOpponentTurn && isGameOver && !isDraw;
+  const hasPlayerWon = isOpponentTurn && isGameOver && !isDraw;
+  const hasPlayerLost = isPlayerTurn && isGameOver && !isDraw;
   const isDrawn = game.isDraw();
   return {
     turn,
@@ -74,14 +74,17 @@ export const requiresPromotion = (
   game: Chess,
   move: Parameters<Chess["move"]>[0],
 ) => {
-  const copy = cloneGame(game);
-  const result = copy.move(move);
+  try {
+    const copy = cloneGame(game);
+    const result = copy.move(move);
 
-  if (result === null) {
-    return false;
+    return result.flags.indexOf("p") !== -1;
+  } catch (e) {
+    if (e instanceof Error && e.message.includes("Invalid move")) {
+      return false;
+    }
+    throw e;
   }
-
-  return result.flags.indexOf("p") !== -1;
 };
 
 export const getDestinationSquares = (game: Chess, square: Square) => {

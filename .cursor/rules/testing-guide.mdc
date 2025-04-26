@@ -1,0 +1,31 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Testing Guide for React Chess Tools
+
+This project uses Jest and React Testing Library for component testing.
+
+## Test Setup
+
+- [jest.config.js](mdc:jest.config.js) contains the Jest configuration
+- [jest.setup.js](mdc:jest.setup.js) imports testing library extensions
+
+## Writing Tests
+
+Tests should be placed in `__tests__` directories adjacent to the components being tested:
+- Test files should be named `ComponentName.test.tsx`
+- Components from react-chessboard need to be mocked
+
+## Mocking Pattern
+
+When possible, use external libraries (e.g. chess.js) without mocking them.
+
+## Running Tests
+
+```
+npm test           # Run all tests
+npm test:watch     # Run tests in watch mode
+npm test:coverage  # Run tests with coverage report
+```
