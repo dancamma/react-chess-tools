@@ -1,5 +1,11 @@
 # @react-chess-tools/react-chess-puzzle
 
+## 0.5.0
+
+### Minor Changes
+
+- 3060132: Pass the whole puzzle context to onSolve and onFail callbacks
+
 ## 0.4.0
 
 ### Minor Changes
