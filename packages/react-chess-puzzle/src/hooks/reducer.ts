@@ -1,5 +1,6 @@
 import { Chess, Move } from "chess.js";
 import { type Puzzle, type Hint, type Status } from "../utils";
+import { ChessPuzzleContextType } from "./useChessPuzzle";
 
 export type State = {
   puzzle: Puzzle;
@@ -30,9 +31,9 @@ export type Action =
       type: "PLAYER_MOVE";
       payload: {
         move?: Move | null;
-        onSolve?: (changePuzzle: (puzzle: Puzzle) => void) => void;
-        onFail?: (changePuzzle: (puzzle: Puzzle) => void) => void;
-        changePuzzle: (puzzle: Puzzle) => void;
+        onSolve?: (puzzleContext: ChessPuzzleContextType) => void;
+        onFail?: (puzzleContext: ChessPuzzleContextType) => void;
+        puzzleContext: ChessPuzzleContextType;
         game: Chess;
       };
     };
@@ -91,7 +92,7 @@ export const reducer = (state: State, action: Action): State => {
       };
 
     case "PLAYER_MOVE": {
-      const { move, onSolve, onFail, changePuzzle } = action.payload;
+      const { move, onSolve, onFail, puzzleContext } = action.payload;
 
       const isMoveRight = [move?.san, move?.lan].includes(
         state?.nextMove || "",
@@ -101,7 +102,7 @@ export const reducer = (state: State, action: Action): State => {
 
       if (!isMoveRight) {
         if (onFail) {
-          onFail(changePuzzle);
+          onFail(puzzleContext);
         }
         return {
           ...state,
@@ -114,7 +115,7 @@ export const reducer = (state: State, action: Action): State => {
 
       if (isPuzzleSolved) {
         if (onSolve) {
-          onSolve(changePuzzle);
+          onSolve(puzzleContext);
         }
 
         return {
