@@ -1,6 +1,6 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
 # Testing Guide for React Chess Tools
@@ -15,8 +15,6 @@ This project uses Jest and React Testing Library for component testing.
 ## Writing Tests
 
 Tests should be placed in `__tests__` directories adjacent to the components being tested:
-- Test files should be named `ComponentName.test.tsx`
-- Components from react-chessboard need to be mocked
 
 ## Mocking Pattern
 
