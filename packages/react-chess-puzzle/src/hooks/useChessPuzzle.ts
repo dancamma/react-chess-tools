@@ -2,7 +2,6 @@ import { useEffect, useReducer } from "react";
 import { initializePuzzle, reducer } from "./reducer";
 import { getOrientation, type Puzzle, type Hint, type Status } from "../utils";
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
-import { useChessPuzzleContext } from "./useChessPuzzleContext";
 
 export type ChessPuzzleContextType = {
   status: Status;

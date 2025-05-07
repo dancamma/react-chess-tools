@@ -34,8 +34,8 @@ export const getCustomSquareStyles = (
     destinationSquares.forEach((square) => {
       customSquareStyles[square] = {
         background:
-          game.get(square) && game.get(square).color !== turn
-            ? "radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)"
+          game.get(square) && game.get(square)?.color !== turn
+            ? "radial-gradient(circle, rgba(1, 0, 0, 0.1) 85%, transparent 85%)"
             : "radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)",
       };
     });
