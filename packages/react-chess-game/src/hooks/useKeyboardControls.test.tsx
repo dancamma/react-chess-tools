@@ -4,7 +4,6 @@ import {
   useChessGameContext,
   ChessGameContextType,
 } from "./useChessGameContext";
-import { defaultKeyboardControls } from "../components/ChessGame/parts/KeyboardControls";
 import { Chess, Color } from "chess.js";
 
 // Mock the context hook
