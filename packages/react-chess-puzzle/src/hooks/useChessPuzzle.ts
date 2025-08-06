@@ -11,6 +11,9 @@ export type ChessPuzzleContextType = {
   nextMove?: string | null;
   isPlayerTurn: boolean;
   onHint: () => void;
+  puzzleState: Status;
+  movesPlayed: number;
+  totalMoves: number;
 };
 
 export const useChessPuzzle = (
@@ -72,6 +75,9 @@ export const useChessPuzzle = (
     onHint,
     nextMove: state.nextMove,
     isPlayerTurn: state.isPlayerTurn,
+    puzzleState: state.status,
+    movesPlayed: state.currentMoveIndex,
+    totalMoves: puzzle.moves.length,
   };
 
   useEffect(() => {
