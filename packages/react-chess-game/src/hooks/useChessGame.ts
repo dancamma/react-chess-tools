@@ -18,57 +18,82 @@ export const useChessGame = ({
   const [currentMoveIndex, setCurrentMoveIndex] = React.useState(-1);
 
   const history = React.useMemo(() => game.history(), [game]);
-  const isLatestMove =
-    currentMoveIndex === history.length - 1 || currentMoveIndex === -1;
+  const isLatestMove = React.useMemo(
+    () => currentMoveIndex === history.length - 1 || currentMoveIndex === -1,
+    [currentMoveIndex, history.length],
+  );
 
-  const setPosition = (fen: string, orientation: Color) => {
+  const info = React.useMemo(
+    () => getGameInfo(game, orientation),
+    [game, orientation],
+  );
+
+  const currentFen = React.useMemo(
+    () => getCurrentFen(fen, game, currentMoveIndex),
+    [fen, game, currentMoveIndex],
+  );
+
+  const currentPosition = React.useMemo(
+    () => game.history()[currentMoveIndex],
+    [game, currentMoveIndex],
+  );
+
+  const setPosition = React.useCallback((fen: string, orientation: Color) => {
     const newGame = new Chess();
     newGame.load(fen);
     setOrientation(orientation);
     setGame(newGame);
     setCurrentMoveIndex(-1);
-  };
+  }, []);
 
-  const makeMove = (move: Parameters<Chess["move"]>[0]): boolean => {
-    // Only allow moves when we're at the latest position
-    if (!isLatestMove) {
-      return false;
-    }
+  const makeMove = React.useCallback(
+    (move: Parameters<Chess["move"]>[0]): boolean => {
+      // Only allow moves when we're at the latest position
+      if (!isLatestMove) {
+        return false;
+      }
 
-    try {
-      const copy = cloneGame(game);
-      copy.move(move);
-      setGame(copy);
-      setCurrentMoveIndex(copy.history().length - 1);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
+      try {
+        const copy = cloneGame(game);
+        copy.move(move);
+        setGame(copy);
+        setCurrentMoveIndex(copy.history().length - 1);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    },
+    [isLatestMove, game],
+  );
 
-  const flipBoard = () => {
+  const flipBoard = React.useCallback(() => {
     setOrientation((orientation) => (orientation === "w" ? "b" : "w"));
-  };
+  }, []);
 
-  const goToMove = (moveIndex: number) => {
-    if (moveIndex < -1 || moveIndex >= history.length) return;
-    setCurrentMoveIndex(moveIndex);
-  };
+  const goToMove = React.useCallback(
+    (moveIndex: number) => {
+      if (moveIndex < -1 || moveIndex >= history.length) return;
+      setCurrentMoveIndex(moveIndex);
+    },
+    [history.length],
+  );
 
-  const goToStart = () => goToMove(-1);
-  const goToEnd = () => goToMove(history.length - 1);
-  const goToPreviousMove = () => goToMove(currentMoveIndex - 1);
-  const goToNextMove = () => goToMove(currentMoveIndex + 1);
+  const goToStart = React.useCallback(() => goToMove(-1), []);
+  const goToEnd = React.useCallback(
+    () => goToMove(history.length - 1),
+    [history.length],
+  );
+  const goToPreviousMove = React.useCallback(
+    () => goToMove(currentMoveIndex - 1),
+    [currentMoveIndex],
+  );
+  const goToNextMove = React.useCallback(
+    () => goToMove(currentMoveIndex + 1),
+    [currentMoveIndex],
+  );
 
-  return {
-    game,
-    currentFen: getCurrentFen(fen, game, currentMoveIndex),
-    currentPosition: game.history()[currentMoveIndex],
-    orientation,
-    currentMoveIndex,
-    isLatestMove,
-    info: getGameInfo(game, orientation),
-    methods: {
+  const methods = React.useMemo(
+    () => ({
       makeMove,
       setPosition,
       flipBoard,
@@ -77,6 +102,27 @@ export const useChessGame = ({
       goToEnd,
       goToPreviousMove,
       goToNextMove,
-    },
+    }),
+    [
+      makeMove,
+      setPosition,
+      flipBoard,
+      goToMove,
+      goToStart,
+      goToEnd,
+      goToPreviousMove,
+      goToNextMove,
+    ],
+  );
+
+  return {
+    game,
+    currentFen,
+    currentPosition,
+    orientation,
+    currentMoveIndex,
+    isLatestMove,
+    info,
+    methods,
   };
 };
