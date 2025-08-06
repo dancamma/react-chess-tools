@@ -6,17 +6,22 @@ export const useBoardSounds = (sounds: Record<Sound, HTMLAudioElement>) => {
   const {
     info: { lastMove, isCheckmate },
   } = useChessGameContext();
+
   useEffect(() => {
+    if (Object.keys(sounds).length === 0) {
+      return;
+    }
+
     if (isCheckmate) {
-      sounds.gameOver.play();
+      sounds.gameOver?.play();
       return;
     }
     if (lastMove?.captured) {
-      sounds.capture.play();
+      sounds.capture?.play();
       return;
     }
     if (lastMove) {
-      sounds.move.play();
+      sounds.move?.play();
       return;
     }
   }, [lastMove]);

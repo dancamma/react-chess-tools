@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useCallback, useMemo } from "react";
 import { initializePuzzle, reducer } from "./reducer";
 import { getOrientation, type Puzzle, type Hint, type Status } from "../utils";
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
@@ -36,10 +36,13 @@ export const useChessPuzzle = (
     }
   }, []);
 
-  const changePuzzle = (puzzle: Puzzle) => {
-    dispatch({ type: "INITIALIZE", payload: { puzzle } });
-    setPosition(puzzle.fen, getOrientation(puzzle));
-  };
+  const changePuzzle = useCallback(
+    (puzzle: Puzzle) => {
+      dispatch({ type: "INITIALIZE", payload: { puzzle } });
+      setPosition(puzzle.fen, getOrientation(puzzle));
+    },
+    [setPosition],
+  );
 
   useEffect(() => {
     if (gameContext && game.fen() === puzzle.fen && state.needCpuMove) {
@@ -63,22 +66,34 @@ export const useChessPuzzle = (
     throw new Error("useChessPuzzle must be used within a ChessGameContext");
   }
 
-  const onHint = () => {
+  const onHint = useCallback(() => {
     dispatch({ type: "TOGGLE_HINT" });
-  };
+  }, []);
 
-  const puzzleContext: ChessPuzzleContextType = {
-    status: state.status,
-    changePuzzle,
-    puzzle,
-    hint: state.hint,
-    onHint,
-    nextMove: state.nextMove,
-    isPlayerTurn: state.isPlayerTurn,
-    puzzleState: state.status,
-    movesPlayed: state.currentMoveIndex,
-    totalMoves: puzzle.moves.length,
-  };
+  const puzzleContext: ChessPuzzleContextType = useMemo(
+    () => ({
+      status: state.status,
+      changePuzzle,
+      puzzle,
+      hint: state.hint,
+      onHint,
+      nextMove: state.nextMove,
+      isPlayerTurn: state.isPlayerTurn,
+      puzzleState: state.status,
+      movesPlayed: state.currentMoveIndex,
+      totalMoves: puzzle.moves.length,
+    }),
+    [
+      state.status,
+      changePuzzle,
+      puzzle,
+      state.hint,
+      onHint,
+      state.nextMove,
+      state.isPlayerTurn,
+      state.currentMoveIndex,
+    ],
+  );
 
   useEffect(() => {
     if (game?.history()?.length <= 0 + (puzzle.makeFirstMove ? 1 : 0)) {
