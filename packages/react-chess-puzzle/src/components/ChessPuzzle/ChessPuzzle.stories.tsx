@@ -127,8 +127,8 @@ export const SmoothAnimations = (args: RootProps) => {
       <ChessPuzzle.Root
         {...args}
         puzzle={puzzles[0]}
-        animationDuration={800}
-        computerMoveDelay={1200}
+        animationDuration={args.animationDuration ?? 800}
+        computerMoveDelay={args.computerMoveDelay ?? 1200}
       >
         <ChessPuzzle.Board />
         <ChessPuzzle.Reset asChild>
@@ -147,8 +147,8 @@ export const FastAnimations = (args: RootProps) => {
       <ChessPuzzle.Root
         {...args}
         puzzle={puzzles[0]}
-        animationDuration={150}
-        computerMoveDelay={300}
+        animationDuration={args.animationDuration ?? 150}
+        computerMoveDelay={args.computerMoveDelay ?? 300}
       >
         <ChessPuzzle.Board />
         <ChessPuzzle.Reset asChild>
@@ -168,8 +168,8 @@ export const ThinkingDelay = (args: RootProps) => {
       <ChessPuzzle.Root
         {...args}
         puzzle={puzzles[0]}
-        animationDuration={300}
-        computerMoveDelay={2000}
+        animationDuration={args.animationDuration ?? 300}
+        computerMoveDelay={args.computerMoveDelay ?? 2000}
       >
         <ChessPuzzle.Board />
         <ChessPuzzle.Reset asChild>
@@ -189,8 +189,8 @@ export const InstantMoves = (args: RootProps) => {
       <ChessPuzzle.Root
         {...args}
         puzzle={puzzles[0]}
-        animationDuration={200}
-        computerMoveDelay={0}
+        animationDuration={args.animationDuration ?? 200}
+        computerMoveDelay={args.computerMoveDelay ?? 0}
       >
         <ChessPuzzle.Board />
         <ChessPuzzle.Reset asChild>
