@@ -1,6 +1,0 @@
----
-"@react-chess-tools/react-chess-puzzle": patch
-"@react-chess-tools/react-chess-game": patch
----
-
-fix: export missing TypeScript types and component props

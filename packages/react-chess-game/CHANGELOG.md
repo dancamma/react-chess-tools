@@ -1,5 +1,14 @@
 # @react-chess-tools/react-chess-game
 
+## 0.4.1
+
+### Patch Changes
+
+- 755a85d: fix: export missing TypeScript types and component props
+- a9c69b5: test: add unit tests
+- 5ed0baf: fix: fix SSR compatibility and prevent unnecessary sound re-renders
+- c3ac738: fix: fix state management and lifecycle issues in chess components
+
 ## 0.4.0
 
 ### Minor Changes

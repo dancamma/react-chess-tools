@@ -1,5 +1,20 @@
 # @react-chess-tools/react-chess-puzzle
 
+## 0.5.1
+
+### Patch Changes
+
+- ca0a210: add missing properties to ChessPuzzleContextType
+- 755a85d: fix: export missing TypeScript types and component props
+- a9c69b5: test: add unit tests
+- 5ed0baf: fix: fix SSR compatibility and prevent unnecessary sound re-renders
+- c3ac738: fix: fix state management and lifecycle issues in chess components
+- Updated dependencies [755a85d]
+- Updated dependencies [a9c69b5]
+- Updated dependencies [5ed0baf]
+- Updated dependencies [c3ac738]
+  - @react-chess-tools/react-chess-game@0.4.1
+
 ## 0.5.0
 
 ### Minor Changes
