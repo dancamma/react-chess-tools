@@ -1,11 +1,11 @@
 import React from "react";
 import { isClickableElement, type Puzzle, type Status } from "../../../utils";
-import { useChessPuzzleContext } from "../../..";
+import { useChessPuzzleContext, type ChessPuzzleContextType } from "../../..";
 
 export interface ResetProps {
   asChild?: boolean;
   puzzle?: Puzzle;
-  onReset?: () => void;
+  onReset?: (puzzleContext: ChessPuzzleContextType) => void;
   showOn?: Status[];
 }
 
@@ -25,7 +25,7 @@ export const Reset: React.FC<React.PropsWithChildren<ResetProps>> = ({
   const { changePuzzle, status } = puzzleContext;
   const handleClick = () => {
     changePuzzle(puzzle || puzzleContext.puzzle);
-    onReset?.();
+    onReset?.(puzzleContext);
   };
 
   if (!showOn.includes(status)) {

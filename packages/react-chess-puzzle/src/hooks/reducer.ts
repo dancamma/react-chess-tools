@@ -11,6 +11,8 @@ export type State = {
   hint: Hint;
   needCpuMove: boolean;
   isPlayerTurn: boolean;
+  onSolveInvoked: boolean;
+  onFailInvoked: boolean;
 };
 
 export type Action =
@@ -31,12 +33,12 @@ export type Action =
       type: "PLAYER_MOVE";
       payload: {
         move?: Move | null;
-        onSolve?: (puzzleContext: ChessPuzzleContextType) => void;
-        onFail?: (puzzleContext: ChessPuzzleContextType) => void;
         puzzleContext: ChessPuzzleContextType;
         game: Chess;
       };
-    };
+    }
+  | { type: "MARK_SOLVE_INVOKED" }
+  | { type: "MARK_FAIL_INVOKED" };
 
 export const initializePuzzle = ({ puzzle }: { puzzle: Puzzle }): State => {
   return {
@@ -48,6 +50,8 @@ export const initializePuzzle = ({ puzzle }: { puzzle: Puzzle }): State => {
     cpuMove: null,
     needCpuMove: !!puzzle.makeFirstMove,
     isPlayerTurn: !puzzle.makeFirstMove,
+    onSolveInvoked: false,
+    onFailInvoked: false,
   };
 };
 
@@ -92,7 +96,7 @@ export const reducer = (state: State, action: Action): State => {
       };
 
     case "PLAYER_MOVE": {
-      const { move, onSolve, onFail, puzzleContext } = action.payload;
+      const { move } = action.payload;
 
       const isMoveRight = [move?.san, move?.lan].includes(
         state?.nextMove || "",
@@ -101,29 +105,24 @@ export const reducer = (state: State, action: Action): State => {
         state.currentMoveIndex === state.puzzle.moves.length - 1;
 
       if (!isMoveRight) {
-        if (onFail) {
-          onFail(puzzleContext);
-        }
         return {
           ...state,
           status: "failed",
           nextMove: null,
           hint: "none",
           isPlayerTurn: false,
+          onFailInvoked: false,
         };
       }
 
       if (isPuzzleSolved) {
-        if (onSolve) {
-          onSolve(puzzleContext);
-        }
-
         return {
           ...state,
           status: "solved",
           nextMove: null,
           hint: "none",
           isPlayerTurn: false,
+          onSolveInvoked: false,
         };
       }
 
@@ -137,6 +136,18 @@ export const reducer = (state: State, action: Action): State => {
         isPlayerTurn: false,
       };
     }
+
+    case "MARK_SOLVE_INVOKED":
+      return {
+        ...state,
+        onSolveInvoked: true,
+      };
+
+    case "MARK_FAIL_INVOKED":
+      return {
+        ...state,
+        onFailInvoked: true,
+      };
 
     default:
       return state;

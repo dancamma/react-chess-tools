@@ -230,42 +230,47 @@ export const PuzzleSolver = () => {
   // Example puzzles
   const puzzles = [
     {
-      fen: "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
-      moves: ["d2d4", "e5d4", "f3d4"],
+      fen: "4kb1r/p2r1ppp/4qn2/1B2p1B1/4P3/1Q6/PPP2PPP/2KR4 w k - 0 1",
+      moves: ["Bxd7+", "Nxd7", "Qb8+", "Nxb8", "Rd8#"],
       makeFirstMove: false,
     },
     {
-      fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
-      moves: ["f3g5", "d7d5", "e4d5", "c6a5"],
-      makeFirstMove: false,
+      fen: "6k1/5p1p/p1q1p1p1/1pB1P3/1Pr3Pn/P4P1P/4Q3/3R2K1 b - - 0 31",
+      moves: ["h4f3", "e2f3", "c4c5", "d1d8", "g8g7", "f3f6"],
+      makeFirstMove: true,
     },
   ];
 
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
   const [score, setScore] = useState(0);
 
-  // Function to load the next puzzle
   const nextPuzzle = () => {
-    setCurrentPuzzle((prev) => (prev + 1) % puzzles.length);
+    const nextPuzzle = (currentPuzzle + 1) % puzzles.length;
+    setCurrentPuzzle(nextPuzzle);
   };
 
-  const handleSolve = (puzzleContext) => {
+  const handleSolve = (puzzleContext: ChessPuzzleContextType) => {
     setScore((prev) => prev + 10);
     console.log(`Puzzle solved in ${puzzleContext.movesPlayed} moves`);
-    // Could automatically progress to next puzzle
-    // setTimeout(nextPuzzle, 1500);
+    nextPuzzle();
   };
 
-  const handleFail = (puzzleContext) => {
+  const handleFail = (puzzleContext: ChessPuzzleContextType) => {
     setScore((prev) => Math.max(0, prev - 5));
-    console.log(`Failed move: ${puzzleContext.lastMove}`);
+    console.log(`Puzzle failed in ${puzzleContext.movesPlayed} moves`);
+
+    nextPuzzle();
+  };
+
+  const handleReset = (puzzleContext: ChessPuzzleContextType) => {
+    puzzleContext.changePuzzle(puzzles[currentPuzzle]!);
   };
 
   return (
     <div className="puzzle-container">
       <div className="score">Score: {score}</div>
       <ChessPuzzle.Root
-        puzzle={puzzles[currentPuzzle]}
+        puzzle={puzzles[currentPuzzle]!}
         onSolve={handleSolve}
         onFail={handleFail}
       >
@@ -277,13 +282,12 @@ export const PuzzleSolver = () => {
         </div>
 
         <div className="controls">
-          <PuzzleStatus />
           <div className="buttons">
             <ChessPuzzle.Reset>Restart</ChessPuzzle.Reset>
             <ChessPuzzle.Hint showOn={["in-progress"]}>Hint</ChessPuzzle.Hint>
             <ChessPuzzle.Reset
               puzzle={puzzles[(currentPuzzle + 1) % puzzles.length]}
-              onReset={nextPuzzle}
+              onReset={handleReset}
             >
               Next Puzzle
             </ChessPuzzle.Reset>

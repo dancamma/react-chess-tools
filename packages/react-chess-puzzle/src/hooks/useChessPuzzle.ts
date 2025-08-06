@@ -30,19 +30,17 @@ export const useChessPuzzle = (
     methods: { makeMove, setPosition },
   } = gameContext;
 
-  useEffect(() => {
-    if (gameContext && game.fen() !== puzzle.fen) {
-      setPosition(puzzle.fen, getOrientation(puzzle));
-    }
-  }, []);
-
   const changePuzzle = useCallback(
     (puzzle: Puzzle) => {
-      dispatch({ type: "INITIALIZE", payload: { puzzle } });
       setPosition(puzzle.fen, getOrientation(puzzle));
+      dispatch({ type: "INITIALIZE", payload: { puzzle } });
     },
     [setPosition],
   );
+
+  useEffect(() => {
+    changePuzzle(puzzle);
+  }, [JSON.stringify(puzzle), changePuzzle]);
 
   useEffect(() => {
     if (gameContext && game.fen() === puzzle.fen && state.needCpuMove) {
@@ -104,8 +102,6 @@ export const useChessPuzzle = (
         type: "PLAYER_MOVE",
         payload: {
           move: gameContext?.game?.history({ verbose: true })?.pop() ?? null,
-          onSolve,
-          onFail,
           puzzleContext,
           game: game,
         },
@@ -116,6 +112,20 @@ export const useChessPuzzle = (
       });
     }
   }, [game?.history()?.length]);
+
+  useEffect(() => {
+    if (state.status === "solved" && !state.onSolveInvoked && onSolve) {
+      onSolve(puzzleContext);
+      dispatch({ type: "MARK_SOLVE_INVOKED" });
+    }
+  }, [state.status, state.onSolveInvoked]);
+
+  useEffect(() => {
+    if (state.status === "failed" && !state.onFailInvoked && onFail) {
+      onFail(puzzleContext);
+      dispatch({ type: "MARK_FAIL_INVOKED" });
+    }
+  }, [state.status, state.onFailInvoked]);
 
   return puzzleContext;
 };
