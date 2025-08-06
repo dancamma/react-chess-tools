@@ -27,6 +27,8 @@ describe("reducer", () => {
     cpuMove: null,
     needCpuMove: false,
     isPlayerTurn: true,
+    onSolveInvoked: false,
+    onFailInvoked: false,
   };
 
   describe("initializePuzzle", () => {
@@ -42,6 +44,8 @@ describe("reducer", () => {
         cpuMove: null,
         needCpuMove: false,
         isPlayerTurn: true,
+        onSolveInvoked: false,
+        onFailInvoked: false,
       });
     });
 
