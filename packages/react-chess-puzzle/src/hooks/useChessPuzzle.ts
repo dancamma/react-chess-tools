@@ -21,6 +21,7 @@ export const useChessPuzzle = (
   puzzle: Puzzle,
   onSolve?: (puzzleContext: ChessPuzzleContextType) => void,
   onFail?: (puzzleContext: ChessPuzzleContextType) => void,
+  computerMoveDelay: number = 500,
 ): ChessPuzzleContextType => {
   const gameContext = useChessGameContext();
 
@@ -50,7 +51,7 @@ export const useChessPuzzle = (
           dispatch({
             type: "CPU_MOVE",
           }),
-        0,
+        computerMoveDelay,
       );
     }
   }, [gameContext, state.needCpuMove]);

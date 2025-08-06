@@ -11,15 +11,18 @@ export interface RootProps {
   puzzle: Puzzle;
   onSolve?: (puzzleContext: ChessPuzzleContextType) => void;
   onFail?: (puzzleContext: ChessPuzzleContextType) => void;
+  animationDuration?: number;
+  computerMoveDelay?: number;
 }
 
 const PuzzleRoot: React.FC<React.PropsWithChildren<RootProps>> = ({
   puzzle,
   onSolve,
   onFail,
+  computerMoveDelay,
   children,
 }) => {
-  const context = useChessPuzzle(puzzle, onSolve, onFail);
+  const context = useChessPuzzle(puzzle, onSolve, onFail, computerMoveDelay);
 
   return (
     <ChessPuzzleContext.Provider value={context}>
@@ -32,11 +35,22 @@ export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
   puzzle,
   onSolve,
   onFail,
+  animationDuration,
+  computerMoveDelay,
   children,
 }) => {
   return (
-    <ChessGame.Root fen={puzzle.fen} orientation={getOrientation(puzzle)}>
-      <PuzzleRoot puzzle={puzzle} onSolve={onSolve} onFail={onFail}>
+    <ChessGame.Root
+      fen={puzzle.fen}
+      orientation={getOrientation(puzzle)}
+      animationDuration={animationDuration}
+    >
+      <PuzzleRoot
+        puzzle={puzzle}
+        onSolve={onSolve}
+        onFail={onFail}
+        computerMoveDelay={computerMoveDelay}
+      >
         {children}
       </PuzzleRoot>
     </ChessGame.Root>

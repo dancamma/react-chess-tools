@@ -5,11 +5,13 @@ import { cloneGame, getCurrentFen, getGameInfo } from "../utils/chess";
 export type useChessGameProps = {
   fen?: string;
   orientation?: Color;
+  animationDuration?: number;
 };
 
 export const useChessGame = ({
   fen,
   orientation: initialOrientation,
+  animationDuration = 300,
 }: useChessGameProps = {}) => {
   const [game, setGame] = React.useState(new Chess(fen));
 
@@ -128,6 +130,7 @@ export const useChessGame = ({
     currentMoveIndex,
     isLatestMove,
     info,
+    animationDuration,
     methods,
   };
 };

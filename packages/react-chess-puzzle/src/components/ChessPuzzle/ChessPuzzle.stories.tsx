@@ -26,6 +26,14 @@ const meta = {
   argTypes: {
     onSolve: { action: "onSolve" },
     onFail: { action: "onFail" },
+    animationDuration: {
+      control: { type: "range", min: 0, max: 2000, step: 50 },
+      description: "Animation duration for piece movements in milliseconds",
+    },
+    computerMoveDelay: {
+      control: { type: "range", min: 0, max: 3000, step: 100 },
+      description: "Delay before computer makes a move in milliseconds",
+    },
   },
   parameters: {
     actions: { argTypesRegex: "^_on.*" },
@@ -108,5 +116,45 @@ export const WithKeyboardControls = (args: RootProps) => {
       />
       <ChessPuzzle.Board />
     </ChessPuzzle.Root>
+  );
+};
+
+export const SmoothAnimations = (args: RootProps) => {
+  return (
+    <div>
+      <h3>Smooth Computer Moves (slower animation + delay)</h3>
+      <ChessPuzzle.Root
+        {...args}
+        puzzle={puzzles[0]}
+        animationDuration={800}
+        computerMoveDelay={1200}
+      >
+        <ChessPuzzle.Board />
+        <ChessPuzzle.Reset asChild>
+          <button>restart</button>
+        </ChessPuzzle.Reset>
+        <ChessPuzzle.Hint>hint</ChessPuzzle.Hint>
+      </ChessPuzzle.Root>
+    </div>
+  );
+};
+
+export const FastAnimations = (args: RootProps) => {
+  return (
+    <div>
+      <h3>Fast Computer Moves (faster animation + delay)</h3>
+      <ChessPuzzle.Root
+        {...args}
+        puzzle={puzzles[0]}
+        animationDuration={150}
+        computerMoveDelay={300}
+      >
+        <ChessPuzzle.Board />
+        <ChessPuzzle.Reset asChild>
+          <button>restart</button>
+        </ChessPuzzle.Reset>
+        <ChessPuzzle.Hint>hint</ChessPuzzle.Hint>
+      </ChessPuzzle.Root>
+    </div>
   );
 };

@@ -24,6 +24,7 @@ export const Board: React.FC<ChessGameProps> = ({
     currentFen,
     orientation,
     info,
+    animationDuration,
     methods: { makeMove },
   } = gameContext;
 
@@ -116,7 +117,7 @@ export const Board: React.FC<ChessGameProps> = ({
       }
       onSquareClick={onSquareClick}
       areArrowsAllowed={true}
-      animationDuration={game.history().length === 0 ? 0 : 300}
+      animationDuration={game.history().length === 0 ? 0 : animationDuration}
       {...rest}
     />
   );
