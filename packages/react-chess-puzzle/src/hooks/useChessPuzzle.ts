@@ -21,7 +21,7 @@ export const useChessPuzzle = (
   puzzle: Puzzle,
   onSolve?: (puzzleContext: ChessPuzzleContextType) => void,
   onFail?: (puzzleContext: ChessPuzzleContextType) => void,
-  computerMoveDelay: number = 500,
+  computerMoveDelay?: number,
 ): ChessPuzzleContextType => {
   const gameContext = useChessGameContext();
 
@@ -51,10 +51,10 @@ export const useChessPuzzle = (
           dispatch({
             type: "CPU_MOVE",
           }),
-        computerMoveDelay,
+        computerMoveDelay ?? 150,
       );
     }
-  }, [gameContext, state.needCpuMove]);
+  }, [gameContext, state.needCpuMove, computerMoveDelay]);
 
   useEffect(() => {
     if (state.cpuMove) {
@@ -115,11 +115,15 @@ export const useChessPuzzle = (
         },
       });
 
-      dispatch({
-        type: "CPU_MOVE",
-      });
+      setTimeout(
+        () =>
+          dispatch({
+            type: "CPU_MOVE",
+          }),
+        computerMoveDelay ?? 150,
+      );
     }
-  }, [game?.history()?.length]);
+  }, [game?.history()?.length, computerMoveDelay]);
 
   useEffect(() => {
     if (state.status === "solved" && !state.onSolveInvoked && onSolve) {

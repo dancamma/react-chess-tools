@@ -32,7 +32,8 @@ const meta = {
     },
     computerMoveDelay: {
       control: { type: "range", min: 0, max: 3000, step: 100 },
-      description: "Delay before computer makes a move in milliseconds",
+      description:
+        "Delay before computer makes a move in milliseconds (default: 150ms)",
     },
   },
   parameters: {
@@ -148,6 +149,48 @@ export const FastAnimations = (args: RootProps) => {
         puzzle={puzzles[0]}
         animationDuration={150}
         computerMoveDelay={300}
+      >
+        <ChessPuzzle.Board />
+        <ChessPuzzle.Reset asChild>
+          <button>restart</button>
+        </ChessPuzzle.Reset>
+        <ChessPuzzle.Hint>hint</ChessPuzzle.Hint>
+      </ChessPuzzle.Root>
+    </div>
+  );
+};
+
+export const ThinkingDelay = (args: RootProps) => {
+  return (
+    <div>
+      <h3>Thinking Computer (long delay, normal animation)</h3>
+      <p>Computer takes 2 seconds to &ldquo;think&rdquo; before moving</p>
+      <ChessPuzzle.Root
+        {...args}
+        puzzle={puzzles[0]}
+        animationDuration={300}
+        computerMoveDelay={2000}
+      >
+        <ChessPuzzle.Board />
+        <ChessPuzzle.Reset asChild>
+          <button>restart</button>
+        </ChessPuzzle.Reset>
+        <ChessPuzzle.Hint>hint</ChessPuzzle.Hint>
+      </ChessPuzzle.Root>
+    </div>
+  );
+};
+
+export const InstantMoves = (args: RootProps) => {
+  return (
+    <div>
+      <h3>Instant Computer Moves (no delay, fast animation)</h3>
+      <p>Computer moves immediately like the original behavior</p>
+      <ChessPuzzle.Root
+        {...args}
+        puzzle={puzzles[0]}
+        animationDuration={200}
+        computerMoveDelay={0}
       >
         <ChessPuzzle.Board />
         <ChessPuzzle.Reset asChild>
