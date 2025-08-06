@@ -3,4 +3,4 @@
 "@react-chess-tools/react-chess-game": patch
 ---
 
-fix: export missing TypeScript types and component props
+fix: fix SSR compatibility and prevent unnecessary sound re-renders
