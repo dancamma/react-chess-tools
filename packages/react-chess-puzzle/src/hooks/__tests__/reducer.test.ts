@@ -186,15 +186,11 @@ describe("reducer", () => {
 
     it("should handle correct player move", () => {
       const move = { san: "e4", lan: "e2e4" } as Move;
-      const onSolve = jest.fn();
-      const onFail = jest.fn();
 
       const action: Action = {
         type: "PLAYER_MOVE",
         payload: {
           move,
-          onSolve,
-          onFail,
           puzzleContext: mockContext,
           game,
         },
@@ -208,21 +204,15 @@ describe("reducer", () => {
       expect(newState.needCpuMove).toBe(true);
       expect(newState.isPlayerTurn).toBe(false);
       expect(newState.status).toBe("in-progress");
-      expect(onSolve).not.toHaveBeenCalled();
-      expect(onFail).not.toHaveBeenCalled();
     });
 
     it("should handle incorrect player move", () => {
       const move = { san: "d4", lan: "d2d4" } as Move;
-      const onSolve = jest.fn();
-      const onFail = jest.fn();
 
       const action: Action = {
         type: "PLAYER_MOVE",
         payload: {
           move,
-          onSolve,
-          onFail,
           puzzleContext: mockContext,
           game,
         },
@@ -234,14 +224,10 @@ describe("reducer", () => {
       expect(newState.nextMove).toBe(null);
       expect(newState.hint).toBe("none");
       expect(newState.isPlayerTurn).toBe(false);
-      expect(onFail).toHaveBeenCalledWith(mockContext);
-      expect(onSolve).not.toHaveBeenCalled();
     });
 
     it("should handle solving the puzzle", () => {
       const move = { san: "Bb5", lan: "f1b5" } as Move;
-      const onSolve = jest.fn();
-      const onFail = jest.fn();
 
       const lastMoveState: State = {
         ...initialState,
@@ -253,8 +239,6 @@ describe("reducer", () => {
         type: "PLAYER_MOVE",
         payload: {
           move,
-          onSolve,
-          onFail,
           puzzleContext: mockContext,
           game,
         },
@@ -266,20 +250,13 @@ describe("reducer", () => {
       expect(newState.nextMove).toBe(null);
       expect(newState.hint).toBe("none");
       expect(newState.isPlayerTurn).toBe(false);
-      expect(onSolve).toHaveBeenCalledWith(mockContext);
-      expect(onFail).not.toHaveBeenCalled();
     });
 
     it("should handle null move", () => {
-      const onSolve = jest.fn();
-      const onFail = jest.fn();
-
       const action: Action = {
         type: "PLAYER_MOVE",
         payload: {
           move: null,
-          onSolve,
-          onFail,
           puzzleContext: mockContext,
           game,
         },
@@ -288,8 +265,6 @@ describe("reducer", () => {
       const newState = reducer(initialState, action);
 
       expect(newState.status).toBe("failed");
-      expect(onFail).toHaveBeenCalledWith(mockContext);
-      expect(onSolve).not.toHaveBeenCalled();
     });
   });
 });

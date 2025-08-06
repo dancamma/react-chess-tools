@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Chess, Color } from "chess.js";
 import { cloneGame, getCurrentFen, getGameInfo } from "../utils/chess";
 
@@ -12,6 +12,11 @@ export const useChessGame = ({
   orientation: initialOrientation,
 }: useChessGameProps = {}) => {
   const [game, setGame] = React.useState(new Chess(fen));
+
+  useEffect(() => {
+    setGame(new Chess(fen));
+  }, [fen]);
+
   const [orientation, setOrientation] = React.useState<Color>(
     initialOrientation ?? "w",
   );
@@ -30,7 +35,7 @@ export const useChessGame = ({
 
   const currentFen = React.useMemo(
     () => getCurrentFen(fen, game, currentMoveIndex),
-    [fen, game, currentMoveIndex],
+    [game, currentMoveIndex],
   );
 
   const currentPosition = React.useMemo(

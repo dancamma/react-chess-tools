@@ -104,6 +104,7 @@ export const getCurrentFen = (
     }
   } else {
     const moves = game.history().slice(0, currentMoveIndex + 1);
+
     if (fen) {
       tempGame.load(fen);
     }
