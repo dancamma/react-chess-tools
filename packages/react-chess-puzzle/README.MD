@@ -263,7 +263,7 @@ export const PuzzleSolver = () => {
   };
 
   const handleReset = (puzzleContext: ChessPuzzleContextType) => {
-    puzzleContext.changePuzzle(puzzles[currentPuzzle]!);
+    puzzleContext.resetPuzzle();
   };
 
   return (

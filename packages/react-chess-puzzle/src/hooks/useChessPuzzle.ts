@@ -6,6 +6,7 @@ import { useChessGameContext } from "@react-chess-tools/react-chess-game";
 export type ChessPuzzleContextType = {
   status: Status;
   changePuzzle: (puzzle: Puzzle) => void;
+  resetPuzzle: () => void;
   puzzle: Puzzle;
   hint: Hint;
   nextMove?: string | null;
@@ -68,10 +69,15 @@ export const useChessPuzzle = (
     dispatch({ type: "TOGGLE_HINT" });
   }, []);
 
+  const resetPuzzle = useCallback(() => {
+    changePuzzle(puzzle);
+  }, [changePuzzle, puzzle]);
+
   const puzzleContext: ChessPuzzleContextType = useMemo(
     () => ({
       status: state.status,
       changePuzzle,
+      resetPuzzle,
       puzzle,
       hint: state.hint,
       onHint,
@@ -84,6 +90,7 @@ export const useChessPuzzle = (
     [
       state.status,
       changePuzzle,
+      resetPuzzle,
       puzzle,
       state.hint,
       onHint,
