@@ -1,5 +1,13 @@
 # @react-chess-tools/react-chess-puzzle
 
+## 0.5.2
+
+### Patch Changes
+
+- f18ce4b: fix: improve error messages for context hook usage
+- Updated dependencies [f18ce4b]
+  - @react-chess-tools/react-chess-game@0.4.2
+
 ## 0.5.1
 
 ### Patch Changes
