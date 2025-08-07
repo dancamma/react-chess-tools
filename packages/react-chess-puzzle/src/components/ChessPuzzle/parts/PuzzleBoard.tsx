@@ -24,13 +24,16 @@ export const PuzzleBoard: React.FC<PuzzleBoardProps> = ({ ...rest }) => {
 
   return (
     <ChessGame.Board
-      customSquareStyles={getCustomSquareStyles(
-        status,
-        hint,
-        isPlayerTurn,
-        game,
-        stringToMove(game, nextMove),
-      )}
+      options={{
+        squareStyles: getCustomSquareStyles(
+          status,
+          hint,
+          isPlayerTurn,
+          game,
+          stringToMove(game, nextMove),
+        ),
+        ...rest.options,
+      }}
       {...rest}
     />
   );

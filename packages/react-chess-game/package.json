@@ -32,12 +32,12 @@
   "dependencies": {
     "chess.js": "^1.0.0-beta.8",
     "lodash": "^4.17.21",
-    "react-chessboard": "^4.6.0"
+    "react-chessboard": "^5.2.2"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.15",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "peerDependencies": {
     "react": ">=16.14.0",
