@@ -86,12 +86,13 @@ The `ChessPuzzle.Root` component is the root component of the `react-chess-puzzl
 
 The `ChessPuzzle.Root` component accepts the following props:
 
-| Name        | Type                                              | Default     | Description                                                                                                          |
-| ----------- | ------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------- |
-| `puzzle`    | `Puzzle`                                          |             | The puzzle to be solved                                                                                              |
-| `onSolve`   | `(puzzleContext: ChessPuzzleContextType) => void` | `undefined` | Callback function that is triggered when the puzzle is successfully solved, receives the puzzle context as parameter |
-| `onFail`    | `(puzzleContext: ChessPuzzleContextType) => void` | `undefined` | Callback function that is triggered when an incorrect move is played, receives the puzzle context as parameter       |
-| `children?` | `ReactNode`                                       |             | The children to be rendered                                                                                          |
+| Name                | Type                                              | Default     | Description                                                                                                          |
+| ------------------- | ------------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------------------------- |
+| `puzzle`            | `Puzzle`                                          |             | The puzzle to be solved                                                                                              |
+| `onSolve`           | `(puzzleContext: ChessPuzzleContextType) => void` | `undefined` | Callback function that is triggered when the puzzle is successfully solved, receives the puzzle context as parameter |
+| `onFail`            | `(puzzleContext: ChessPuzzleContextType) => void` | `undefined` | Callback function that is triggered when an incorrect move is played, receives the puzzle context as parameter       |
+| `computerMoveDelay` | `number`                                          | `500`       | Delay before computer makes its move in milliseconds (0-3000ms)                                                      |
+| `children?`         | `ReactNode`                                       |             | The children to be rendered                                                                                          |
 
 The `puzzle` prop contains the following properties:
 

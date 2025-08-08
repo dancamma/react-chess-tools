@@ -11,6 +11,7 @@ export interface ChessGameProps
 
 export const Board: React.FC<ChessGameProps> = ({
   customSquareStyles,
+  animationDuration = 300,
   ...rest
 }) => {
   const gameContext = useChessGameContext();
@@ -24,7 +25,6 @@ export const Board: React.FC<ChessGameProps> = ({
     currentFen,
     orientation,
     info,
-    animationDuration,
     methods: { makeMove },
   } = gameContext;
 
