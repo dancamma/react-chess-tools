@@ -18,7 +18,7 @@ This project is a React-based chess game that allows users to play chess online.
 - Square highlighting
 - Keyboard controls
 
-It is build using an approach similar to the one used in the `radix-ui`, where the `ChessGame` component is built using a `ChessGameContext` that you can use to customize and ehance the component game. Is also provides a set of default components that you can use to build your next chess app.
+It is built using an approach similar to the one used in the `radix-ui`, where the `ChessGame` component is built using a `ChessGameContext` that you can use to customize and enhance the component game. It also provides a set of default components that you can use to build your next chess app.
 
 ## Preview
 
@@ -116,7 +116,7 @@ New:
 
 ### ChessGame.Sounds
 
-The `ChessGame.Sounds` component is used to provide the sounds for the chess game. By default, it uses the sounds from the `react-chess-sounds` package, but you can provide your own sounds. Sounds must be provided as base 64 encoded strings.
+The `ChessGame.Sounds` component is used to provide the sounds for the chess game. By default, it uses built-in sounds, but you can provide your own sounds. Sounds must be provided as base 64 encoded strings.
 
 #### Props
 
@@ -149,16 +149,27 @@ The `useChessGameContext` hook is used to get the `ChessGameContext` from the `C
 
 The `useChessGameContext` hook returns the following values:
 
-| Name             | Type       | Description                                                                            |
-| ---------------- | ---------- | -------------------------------------------------------------------------------------- |
-| game             | Chess      | The underlying `Chess.js` instance.                                                    |
-| orientation      | "w" \| "b" | The orientation of the chess game.                                                     |
-| currentFen       | string     | The current FEN string representing the board position.                                |
-| currentPosition  | string     | The current move in the game history.                                                  |
-| currentMoveIndex | number     | The index of the current move in the game history.                                     |
-| isLatestMove     | boolean    | Whether the current position is the latest move in the game.                           |
-| methods          | Methods    | The methods you can use to interact with the chess game.                               |
-| info             | Info       | The info of the chess game, calculated using the chess instance using chess.js methods |
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+
+<<<<<<< HEAD
+| game | Chess | The underlying `Chess.js` instance. |
+| orientation | "w" \| "b" | The orientation of the chess game. |
+| currentFen | string | The current FEN string representing the board position. |
+| currentPosition | string | The current move in the game history. |
+| currentMoveIndex | number | The index of the current move in the game history. |
+| isLatestMove | boolean | Whether the current position is the latest move in the game. |
+=======
+| game | Chess | The `Chess` instance of the chess game. |
+| orientation | "w" \| "b" | The orientation of the chess game. |
+| currentFen | string | The current FEN string representing the board position |
+| currentPosition | string | The current move in the game history |
+| currentMoveIndex | number | The index of the current move in the game history |
+| isLatestMove | boolean | Whether the current position is the latest move |
+
+> > > > > > > origin
+> > > > > > > | methods | Methods | The methods you can use to interact with the chess game. |
+> > > > > > > | info | Info | The info of the chess game, calculated using the chess instance using chess.js methods |
 
 #### Methods
 
@@ -196,11 +207,6 @@ The `useChessGameContext` hook returns the following info:
 | isDrawn                | boolean    | Whether the game is drawn                                                  |
 | hasPlayerWon           | boolean    | Whether the player (the side specified in the `orientation` prop) has won  |
 | hasPlayerLost          | boolean    | Whether the player (the side specified in the `orientation` prop) has lost |
-| currentFen             | string     | The current FEN string representing the board position                     |
-| currentPosition        | string     | The current move in the game history                                       |
-| currentMoveIndex       | number     | The index of the current move in the game history                          |
-| isLatestMove           | boolean    | Whether the current position is the latest move in the game                |
-| game                   | Chess      | The underlying Chess.js instance                                           |
 
 ## 📝 License
 
