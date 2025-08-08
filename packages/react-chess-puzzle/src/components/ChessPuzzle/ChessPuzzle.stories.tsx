@@ -24,6 +24,21 @@ const meta = {
   component: ChessPuzzle.Root,
   tags: ["components", "puzzle"],
   argTypes: {
+    puzzle: {
+      control: {
+        type: "select",
+        labels: {
+          0: "Mate in 3 (white)",
+          1: "Tactical motif (black)",
+        },
+      },
+      mapping: {
+        0: puzzles[0],
+        1: puzzles[1],
+      },
+      options: [0, 1],
+      description: "The puzzle definition (fen + solution moves)",
+    },
     onSolve: { action: "onSolve" },
     onFail: { action: "onFail" },
     animationDuration: {
@@ -54,21 +69,12 @@ export default meta;
 // More on writing stories with args: https://storybook.js.org/docs/react/writing-stories/args
 
 export const Example = (args: RootProps) => {
-  const [puzzleIndex, setPuzzleIndex] = React.useState(0);
-  const puzzle = puzzles[puzzleIndex];
   return (
     <div>
-      <ChessPuzzle.Root {...args} puzzle={puzzle}>
+      <ChessPuzzle.Root {...args}>
         <ChessPuzzle.Board />
         <ChessPuzzle.Reset asChild>
           <button>restart</button>
-        </ChessPuzzle.Reset>
-        <ChessPuzzle.Reset
-          asChild
-          puzzle={puzzles[(puzzleIndex + 1) % puzzles.length]}
-          onReset={() => setPuzzleIndex((puzzleIndex + 1) % puzzles.length)}
-        >
-          <button>next</button>
         </ChessPuzzle.Reset>
         <ChessPuzzle.Hint>hint</ChessPuzzle.Hint>
       </ChessPuzzle.Root>
@@ -76,15 +82,16 @@ export const Example = (args: RootProps) => {
   );
 };
 
+Example.args = {
+  puzzle: puzzles[0],
+  animationDuration: 300,
+  computerMoveDelay: 150,
+};
+
 export const Underpromotion = (args: RootProps) => {
-  const puzzle = {
-    fen: "8/8/5R1p/8/3pb1P1/kpKp4/8/8 w - - 0 54",
-    moves: ["c3d4", "d3d2", "d4c3", "d2d1n"],
-    makeFirstMove: true,
-  };
   return (
     <div>
-      <ChessPuzzle.Root {...args} puzzle={puzzle}>
+      <ChessPuzzle.Root {...args}>
         <ChessPuzzle.Board />
         <ChessPuzzle.Reset asChild>
           <button>done! Restart</button>
@@ -94,18 +101,30 @@ export const Underpromotion = (args: RootProps) => {
   );
 };
 
+Underpromotion.args = {
+  puzzle: {
+    fen: "8/8/5R1p/8/3pb1P1/kpKp4/8/8 w - - 0 54",
+    moves: ["c3d4", "d3d2", "d4c3", "d2d1n"],
+    makeFirstMove: true,
+  },
+};
+
 export const WithSounds = (args: RootProps) => {
   return (
-    <ChessPuzzle.Root {...args} puzzle={puzzles[0]}>
+    <ChessPuzzle.Root {...args}>
       <ChessGame.Sounds />
       <ChessPuzzle.Board />
     </ChessPuzzle.Root>
   );
 };
 
+WithSounds.args = {
+  puzzle: puzzles[0],
+};
+
 export const WithKeyboardControls = (args: RootProps) => {
   return (
-    <ChessPuzzle.Root {...args} puzzle={puzzles[0]}>
+    <ChessPuzzle.Root {...args}>
       <ChessGame.KeyboardControls
         controls={{
           f: (context) => context.methods.flipBoard(),
@@ -120,13 +139,16 @@ export const WithKeyboardControls = (args: RootProps) => {
   );
 };
 
+WithKeyboardControls.args = {
+  puzzle: puzzles[0],
+};
+
 export const SmoothAnimations = (args: RootProps) => {
   return (
     <div>
       <h3>Smooth Computer Moves (slower animation + delay)</h3>
       <ChessPuzzle.Root
         {...args}
-        puzzle={puzzles[0]}
         animationDuration={args.animationDuration ?? 800}
         computerMoveDelay={args.computerMoveDelay ?? 1200}
       >
@@ -140,13 +162,16 @@ export const SmoothAnimations = (args: RootProps) => {
   );
 };
 
+SmoothAnimations.args = {
+  puzzle: puzzles[0],
+};
+
 export const FastAnimations = (args: RootProps) => {
   return (
     <div>
       <h3>Fast Computer Moves (faster animation + delay)</h3>
       <ChessPuzzle.Root
         {...args}
-        puzzle={puzzles[0]}
         animationDuration={args.animationDuration ?? 150}
         computerMoveDelay={args.computerMoveDelay ?? 300}
       >
@@ -160,14 +185,17 @@ export const FastAnimations = (args: RootProps) => {
   );
 };
 
+FastAnimations.args = {
+  puzzle: puzzles[0],
+};
+
 export const ThinkingDelay = (args: RootProps) => {
   return (
     <div>
       <h3>Thinking Computer (long delay, normal animation)</h3>
-      <p>Computer takes 2 seconds to &ldquo;think&rdquo; before moving</p>
+      <p>Computer takes 2 seconds to “think” before moving</p>
       <ChessPuzzle.Root
         {...args}
-        puzzle={puzzles[0]}
         animationDuration={args.animationDuration ?? 300}
         computerMoveDelay={args.computerMoveDelay ?? 2000}
       >
@@ -181,6 +209,10 @@ export const ThinkingDelay = (args: RootProps) => {
   );
 };
 
+ThinkingDelay.args = {
+  puzzle: puzzles[0],
+};
+
 export const InstantMoves = (args: RootProps) => {
   return (
     <div>
@@ -188,7 +220,6 @@ export const InstantMoves = (args: RootProps) => {
       <p>Computer moves immediately like the original behavior</p>
       <ChessPuzzle.Root
         {...args}
-        puzzle={puzzles[0]}
         animationDuration={args.animationDuration ?? 200}
         computerMoveDelay={args.computerMoveDelay ?? 0}
       >
@@ -200,4 +231,8 @@ export const InstantMoves = (args: RootProps) => {
       </ChessPuzzle.Root>
     </div>
   );
+};
+
+InstantMoves.args = {
+  puzzle: puzzles[0],
 };
