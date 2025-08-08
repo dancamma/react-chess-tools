@@ -149,27 +149,16 @@ The `useChessGameContext` hook is used to get the `ChessGameContext` from the `C
 
 The `useChessGameContext` hook returns the following values:
 
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-
-<<<<<<< HEAD
-| game | Chess | The underlying `Chess.js` instance. |
-| orientation | "w" \| "b" | The orientation of the chess game. |
-| currentFen | string | The current FEN string representing the board position. |
-| currentPosition | string | The current move in the game history. |
-| currentMoveIndex | number | The index of the current move in the game history. |
-| isLatestMove | boolean | Whether the current position is the latest move in the game. |
-=======
-| game | Chess | The `Chess` instance of the chess game. |
-| orientation | "w" \| "b" | The orientation of the chess game. |
-| currentFen | string | The current FEN string representing the board position |
-| currentPosition | string | The current move in the game history |
-| currentMoveIndex | number | The index of the current move in the game history |
-| isLatestMove | boolean | Whether the current position is the latest move |
-
-> > > > > > > origin
-> > > > > > > | methods | Methods | The methods you can use to interact with the chess game. |
-> > > > > > > | info | Info | The info of the chess game, calculated using the chess instance using chess.js methods |
+| Name             | Type       | Description                                                                            |
+| ---------------- | ---------- | -------------------------------------------------------------------------------------- |
+| game             | Chess      | The underlying `Chess.js` instance.                                                    |
+| orientation      | "w" \| "b" | The orientation of the chess game.                                                     |
+| currentFen       | string     | The current FEN string representing the board position.                                |
+| currentPosition  | string     | The current move in the game history.                                                  |
+| currentMoveIndex | number     | The index of the current move in the game history.                                     |
+| isLatestMove     | boolean    | Whether the current position is the latest move in the game.                           |
+| methods          | Methods    | The methods you can use to interact with the chess game.                               |
+| info             | Info       | The info of the chess game, calculated using the chess instance using chess.js methods |
 
 #### Methods
 
