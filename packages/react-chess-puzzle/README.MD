@@ -11,6 +11,23 @@ This project is a React-based chess puzzle component that allows users to solve 
 
 Visit the [demo](https://react-chess-tools.vercel.app/) to see the `react-chess-puzzle` component in action.
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Puzzle Solving Flow](#puzzle-solving-flow)
+- [API Reference](#api-reference)
+  - [ChessPuzzle.Root](#chesspuzzleroot)
+  - [ChessPuzzle.Board](#chesspuzzleboard)
+  - [ChessPuzzle.Reset](#chesspuzzlereset)
+  - [ChessPuzzle.Hint](#chesspuzzlehint)
+- [Hooks and Context](#hooks-and-context)
+  - [useChessPuzzleContext](#usechesspuzzlecontext)
+  - [useChessGameContext](#usechessgamecontext)
+- [Integration with react-chess-game](#using-react-chess-game-components)
+- [Complete Example](#complete-example)
+- [License](#-license)
+
 ## Installation
 
 To install the `react-chess-puzzle` package, run the following command:
@@ -19,7 +36,7 @@ To install the `react-chess-puzzle` package, run the following command:
 $ npm install @react-chess-tools/react-chess-puzzle
 ```
 
-## Usage
+## Quick Start
 
 To use the `react-chess-puzzle` package, you can import the `ChessPuzzle` component and use it as follows:
 
@@ -57,7 +74,7 @@ The puzzle-solving flow follows these steps:
    - If the move is incorrect, the puzzle is marked as failed
 5. **Completion**: When all correct moves have been made, the puzzle is marked as solved
 
-## Documentation
+## API Reference
 
 The `react-chess-puzzle` package provides a set of components that you can use to build your chess app. The following sections describe the components and their usage.
 
@@ -81,7 +98,7 @@ The `puzzle` prop contains the following properties:
 | Name            | Type       | Default | Description                                                                |
 | --------------- | ---------- | ------- | -------------------------------------------------------------------------- |
 | `fen`           | `string`   |         | The FEN string representing the initial position of the puzzle             |
-| `moves`         | `string[]` |         | The sequence of moves (in algebraic notation) that solve the puzzle        |
+| `moves`         | `string[]` |         | The sequence of moves (in algebraic or UCI notation) that solve the puzzle |
 | `makeFirstMove` | `boolean`  | `false` | Whether the first move is part of the problem or must be played by the CPU |
 
 ### ChessPuzzle.Board
@@ -107,7 +124,7 @@ A button component that resets the current puzzle or loads a new one.
 | --------- | --------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `puzzle`  | `Puzzle \| undefined` | `undefined`                                          | The puzzle object for a new puzzle. If not provided, the current puzzle is reset.                                                                                                                             |
 | `onReset` | `() => void`          | `undefined`                                          | A callback function that is called when the puzzle is reset.                                                                                                                                                  |
-| `showOn`  | `PuzzleState[]`       | `["not-started", "in-progress", "solved", "failed"]` | The state(s) in which the button is shown. Valid states are: "not-started", "in-progress", "solved", "failed"                                                                                                 |
+| `showOn`  | `Status[]`            | `["not-started", "in-progress", "solved", "failed"]` | The state(s) in which the button is shown. Valid states are: "not-started", "in-progress", "solved", "failed"                                                                                                 |
 | `asChild` | `boolean`             | `false`                                              | Change the component to the HTML tag or custom component of the only child. This will merge the original component props with the props of the supplied element/component and change the underlying DOM node. |
 
 ### ChessPuzzle.Hint
@@ -116,10 +133,10 @@ A button component that provides a hint by highlighting the next move in the sol
 
 #### Props
 
-| Name      | Type            | Default           | Description                                                                                                                                                                                                   |
-| --------- | --------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `showOn`  | `PuzzleState[]` | `["in-progress"]` | The state(s) in which the button is shown. Valid states are: "not-started", "in-progress", "solved", "failed"                                                                                                 |
-| `asChild` | `boolean`       | `false`           | Change the component to the HTML tag or custom component of the only child. This will merge the original component props with the props of the supplied element/component and change the underlying DOM node. |
+| Name      | Type       | Default           | Description                                                                                                                                                                                                   |
+| --------- | ---------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `showOn`  | `Status[]` | `["in-progress"]` | The state(s) in which the button is shown. Valid states are: "not-started", "in-progress", "solved", "failed"                                                                                                 |
+| `asChild` | `boolean`  | `false`           | Change the component to the HTML tag or custom component of the only child. This will merge the original component props with the props of the supplied element/component and change the underlying DOM node. |
 
 ## Hooks and Context
 
@@ -134,7 +151,7 @@ const MyComponent = () => {
   const {
     puzzleState, // "not-started" | "in-progress" | "solved" | "failed"
     resetPuzzle, // Function to reset the current puzzle
-    showHint, // Function to show a hint
+    onHint, // Function to show a hint
     movesPlayed, // Number of moves played so far
     totalMoves, // Total number of moves in the solution
   } = useChessPuzzleContext();
@@ -146,6 +163,7 @@ const MyComponent = () => {
         Progress: {movesPlayed}/{totalMoves} moves
       </p>
       <button onClick={resetPuzzle}>Reset</button>
+      <button onClick={onHint}>Show Hint</button>
     </div>
   );
 };
@@ -221,7 +239,10 @@ const App = () => (
 Here's a complete example of a chess puzzle component with sounds, keyboard controls, and custom styling:
 
 ```tsx
-import { ChessPuzzle } from "@react-chess-tools/react-chess-puzzle";
+import {
+  ChessPuzzle,
+  type ChessPuzzleContextType,
+} from "@react-chess-tools/react-chess-puzzle";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 import { useState } from "react";
 import "./ChessPuzzleStyles.css"; // Your custom CSS
