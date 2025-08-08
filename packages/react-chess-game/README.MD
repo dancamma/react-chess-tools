@@ -98,22 +98,6 @@ Quick example (custom styles and event handlers):
 </ChessGame.Root>
 ```
 
-#### Migration (react-chessboard v4 -> v5)
-
-Previous versions allowed passing `react-chessboard` props directly to `ChessGame.Board`. Now you must pass them through the `options` object.
-
-Old:
-
-```tsx
-<ChessGame.Board boardOrientation="black" position={fen} />
-```
-
-New:
-
-```tsx
-<ChessGame.Board options={{ boardOrientation: "black", position: fen }} />
-```
-
 ### ChessGame.Sounds
 
 The `ChessGame.Sounds` component is used to provide the sounds for the chess game. By default, it uses built-in sounds, but you can provide your own sounds. Sounds must be provided as base 64 encoded strings.
