@@ -39,11 +39,11 @@ To use the `react-chess-game` package, you can import the `ChessGame` component 
 ```tsx
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 
-const App = () => {
+const App = () => (
   <ChessGame.Root>
     <ChessGame.Board />
-  </ChessGame.Root>;
-};
+  </ChessGame.Root>
+);
 ```
 
 ## Documentation
@@ -58,19 +58,61 @@ The `ChessGame.Root` component is the root component of the `react-chess-game` p
 
 The `ChessGame.Root` component accepts the following props:
 
-| Name        | Type       | Default          | Description                                     |
-| ----------- | ---------- | ---------------- | ----------------------------------------------- |
-| children    | React.FC   |                  | The children of the `ChessGame.Root` component. |
-| fen         | string     | initial position | The FEN of the chess game.                      |
-| orientation | "w" \| "b" | "white"          | The orientation of the chess game.              |
+| Name        | Type       | Default | Description                                     |
+| ----------- | ---------- | ------- | ----------------------------------------------- |
+| children    | React.FC   |         | The children of the `ChessGame.Root` component. |
+| fen         | string     |         | The initial FEN of the chess game.              |
+| orientation | "w" \| "b" | "w"     | The orientation of the chess game.              |
 
 ### ChessGame.Board
 
 The `ChessGame.Board` component is the main component of the `react-chess-game` package. It is used to render the chess board and the pieces. It uses the `ChessGameContext` to get the `Chess` instance and the `orientation` of the game.
 
+This version targets `react-chessboard` v5 and exposes a single `options` prop instead of spreading all board props.
+
 #### Props
 
-All the props from Chessboard.js are supported. You can find the full list of props [here](https://github.com/Clariity/react-chessboard#props).
+Accepts a single prop:
+
+| Name     | Type                | Description                                                                                        |
+| -------- | ------------------- | -------------------------------------------------------------------------------------------------- |
+| options? | `ChessboardOptions` | Forwarded to `react-chessboard` v5 `Chessboard({ options })`. Your values merge with the defaults. |
+
+Quick example (custom styles and event handlers):
+
+```tsx
+<ChessGame.Root>
+  <ChessGame.Board
+    options={{
+      squareStyles: { e4: { boxShadow: "inset 0 0 0 2px #4f46e5" } },
+      onPieceDrop: ({ sourceSquare, targetSquare }) => {
+        // return boolean to accept/reject drop
+        return true;
+      },
+      showNotation: true,
+      animationDurationInMs: 300,
+    }}
+  />
+
+  {/* Other parts like <ChessGame.Sounds /> or <ChessGame.KeyboardControls /> */}
+</ChessGame.Root>
+```
+
+#### Migration (react-chessboard v4 -> v5)
+
+Previous versions allowed passing `react-chessboard` props directly to `ChessGame.Board`. Now you must pass them through the `options` object.
+
+Old:
+
+```tsx
+<ChessGame.Board boardOrientation="black" position={fen} />
+```
+
+New:
+
+```tsx
+<ChessGame.Board options={{ boardOrientation: "black", position: fen }} />
+```
 
 ### ChessGame.Sounds
 
@@ -107,27 +149,31 @@ The `useChessGameContext` hook is used to get the `ChessGameContext` from the `C
 
 The `useChessGameContext` hook returns the following values:
 
-| Name        | Type       | Description                                                                            |
-| ----------- | ---------- | -------------------------------------------------------------------------------------- |
-| chess       | Chess      | The `Chess` instance of the chess game.                                                |
-| orientation | "w" \| "b" | The orientation of the chess game.                                                     |
-| methods     | Methods    | The methods you can use to interact with the chess game.                               |
-| info        | Info       | The info of the chess game, calculated using the chess instance using chess.js methods |
+| Name             | Type       | Description                                                                            |
+| ---------------- | ---------- | -------------------------------------------------------------------------------------- |
+| game             | Chess      | The underlying `Chess.js` instance.                                                    |
+| orientation      | "w" \| "b" | The orientation of the chess game.                                                     |
+| currentFen       | string     | The current FEN string representing the board position.                                |
+| currentPosition  | string     | The current move in the game history.                                                  |
+| currentMoveIndex | number     | The index of the current move in the game history.                                     |
+| isLatestMove     | boolean    | Whether the current position is the latest move in the game.                           |
+| methods          | Methods    | The methods you can use to interact with the chess game.                               |
+| info             | Info       | The info of the chess game, calculated using the chess instance using chess.js methods |
 
 #### Methods
 
-The `useChessGameContextContext` hook returns the following methods:
+The `useChessGameContext` hook also exposes these methods:
 
-| Name             | Type                        | Description                                  |
-| ---------------- | --------------------------- | -------------------------------------------- |
-| makeMove         | (move: string) => void      | Makes a move in the chess game.              |
-| setPostion       | (fen: string) => void       | Sets the position of the chess game.         |
-| flipBoard        | () => void                  | Flips the board.                             |
-| goToMove         | (moveIndex: number) => void | Goes to a specific move in the game history. |
-| goToStart        | () => void                  | Goes to the starting position.               |
-| goToEnd          | () => void                  | Goes to the latest position.                 |
-| goToPreviousMove | () => void                  | Goes to the previous move.                   |
-| goToNextMove     | () => void                  | Goes to the next move.                       |
+| Name             | Type                            | Description                                                     |
+| ---------------- | ------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------- | --- | ------------------ | ------------------------------------------------------------------ |
+| makeMove         | `(move: string                  | { from: Square; to: Square; promotion?: "q"                     | "r"                                                                  | "b" | "n" }) => boolean` | Attempts a move at the latest position; returns `true` if applied. |
+| setPosition      | `(fen: string, orientation: "w" | "b") => void`                                                   | Sets a new FEN and orientation, resets history navigation to latest. |
+| flipBoard        | `() => void`                    | Flips the board orientation.                                    |
+| goToMove         | `(moveIndex: number) => void`   | Jumps to a specific move index (`-1` is the starting position). |
+| goToStart        | `() => void`                    | Goes to the starting position.                                  |
+| goToEnd          | `() => void`                    | Goes to the latest move.                                        |
+| goToPreviousMove | `() => void`                    | Goes to the previous move.                                      |
+| goToNextMove     | `() => void`                    | Goes to the next move.                                          |
 
 #### Info
 

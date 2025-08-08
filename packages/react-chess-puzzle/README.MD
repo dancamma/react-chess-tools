@@ -86,16 +86,17 @@ The `puzzle` prop contains the following properties:
 
 ### ChessPuzzle.Board
 
-The `ChessPuzzle.Board` component is used to render the chess board. It is a wrapper around the `ChessGame.Board` component and accepts the same props.
+The `ChessPuzzle.Board` component renders the chess board and delegates to `ChessGame.Board` under the hood.
 
 #### Props
 
-Inherits all props from `ChessGame.Board` with these additional options:
+It accepts the same props as `ChessGame.Board`:
 
-| Name             | Type                 | Default   | Description                                  |
-| ---------------- | -------------------- | --------- | -------------------------------------------- |
-| `showHighlights` | `boolean`            | `true`    | Show highlights for legal moves on the board |
-| `orientation`    | `"white" \| "black"` | `"white"` | Board orientation                            |
+| Name     | Type                | Description                                                            |
+| -------- | ------------------- | ---------------------------------------------------------------------- |
+| options? | `ChessboardOptions` | Forwarded to `react-chessboard` v5 via `ChessGame.Board({ options })`. |
+
+Any other props are passed through to `ChessGame.Board` unchanged.
 
 ### ChessPuzzle.Reset
 
@@ -159,22 +160,13 @@ Since `react-chess-puzzle` is built on top of `react-chess-game`, you can also u
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
 
 const MyComponent = () => {
-  const {
-    fen, // Current FEN string
-    gameState, // Game state (playing, checkmate, etc.)
-    turn, // Current turn ("w" | "b")
-    moves, // List of legal moves
-    makeMove, // Function to make a move
-    history, // Game move history
-    selectedSquare, // Currently selected square
-    setSelectedSquare, // Function to select a square
-    checkSquare, // Square with the king in check (if any)
-  } = useChessGameContext();
+  const { currentFen, info, methods } = useChessGameContext();
 
   return (
     <div>
-      <p>Current FEN: {fen}</p>
-      <p>Current turn: {turn === "w" ? "White" : "Black"}</p>
+      <p>Current FEN: {currentFen}</p>
+      <p>Current turn: {info.turn === "w" ? "White" : "Black"}</p>
+      <button onClick={() => methods.flipBoard()}>Flip</button>
     </div>
   );
 };
