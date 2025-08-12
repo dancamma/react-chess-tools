@@ -98,6 +98,7 @@ export const Board: React.FC<ChessGameProps> = ({ options = {} }) => {
 
   // Calculate square width for precise positioning
   const squareWidth = React.useMemo(() => {
+    if (typeof document === "undefined") return 80;
     const squareElement = document.querySelector(`[data-square]`);
     return squareElement?.getBoundingClientRect()?.width ?? 80;
   }, [promotionMove]);
