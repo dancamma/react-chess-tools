@@ -33,5 +33,5 @@ export const useBoardSounds = (sounds: Record<Sound, HTMLAudioElement>) => {
     if (lastMove && sounds.move) {
       playSound(sounds.move);
     }
-  }, [lastMove, isCheckmate, sounds]);
+  }, [lastMove]);
 };
