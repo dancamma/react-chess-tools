@@ -1,5 +1,19 @@
 # @react-chess-tools/react-chess-puzzle
 
+## 0.6.0
+
+### Minor Changes
+
+- f58c1ac: chore: upgrade to react-chessboard v5
+
+### Patch Changes
+
+- 95cf0c3: docs: update README documentation for react-chess-tools packages
+- Updated dependencies [f58c1ac]
+- Updated dependencies [95cf0c3]
+- Updated dependencies [a877019]
+  - @react-chess-tools/react-chess-game@0.5.0
+
 ## 0.5.2
 
 ### Patch Changes
