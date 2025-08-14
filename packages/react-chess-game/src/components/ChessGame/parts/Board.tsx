@@ -1,4 +1,5 @@
 import React from "react";
+import merge from "lodash/merge";
 import {
   Chessboard,
   ChessboardOptions,
@@ -6,16 +7,18 @@ import {
   chessColumnToColumnIndex,
 } from "react-chessboard";
 import { Move, Square } from "chess.js";
-import { getCustomSquareStyles } from "../../../utils/board";
 import { isLegalMove, requiresPromotion } from "../../../utils/chess";
 import { useChessGameContext } from "../../../hooks/useChessGameContext";
+import { useTheme } from "../../../hooks/useTheme";
+import { themeToChessboardOptions } from "../../../theme";
 
 export interface ChessGameProps {
-  options?: ChessboardOptions;
+  options?: Partial<ChessboardOptions>;
 }
 
 export const Board: React.FC<ChessGameProps> = ({ options = {} }) => {
   const gameContext = useChessGameContext();
+  const { theme } = useTheme();
 
   if (!gameContext) {
     throw new Error("ChessGameContext not found");
@@ -96,12 +99,50 @@ export const Board: React.FC<ChessGameProps> = ({ options = {} }) => {
     setPromotionMove(null);
   };
 
-  // Calculate square width for precise positioning
-  const squareWidth = React.useMemo(() => {
-    if (typeof document === "undefined") return 80;
-    const squareElement = document.querySelector(`[data-square]`);
-    return squareElement?.getBoundingClientRect()?.width ?? 80;
-  }, [promotionMove]);
+  // Calculate square width for precise positioning - optimized with ResizeObserver
+  const [squareWidth, setSquareWidth] = React.useState(80);
+
+  React.useEffect(() => {
+    if (typeof document === "undefined") return;
+
+    const updateSquareWidth = () => {
+      const squareElement = document.querySelector(`[data-square]`);
+      if (squareElement) {
+        const width = squareElement.getBoundingClientRect().width;
+        setSquareWidth(width || 80);
+      }
+    };
+
+    // Initial measurement
+    updateSquareWidth();
+
+    // Use ResizeObserver for efficient size tracking
+    let resizeObserver: ResizeObserver | null = null;
+
+    if (window.ResizeObserver) {
+      resizeObserver = new ResizeObserver(() => {
+        updateSquareWidth();
+      });
+
+      const boardElement =
+        document.querySelector('[data-testid="board"]') ||
+        document.querySelector(".react-chessboard");
+      if (boardElement) {
+        resizeObserver.observe(boardElement);
+      }
+    } else {
+      // Fallback for browsers without ResizeObserver
+      const handleResize = () => updateSquareWidth();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+
+    return () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    };
+  }, []); // Only run once on mount
 
   // Calculate promotion square position
   const promotionSquareLeft = React.useMemo(() => {
@@ -117,56 +158,65 @@ export const Board: React.FC<ChessGameProps> = ({ options = {} }) => {
     );
   }, [promotionMove, squareWidth, orientation]);
 
+  // Memoize animation duration to avoid calling game.history() on every render
+  const animationDuration = React.useMemo(() => {
+    return game.history().length === 0 ? 0 : 300;
+  }, [game]);
+
+  const mergedOptions = React.useMemo<Partial<ChessboardOptions>>(() => {
+    const base: Partial<ChessboardOptions> = {
+      ...themeToChessboardOptions(theme),
+      boardOrientation: orientation === "b" ? "black" : "white",
+      position: currentFen,
+      showAnimations: isLatestMove,
+      canDragPiece: ({ piece }) => {
+        if (isGameOver) return false;
+        return piece.pieceType[0] === turn;
+      },
+      onPieceDrag: ({ piece, square }) => {
+        if (piece.pieceType[0] === turn) {
+          if (square) setActiveSquare(square as Square);
+        }
+      },
+      onPieceDrop: ({ sourceSquare, targetSquare }) => {
+        setActiveSquare(null);
+        const moveData = {
+          from: sourceSquare as Square,
+          to: targetSquare as Square,
+        };
+
+        if (requiresPromotion(game, { ...moveData, promotion: "q" })) {
+          setPromotionMove(moveData);
+          return false;
+        }
+
+        return makeMove(moveData);
+      },
+      onSquareClick: ({ square }) => {
+        if (square.match(/^[a-h][1-8]$/)) {
+          onSquareClick(square as Square);
+        }
+      },
+      onSquareRightClick: onSquareRightClick,
+      allowDrawingArrows: true,
+      animationDurationInMs: animationDuration,
+    };
+
+    return merge({}, base, options ?? {});
+  }, [
+    theme,
+    orientation,
+    currentFen,
+    isLatestMove,
+    isGameOver,
+    turn,
+    animationDuration,
+    options,
+  ]);
+
   return (
     <div style={{ position: "relative" }}>
-      <Chessboard
-        options={{
-          squareStyles: {
-            ...getCustomSquareStyles(game, info, activeSquare),
-            ...options.squareStyles,
-          },
-          boardOrientation: orientation === "b" ? "black" : "white",
-          position: currentFen,
-          showNotation: true,
-          showAnimations: isLatestMove,
-          canDragPiece: ({ piece }) => {
-            if (isGameOver) return false;
-            return piece.pieceType[0] === turn;
-          },
-          dropSquareStyle: {
-            backgroundColor: "rgba(255, 255, 0, 0.4)",
-          },
-          onPieceDrag: ({ piece, square }) => {
-            if (piece.pieceType[0] === turn) {
-              setActiveSquare(square as Square);
-            }
-          },
-          onPieceDrop: ({ sourceSquare, targetSquare }) => {
-            setActiveSquare(null);
-            const moveData = {
-              from: sourceSquare as Square,
-              to: targetSquare as Square,
-            };
-
-            // Check if promotion is needed
-            if (requiresPromotion(game, { ...moveData, promotion: "q" })) {
-              setPromotionMove(moveData);
-              return false; // Prevent the move until promotion is selected
-            }
-
-            return makeMove(moveData);
-          },
-          onSquareClick: ({ square }) => {
-            if (square.match(/^[a-h][1-8]$/)) {
-              onSquareClick(square as Square);
-            }
-          },
-          onSquareRightClick: onSquareRightClick,
-          allowDrawingArrows: true,
-          animationDurationInMs: game.history().length === 0 ? 0 : 300,
-          ...options,
-        }}
-      />
+      <Chessboard options={mergedOptions} />
       {promotionMove && (
         <>
           {/* Backdrop overlay - click to cancel */}
@@ -193,12 +243,13 @@ export const Board: React.FC<ChessGameProps> = ({ options = {} }) => {
               top: promotionMove.to?.[1]?.includes("8") ? 0 : "auto",
               bottom: promotionMove.to?.[1].includes("1") ? 0 : "auto",
               left: promotionSquareLeft,
-              backgroundColor: "white",
+              backgroundColor: theme.colors.lightSquare,
               width: squareWidth,
               zIndex: 1001,
               display: "flex",
               flexDirection: "column",
               boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.5)",
+              border: `1px solid ${theme.colors.darkSquare}`,
             }}
           >
             {["q", "r", "n", "b"].map((piece) => (
@@ -217,13 +268,17 @@ export const Board: React.FC<ChessGameProps> = ({ options = {} }) => {
                   padding: 0,
                   border: "none",
                   cursor: "pointer",
-                  backgroundColor: "white",
+                  backgroundColor: theme.colors.lightSquare,
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#f0f0f0";
+                  e.currentTarget.style.backgroundColor =
+                    theme.colors.darkSquare;
+                  e.currentTarget.style.opacity = "0.8";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "white";
+                  e.currentTarget.style.backgroundColor =
+                    theme.colors.lightSquare;
+                  e.currentTarget.style.opacity = "1";
                 }}
               >
                 {defaultPieces[

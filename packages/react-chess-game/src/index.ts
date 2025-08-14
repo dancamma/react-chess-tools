@@ -7,6 +7,16 @@ export { useChessGame } from "./hooks/useChessGame";
 export type { ChessGameContextType } from "./hooks/useChessGameContext";
 export type { useChessGameProps } from "./hooks/useChessGame";
 
+// Theme
+export { useTheme, ThemeProvider } from "./hooks/useTheme";
+export {
+  themes,
+  defaultTheme,
+  themeToChessboardOptions,
+  mergeThemes,
+  type ChessTheme,
+} from "./theme";
+
 // Audio Types
 export type { Sound, Sounds } from "./assets/sounds";
 export type { SoundsProps } from "./components/ChessGame/parts/Sounds";
