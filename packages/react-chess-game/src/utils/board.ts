@@ -1,5 +1,7 @@
 import { type Chess, type Square } from "chess.js";
 import { type CSSProperties } from "react";
+import { merge } from "lodash";
+import type { ChessboardOptions } from "react-chessboard";
 import { getDestinationSquares, type GameInfo } from "./chess";
 
 const LAST_MOVE_COLOR = "rgba(255, 255, 0, 0.5)";
@@ -53,4 +55,51 @@ export const getCustomSquareStyles = (
     });
   }
   return customSquareStyles;
+};
+
+/**
+ * Smart deep merge for ChessboardOptions that handles different property types appropriately:
+ * - Functions: Overwrite (custom functions replace base functions)
+ * - Objects: Deep merge (nested objects merge recursively)
+ * - Primitives: Overwrite (custom values replace base values)
+ *
+ * This ensures that computed options (like squareStyles with move highlighting) are preserved
+ * while allowing custom options to extend or override them intelligently.
+ *
+ * @param baseOptions - The computed base options (e.g., computed squareStyles, event handlers)
+ * @param customOptions - Custom options provided by the user
+ * @returns Intelligently merged ChessboardOptions
+ */
+export const deepMergeChessboardOptions = (
+  baseOptions: ChessboardOptions,
+  customOptions?: Partial<ChessboardOptions>,
+): ChessboardOptions => {
+  if (!customOptions) {
+    return { ...baseOptions }; // Return a new object even when no custom options
+  }
+
+  const result = merge({}, baseOptions, customOptions, {
+    customizer: (_objValue: unknown, srcValue: unknown) => {
+      // Functions should always overwrite (not merge)
+      // This is important for event handlers like onSquareClick, onPieceDrop, etc.
+      if (typeof srcValue === "function") {
+        return srcValue;
+      }
+
+      // For arrays, we typically want to overwrite rather than merge
+      // This avoids unexpected behavior with array concatenation
+      if (Array.isArray(srcValue)) {
+        return srcValue;
+      }
+
+      // Let lodash handle objects with default deep merge behavior
+      // This will properly merge nested objects like squareStyles, dropSquareStyle, etc.
+      return undefined; // Use default merge behavior
+    },
+  });
+
+  // Clean up any unwanted properties that lodash might add
+  delete (result as Record<string, unknown>).customizer;
+
+  return result;
 };

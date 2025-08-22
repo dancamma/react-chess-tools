@@ -6,7 +6,10 @@ import {
   chessColumnToColumnIndex,
 } from "react-chessboard";
 import { Move, Square } from "chess.js";
-import { getCustomSquareStyles } from "../../../utils/board";
+import {
+  getCustomSquareStyles,
+  deepMergeChessboardOptions,
+} from "../../../utils/board";
 import { isLegalMove, requiresPromotion } from "../../../utils/chess";
 import { useChessGameContext } from "../../../hooks/useChessGameContext";
 
@@ -117,56 +120,54 @@ export const Board: React.FC<ChessGameProps> = ({ options = {} }) => {
     );
   }, [promotionMove, squareWidth, orientation]);
 
+  const baseOptions: ChessboardOptions = {
+    squareStyles: getCustomSquareStyles(game, info, activeSquare),
+    boardOrientation: orientation === "b" ? "black" : "white",
+    position: currentFen,
+    showNotation: true,
+    showAnimations: isLatestMove,
+    canDragPiece: ({ piece }) => {
+      if (isGameOver) return false;
+      return piece.pieceType[0] === turn;
+    },
+    dropSquareStyle: {
+      backgroundColor: "rgba(255, 255, 0, 0.4)",
+    },
+    onPieceDrag: ({ piece, square }) => {
+      if (piece.pieceType[0] === turn) {
+        setActiveSquare(square as Square);
+      }
+    },
+    onPieceDrop: ({ sourceSquare, targetSquare }) => {
+      setActiveSquare(null);
+      const moveData = {
+        from: sourceSquare as Square,
+        to: targetSquare as Square,
+      };
+
+      // Check if promotion is needed
+      if (requiresPromotion(game, { ...moveData, promotion: "q" })) {
+        setPromotionMove(moveData);
+        return false; // Prevent the move until promotion is selected
+      }
+
+      return makeMove(moveData);
+    },
+    onSquareClick: ({ square }) => {
+      if (square.match(/^[a-h][1-8]$/)) {
+        onSquareClick(square as Square);
+      }
+    },
+    onSquareRightClick: onSquareRightClick,
+    allowDrawingArrows: true,
+    animationDurationInMs: game.history().length === 0 ? 0 : 300,
+  };
+
+  const mergedOptions = deepMergeChessboardOptions(baseOptions, options);
+
   return (
     <div style={{ position: "relative" }}>
-      <Chessboard
-        options={{
-          squareStyles: {
-            ...getCustomSquareStyles(game, info, activeSquare),
-            ...options.squareStyles,
-          },
-          boardOrientation: orientation === "b" ? "black" : "white",
-          position: currentFen,
-          showNotation: true,
-          showAnimations: isLatestMove,
-          canDragPiece: ({ piece }) => {
-            if (isGameOver) return false;
-            return piece.pieceType[0] === turn;
-          },
-          dropSquareStyle: {
-            backgroundColor: "rgba(255, 255, 0, 0.4)",
-          },
-          onPieceDrag: ({ piece, square }) => {
-            if (piece.pieceType[0] === turn) {
-              setActiveSquare(square as Square);
-            }
-          },
-          onPieceDrop: ({ sourceSquare, targetSquare }) => {
-            setActiveSquare(null);
-            const moveData = {
-              from: sourceSquare as Square,
-              to: targetSquare as Square,
-            };
-
-            // Check if promotion is needed
-            if (requiresPromotion(game, { ...moveData, promotion: "q" })) {
-              setPromotionMove(moveData);
-              return false; // Prevent the move until promotion is selected
-            }
-
-            return makeMove(moveData);
-          },
-          onSquareClick: ({ square }) => {
-            if (square.match(/^[a-h][1-8]$/)) {
-              onSquareClick(square as Square);
-            }
-          },
-          onSquareRightClick: onSquareRightClick,
-          allowDrawingArrows: true,
-          animationDurationInMs: game.history().length === 0 ? 0 : 300,
-          ...options,
-        }}
-      />
+      <Chessboard options={mergedOptions} />
       {promotionMove && (
         <>
           {/* Backdrop overlay - click to cancel */}
