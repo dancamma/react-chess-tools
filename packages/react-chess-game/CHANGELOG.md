@@ -1,5 +1,11 @@
 # @react-chess-tools/react-chess-game
 
+## 0.5.1
+
+### Patch Changes
+
+- f50ac0f: feat: improve chessboard options merging with deep merge utility
+
 ## 0.5.0
 
 ### Minor Changes
