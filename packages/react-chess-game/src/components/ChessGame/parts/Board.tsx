@@ -1,5 +1,4 @@
 import React from "react";
-import merge from "lodash/merge";
 import {
   Chessboard,
   ChessboardOptions,
@@ -7,6 +6,10 @@ import {
   chessColumnToColumnIndex,
 } from "react-chessboard";
 import { Move, Square } from "chess.js";
+import {
+  getCustomSquareStyles,
+  deepMergeChessboardOptions,
+} from "../../../utils/board";
 import { isLegalMove, requiresPromotion } from "../../../utils/chess";
 import { useChessGameContext } from "../../../hooks/useChessGameContext";
 import { useTheme } from "../../../hooks/useTheme";
@@ -166,6 +169,7 @@ export const Board: React.FC<ChessGameProps> = ({ options = {} }) => {
   const mergedOptions = React.useMemo<Partial<ChessboardOptions>>(() => {
     const base: Partial<ChessboardOptions> = {
       ...themeToChessboardOptions(theme),
+      squareStyles: getCustomSquareStyles(game, info, activeSquare),
       boardOrientation: orientation === "b" ? "black" : "white",
       position: currentFen,
       showAnimations: isLatestMove,
@@ -202,7 +206,7 @@ export const Board: React.FC<ChessGameProps> = ({ options = {} }) => {
       animationDurationInMs: animationDuration,
     };
 
-    return merge({}, base, options ?? {});
+    return deepMergeChessboardOptions(base, options);
   }, [
     theme,
     orientation,
@@ -211,6 +215,9 @@ export const Board: React.FC<ChessGameProps> = ({ options = {} }) => {
     isGameOver,
     turn,
     animationDuration,
+    game,
+    info,
+    activeSquare,
     options,
   ]);
 
