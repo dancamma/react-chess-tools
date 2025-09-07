@@ -1,530 +1,637 @@
 import React from "react";
 import {
+  ChessGame,
   themes,
   mergeThemes,
-  ChessTheme,
-} from "../../packages/react-chess-game/src/theme";
-import {
-  ThemeDraft,
-  ThemePlaygroundTab,
-  PlaygroundColors,
-  buildThemeColors,
-  buildThemePieces,
-} from "../lib/themeTypes";
-import { rgbToHex, parseRgba, rgbaStringFromHexAlpha } from "../lib/colorUtils";
-import { ThemeErrorBoundary } from "./ThemeErrorBoundary";
-import { ThemePresetGrid } from "./ThemePresetGrid";
-import { TabNavigation } from "./TabNavigation";
-import { BoardControlsPanel } from "./BoardControlsPanel";
-import { HighlightControlsPanel } from "./HighlightControlsPanel";
-import { PieceControlsPanel } from "./PieceControlsPanel";
-import { AdvancedControlsPanel } from "./AdvancedControlsPanel";
-import { ActionButtonsPanel } from "./ActionButtonsPanel";
-import { BoardPreview } from "./BoardPreview";
+  type ChessTheme,
+} from "../../packages/react-chess-game/src";
+import { parseRgba, rgbToHex, rgbaStringFromHexAlpha } from "../lib/colorUtils";
 
-/**
- * Internal Theme Playground Component
- * Core functionality without error boundary
- */
-const ThemePlaygroundCore: React.FC = () => {
-  const [base, setBase] = React.useState<keyof typeof themes>("classic");
-  const [draft, setDraft] = React.useState<ThemeDraft>({});
-  const [activeTab, setActiveTab] = React.useState<ThemePlaygroundTab>("board");
-  const [isMobile, setIsMobile] = React.useState(false);
-  const [copyFeedback, setCopyFeedback] = React.useState("");
+type ColorField = keyof ChessTheme["colors"];
 
-  // Responsive design detection
-  React.useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+export const ThemePlayground: React.FC = () => {
+  const [baseTheme, setBaseTheme] = React.useState<string>("classic");
+  const [draft, setDraft] = React.useState<Partial<ChessTheme>>({});
+  const [showSpecificPieces, setShowSpecificPieces] = React.useState(false);
 
-  const baseTheme = themes[base];
-  const theme = React.useMemo(() => {
-    const custom: Partial<ChessTheme> = {};
-
-    if (draft.colors) {
-      custom.colors = buildThemeColors(baseTheme.colors, draft.colors);
-    }
-
-    if (draft.notation) {
-      custom.notation = {
-        show: draft.notation.show ?? baseTheme.notation?.show ?? true,
-        darkSquareColor:
-          draft.notation.darkSquareColor ??
-          baseTheme.notation?.darkSquareColor ??
-          baseTheme.colors.darkSquare,
-        lightSquareColor:
-          draft.notation.lightSquareColor ??
-          baseTheme.notation?.lightSquareColor ??
-          baseTheme.colors.lightSquare,
-      };
-    }
-
-    if (draft.pieces) {
-      custom.pieces = buildThemePieces(baseTheme.pieces, draft.pieces);
-    }
-
-    return mergeThemes(baseTheme, custom);
+  const theme = React.useMemo<ChessTheme>(() => {
+    const base = themes[baseTheme] ?? themes.classic;
+    return mergeThemes(base, draft);
   }, [baseTheme, draft]);
 
-  // Modern design system - memoized to prevent recreation on every render
-  const currentColors: PlaygroundColors = React.useMemo(
+  const handleBoardColorChange = React.useCallback(
+    (field: Exclude<ColorField, "highlight">) =>
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setDraft((prev) => ({
+          ...prev,
+          colors: { ...(prev.colors ?? {}), [field]: value },
+        }));
+      },
+    [],
+  );
+
+  const handleNotationToggle = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const checked = e.target.checked;
+      setDraft((prev) => ({
+        ...prev,
+        notation: { ...(prev.notation ?? {}), show: checked },
+      }));
+    },
+    [],
+  );
+
+  const handleNotationColor = React.useCallback(
+    (field: keyof NonNullable<ChessTheme["notation"]>) =>
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setDraft((prev) => ({
+          ...prev,
+          notation: { ...(prev.notation ?? {}), [field]: value },
+        }));
+      },
+    [],
+  );
+
+  // Highlight helpers
+  const highlightKeys = [
+    "lastMove",
+    "check",
+    "validMove",
+    "validCapture",
+  ] as const;
+
+  const highlightParsed = React.useMemo(() => {
+    const current = theme.colors.highlight;
+    return highlightKeys.reduce(
+      (acc, key) => {
+        const parsed =
+          parseRgba(current[key]) || ({ r: 0, g: 0, b: 0, a: 1 } as const);
+        const hex = rgbToHex(parsed.r, parsed.g, parsed.b);
+        acc[key] = { hex, alpha: parsed.a };
+        return acc;
+      },
+      {} as Record<
+        (typeof highlightKeys)[number],
+        { hex: string; alpha: number }
+      >,
+    );
+  }, [
+    theme.colors.highlight.lastMove,
+    theme.colors.highlight.check,
+    theme.colors.highlight.validMove,
+    theme.colors.highlight.validCapture,
+  ]);
+
+  const setHighlightHex = React.useCallback(
+    (key: (typeof highlightKeys)[number]) =>
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const nextHex = e.target.value;
+        const alpha = highlightParsed[key].alpha ?? 1;
+        setDraft((prev) => ({
+          ...prev,
+          colors: {
+            ...(prev.colors ?? {}),
+            highlight: {
+              ...(prev.colors?.highlight ?? {}),
+              [key]: rgbaStringFromHexAlpha(nextHex, alpha),
+            },
+          },
+        }));
+      },
+    [highlightParsed],
+  );
+
+  const setHighlightAlpha = React.useCallback(
+    (key: (typeof highlightKeys)[number]) =>
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const alpha = Number(e.target.value);
+        const hex = highlightParsed[key].hex ?? "#000000";
+        setDraft((prev) => ({
+          ...prev,
+          colors: {
+            ...(prev.colors ?? {}),
+            highlight: {
+              ...(prev.colors?.highlight ?? {}),
+              [key]: rgbaStringFromHexAlpha(hex, alpha),
+            },
+          },
+        }));
+      },
+    [highlightParsed],
+  );
+
+  // Piece helpers
+  type PieceSide = "light" | "dark";
+  type PieceField = "fill" | "stroke" | "background";
+  const pieceKeys = [
+    "wK",
+    "wQ",
+    "wR",
+    "wB",
+    "wN",
+    "wP",
+    "bK",
+    "bQ",
+    "bR",
+    "bB",
+    "bN",
+    "bP",
+  ] as const;
+
+  const onPieceSideChange = React.useCallback(
+    (side: PieceSide, field: PieceField) =>
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setDraft((prev) => ({
+          ...prev,
+          pieces: {
+            ...(prev.pieces ?? {}),
+            [side]: { ...(prev.pieces?.[side] ?? {}), [field]: value },
+          },
+        }));
+      },
+    [],
+  );
+
+  const clearPieceSideField = React.useCallback(
+    (side: PieceSide, field: PieceField) => {
+      setDraft((prev) => {
+        const nextPieces = { ...(prev.pieces ?? {}) } as NonNullable<
+          ChessTheme["pieces"]
+        >;
+        const sideObj = {
+          ...(nextPieces[side] as Record<string, string> | undefined),
+        };
+        if (sideObj && field in sideObj) {
+          delete sideObj[field];
+        }
+        if (Object.keys(sideObj || {}).length) {
+          (nextPieces as any)[side] = sideObj as any;
+        } else {
+          delete (nextPieces as any)[side];
+        }
+        return {
+          ...prev,
+          pieces: Object.keys(nextPieces).length
+            ? (nextPieces as any)
+            : undefined,
+        };
+      });
+    },
+    [],
+  );
+
+  const onSpecificPieceChange = React.useCallback(
+    (key: (typeof pieceKeys)[number], field: PieceField) =>
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setDraft((prev) => ({
+          ...prev,
+          pieces: {
+            ...(prev.pieces ?? {}),
+            specific: {
+              ...(prev.pieces?.specific ?? {}),
+              [key]: {
+                ...(prev.pieces?.specific?.[key] ?? {}),
+                [field]: value,
+              },
+            },
+          },
+        }));
+      },
+    [],
+  );
+
+  const clearSpecificPiece = React.useCallback(
+    (key: (typeof pieceKeys)[number]) => {
+      setDraft((prev) => {
+        const nextPieces = { ...(prev.pieces ?? {}) } as NonNullable<
+          ChessTheme["pieces"]
+        >;
+        const nextSpecific = { ...(nextPieces.specific ?? {}) } as Record<
+          string,
+          any
+        >;
+        delete nextSpecific[key];
+        if (Object.keys(nextSpecific).length) {
+          (nextPieces as any).specific = nextSpecific;
+        } else {
+          delete (nextPieces as any).specific;
+        }
+        return {
+          ...prev,
+          pieces: Object.keys(nextPieces).length
+            ? (nextPieces as any)
+            : undefined,
+        };
+      });
+    },
+    [],
+  );
+
+  const resetDraft = React.useCallback(() => setDraft({}), []);
+
+  const container: React.CSSProperties = React.useMemo(
     () => ({
-      primary: "#3b82f6",
-      primaryHover: "#2563eb",
-      secondary: "#64748b",
-      background: "#ffffff",
-      surface: "rgba(255, 255, 255, 0.8)",
-      border: "rgba(0, 0, 0, 0.1)",
-      text: "#0f172a",
-      textSecondary: "#64748b",
-      shadow: "rgba(0, 0, 0, 0.1)",
+      display: "grid",
+      gridTemplateColumns: "360px 1fr",
+      gap: 24,
+      padding: 24,
+      maxWidth: 1200,
+      margin: "0 auto",
+      fontFamily: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
     }),
     [],
   );
 
-  const modernStyles = React.useMemo(
+  const card: React.CSSProperties = React.useMemo(
     () => ({
-      container: {
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
-        color: currentColors.text,
-        fontFamily: "system-ui, -apple-system, sans-serif",
-        transition: "all 0.3s ease",
-      } as React.CSSProperties,
-
-      layout: {
-        display: "grid",
-        gridTemplateColumns: isMobile ? "1fr" : "500px 1fr",
-        gap: isMobile ? "24px" : "32px",
-        padding: isMobile ? "16px" : "16px 32px 32px 32px",
-        maxWidth: "1600px",
-        margin: "0 auto",
-      } as React.CSSProperties,
-
-      sidebar: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "16px",
-        position: isMobile ? "static" : "sticky",
-        top: isMobile ? "auto" : "16px",
-        alignSelf: "start",
-        // Mobile-specific optimizations
-        ...(isMobile && {
-          WebkitOverflowScrolling: "touch",
-          overscrollBehavior: "contain",
-        }),
-      } as React.CSSProperties,
-
-      card: {
-        background: currentColors.surface,
-        backdropFilter: "blur(20px)",
-        border: `1px solid ${currentColors.border}`,
-        borderRadius: "20px",
-        padding: "16px",
-        boxShadow: `0 20px 40px ${currentColors.shadow}`,
-        transition: "all 0.3s ease",
-      } as React.CSSProperties,
-
-      sectionTitle: {
-        fontSize: "18px",
-        fontWeight: 600,
-        margin: "0 0 12px 0",
-        color: currentColors.text,
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-      } as React.CSSProperties,
-
-      themePresets: {
-        display: "grid",
-        gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(3, 1fr)",
-        gap: "12px",
-      } as React.CSSProperties,
-
-      themePreset: (isActive: boolean) =>
-        ({
-          padding: "16px",
-          borderRadius: "16px",
-          border: `2px solid ${isActive ? currentColors.primary : currentColors.border}`,
-          background: isActive
-            ? `linear-gradient(135deg, ${currentColors.primary}20, ${currentColors.primary}10)`
-            : currentColors.surface,
-          cursor: "pointer",
-          transition: "all 0.3s ease",
-          textAlign: "center",
-          position: "relative",
-          overflow: "hidden",
-        }) as React.CSSProperties,
-
-      presetPreview: (themeName: string) => {
-        const presetTheme = themes[themeName as keyof typeof themes];
-        return {
-          width: "100%",
-          height: "60px",
-          borderRadius: "8px",
-          marginBottom: "8px",
-          background: `linear-gradient(45deg, ${presetTheme.colors.lightSquare} 50%, ${presetTheme.colors.darkSquare} 50%)`,
-          border: `2px solid ${presetTheme.colors.boardBorder || "#333"}`,
-        } as React.CSSProperties;
-      },
-
-      tabs: {
-        display: "flex",
-        borderRadius: "16px",
-        background: currentColors.surface,
-        padding: "4px",
-        marginBottom: "12px",
-        border: `1px solid ${currentColors.border}`,
-      } as React.CSSProperties,
-
-      tab: (isActive: boolean) =>
-        ({
-          flex: 1,
-          padding: "12px 8px",
-          borderRadius: "12px",
-          border: "none",
-          background: isActive ? currentColors.primary : "transparent",
-          color: isActive ? "#ffffff" : currentColors.textSecondary,
-          cursor: "pointer",
-          transition: "all 0.2s ease",
-          fontSize: "14px",
-          fontWeight: 500,
-          textAlign: "center",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "6px",
-          minHeight: "44px",
-        }) as React.CSSProperties,
-
-      controlGroup: {
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-      } as React.CSSProperties,
-
-      controlRow: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: "12px",
-      } as React.CSSProperties,
-
-      label: {
-        fontSize: "14px",
-        fontWeight: 500,
-        color: currentColors.text,
-        minWidth: "120px",
-      } as React.CSSProperties,
-
-      colorInput: {
-        width: isMobile ? "50px" : "60px",
-        height: isMobile ? "50px" : "40px",
-        borderRadius: "12px",
-        border: `2px solid ${currentColors.border}`,
-        background: "transparent",
-        cursor: "pointer",
-        transition: "all 0.2s ease",
-        // Enhanced touch targets for mobile
-        ...(isMobile && {
-          minWidth: "44px",
-          minHeight: "44px",
-          touchAction: "manipulation",
-        }),
-      } as React.CSSProperties,
-
-      rangeInput: {
-        flex: 1,
-        height: isMobile ? "12px" : "8px",
-        borderRadius: "4px",
-        background: currentColors.border,
-        outline: "none",
-        appearance: "none",
-        cursor: "pointer",
-        // Enhanced touch targets for mobile
-        ...(isMobile && {
-          touchAction: "manipulation",
-          minHeight: "44px",
-        }),
-      } as React.CSSProperties,
-
-      actionButtons: {
-        display: "flex",
-        gap: "12px",
-        marginTop: "12px",
-      } as React.CSSProperties,
-
-      button: (variant: "primary" | "secondary" = "secondary") =>
-        ({
-          flex: 1,
-          padding: isMobile ? "16px 20px" : "12px 20px",
-          borderRadius: "12px",
-          border:
-            variant === "primary"
-              ? "none"
-              : `1px solid ${currentColors.border}`,
-          background:
-            variant === "primary"
-              ? currentColors.primary
-              : currentColors.surface,
-          color: variant === "primary" ? "#ffffff" : currentColors.text,
-          cursor: "pointer",
-          fontSize: isMobile ? "16px" : "14px",
-          fontWeight: 500,
-          transition: "all 0.2s ease",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          backdropFilter: "blur(10px)",
-          // Enhanced touch targets for mobile
-          ...(isMobile && {
-            minHeight: "48px",
-            touchAction: "manipulation",
-          }),
-        }) as React.CSSProperties,
-
-      chessboardContainer: {
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "24px",
-      } as React.CSSProperties,
-
-      boardWrapper: {
-        padding: isMobile ? "16px" : "32px",
-        borderRadius: isMobile ? "16px" : "24px",
-        background: currentColors.surface,
-        backdropFilter: "blur(20px)",
-        border: `1px solid ${currentColors.border}`,
-        boxShadow: isMobile
-          ? `0 10px 30px ${currentColors.shadow}`
-          : `0 30px 60px ${currentColors.shadow}`,
-        transition: "all 0.3s ease",
-        // Mobile-specific optimizations
-        ...(isMobile && {
-          width: "100%",
-          maxWidth: "400px",
-          margin: "0 auto",
-        }),
-      } as React.CSSProperties,
-
-      themeInfo: {
-        padding: "20px",
-        borderRadius: "16px",
-        background: currentColors.surface,
-        border: `1px solid ${currentColors.border}`,
-        fontSize: "14px",
-        fontFamily: "monospace",
-        color: currentColors.textSecondary,
-        maxWidth: "600px",
-        overflow: "auto",
-      } as React.CSSProperties,
+      background: "#fff",
+      border: "1px solid rgba(0,0,0,.08)",
+      borderRadius: 12,
+      padding: 16,
+      boxShadow: "0 6px 20px rgba(0,0,0,.06)",
     }),
-    [isMobile, currentColors],
+    [],
   );
 
-  // Event handlers - memoized to prevent unnecessary re-renders
-  const updateDraft = React.useCallback((newDraft: ThemeDraft) => {
-    setDraft(newDraft);
-  }, []);
-
-  const setColor = React.useCallback(
-    (field: keyof ChessTheme["colors"]) =>
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        updateDraft({
-          ...draft,
-          colors: { ...(draft.colors || {}), [field]: value },
-        });
-      },
-    [draft, updateDraft],
+  const label: React.CSSProperties = React.useMemo(
+    () => ({
+      fontSize: 13,
+      fontWeight: 600,
+      color: "#0f172a",
+      marginBottom: 6,
+    }),
+    [],
   );
 
-  const setHighlightHex = React.useCallback(
-    (field: keyof NonNullable<ChessTheme["colors"]>["highlight"]) =>
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        const hex = e.target.value;
-        const current =
-          draft.colors?.highlight?.[field] || theme.colors.highlight[field];
-        const parsed = typeof current === "string" ? parseRgba(current) : null;
-        const alpha = parsed?.a ?? 1;
-        updateDraft({
-          ...draft,
-          colors: {
-            ...(draft.colors || {}),
-            highlight: {
-              ...(draft.colors?.highlight || {}),
-              [field]: rgbaStringFromHexAlpha(hex, alpha),
-            },
-          },
-        });
-      },
-    [draft, theme, updateDraft],
+  const row: React.CSSProperties = React.useMemo(
+    () => ({
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      marginBottom: 12,
+      width: "100%",
+      minWidth: 0, // allow children (like range inputs) to shrink within grid
+    }),
+    [],
   );
 
-  const setHighlightAlpha = React.useCallback(
-    (field: keyof NonNullable<ChessTheme["colors"]>["highlight"]) =>
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        const alpha = Number(e.target.value);
-        const current =
-          draft.colors?.highlight?.[field] || theme.colors.highlight[field];
-        const parsed = typeof current === "string" ? parseRgba(current) : null;
-        const hex = parsed ? rgbToHex(parsed.r, parsed.g, parsed.b) : "#000000";
-        updateDraft({
-          ...draft,
-          colors: {
-            ...(draft.colors || {}),
-            highlight: {
-              ...(draft.colors?.highlight || {}),
-              [field]: rgbaStringFromHexAlpha(hex, alpha),
-            },
-          },
-        });
-      },
-    [draft, theme, updateDraft],
+  const inputColor: React.CSSProperties = React.useMemo(
+    () => ({
+      width: 48,
+      height: 32,
+      minWidth: 48,
+      borderRadius: 8,
+      border: "1px solid #e2e8f0",
+      flexShrink: 0, // prevent the color swatch from collapsing next to the range slider
+    }),
+    [],
   );
-
-  const setNotation = React.useCallback(
-    <K extends keyof NonNullable<ChessTheme["notation"]>>(field: K) =>
-      (value: NonNullable<ChessTheme["notation"]>[K]) => {
-        updateDraft({
-          ...draft,
-          notation: { ...(draft.notation || {}), [field]: value },
-        });
-      },
-    [draft, updateDraft],
-  );
-
-  const setPiece = React.useCallback(
-    (side: "light" | "dark", field: "fill" | "stroke") =>
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        updateDraft({
-          ...draft,
-          pieces: {
-            ...(draft.pieces || {}),
-            [side]: { ...(draft.pieces || {})[side], [field]: value },
-          },
-        });
-      },
-    [draft, updateDraft],
-  );
-
-  const exportTheme = React.useCallback(() => {
-    const data = JSON.stringify(theme, null, 2);
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `chess-theme-${theme.name.toLowerCase().replace(/\s+/g, "-")}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [theme]);
-
-  const copyThemeCode = React.useCallback(async () => {
-    try {
-      const code = `const customTheme: ChessTheme = ${JSON.stringify(theme, null, 2)};`;
-      await navigator.clipboard.writeText(code);
-      setCopyFeedback("✅ Copied to clipboard!");
-      setTimeout(() => setCopyFeedback(""), 2000);
-    } catch (error) {
-      setCopyFeedback("❌ Failed to copy");
-      setTimeout(() => setCopyFeedback(""), 2000);
-    }
-  }, [theme]);
-
-  const resetTheme = React.useCallback(() => {
-    updateDraft({});
-    setBase("classic");
-  }, [updateDraft]);
 
   return (
-    <div style={modernStyles.container}>
-      <div style={modernStyles.layout}>
-        <div style={modernStyles.sidebar}>
-          {/* Theme Presets */}
-          <ThemePresetGrid
-            activeTheme={base}
-            onThemeSelect={setBase}
-            colors={currentColors}
-            isMobile={isMobile}
+    <div style={container}>
+      <div style={card}>
+        <h3 style={{ margin: 0, marginBottom: 12 }}>Theme Playground</h3>
+
+        <div style={{ ...row, marginTop: 4 }}>
+          <div style={{ ...label, margin: 0, minWidth: 100 }}>Preset</div>
+          <select
+            value={baseTheme}
+            onChange={(e) => setBaseTheme(e.target.value)}
+            style={{
+              padding: "6px 8px",
+              borderRadius: 8,
+              border: "1px solid #e2e8f0",
+              flex: 1,
+            }}
+          >
+            {Object.keys(themes).map((name) => (
+              <option key={name} value={name}>
+                {themes[name].name || name}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={resetDraft}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 8,
+              border: "1px solid #e2e8f0",
+              background: "#f8fafc",
+              cursor: "pointer",
+            }}
+          >
+            Reset edits
+          </button>
+        </div>
+
+        <hr
+          style={{
+            border: 0,
+            borderTop: "1px solid #e2e8f0",
+            margin: "12px 0",
+          }}
+        />
+
+        <div style={{ marginBottom: 8, color: "#0f172a", fontWeight: 600 }}>
+          Board Colors
+        </div>
+        <div style={row}>
+          <div style={{ ...label, minWidth: 120 }}>Light square</div>
+          <input
+            type="color"
+            value={theme.colors.lightSquare}
+            onChange={handleBoardColorChange("lightSquare")}
+            style={inputColor}
           />
-
-          {/* Control Tabs */}
-          <div style={modernStyles.card}>
-            <TabNavigation
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              colors={currentColors}
-            />
-
-            <BoardControlsPanel
-              theme={theme}
-              onColorChange={setColor}
-              colors={currentColors}
-              isVisible={activeTab === "board"}
-            />
-
-            <HighlightControlsPanel
-              theme={theme}
-              onHighlightHexChange={setHighlightHex}
-              onHighlightAlphaChange={setHighlightAlpha}
-              colors={currentColors}
-              isMobile={isMobile}
-              isVisible={activeTab === "highlights"}
-            />
-
-            <PieceControlsPanel
-              theme={theme}
-              onPieceChange={setPiece}
-              colors={currentColors}
-              isVisible={activeTab === "pieces"}
-            />
-
-            <AdvancedControlsPanel
-              theme={theme}
-              onNotationChange={setNotation}
-              colors={currentColors}
-              isVisible={activeTab === "advanced"}
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <ActionButtonsPanel
-            onReset={resetTheme}
-            onExport={exportTheme}
-            onCopy={copyThemeCode}
-            copyFeedback={copyFeedback}
-            colors={currentColors}
-            isMobile={isMobile}
+        </div>
+        <div style={row}>
+          <div style={{ ...label, minWidth: 120 }}>Dark square</div>
+          <input
+            type="color"
+            value={theme.colors.darkSquare}
+            onChange={handleBoardColorChange("darkSquare")}
+            style={inputColor}
+          />
+        </div>
+        <div style={row}>
+          <div style={{ ...label, minWidth: 120 }}>Border</div>
+          <input
+            type="color"
+            value={theme.colors.boardBorder || "#000000"}
+            onChange={handleBoardColorChange("boardBorder")}
+            style={inputColor}
+          />
+        </div>
+        <div style={row}>
+          <div style={{ ...label, minWidth: 120 }}>Background</div>
+          <input
+            type="color"
+            value={theme.colors.boardBackground || "#ffffff"}
+            onChange={handleBoardColorChange("boardBackground")}
+            style={inputColor}
           />
         </div>
 
-        {/* Chess Board Preview */}
-        <BoardPreview
-          theme={theme}
-          colors={currentColors}
-          isMobile={isMobile}
+        <hr
+          style={{
+            border: 0,
+            borderTop: "1px solid #e2e8f0",
+            margin: "12px 0",
+          }}
         />
+
+        <div style={{ marginBottom: 8, color: "#0f172a", fontWeight: 600 }}>
+          Notation
+        </div>
+        <div style={row}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              type="checkbox"
+              checked={theme.notation?.show ?? true}
+              onChange={handleNotationToggle}
+            />
+            Show notation
+          </label>
+        </div>
+        <div style={row}>
+          <div style={{ ...label, minWidth: 120 }}>Light square text</div>
+          <input
+            type="color"
+            value={theme.notation?.lightSquareColor || theme.colors.lightSquare}
+            onChange={handleNotationColor("lightSquareColor")}
+            style={inputColor}
+          />
+        </div>
+        <div style={row}>
+          <div style={{ ...label, minWidth: 120 }}>Dark square text</div>
+          <input
+            type="color"
+            value={theme.notation?.darkSquareColor || theme.colors.darkSquare}
+            onChange={handleNotationColor("darkSquareColor")}
+            style={inputColor}
+          />
+        </div>
+
+        <hr
+          style={{
+            border: 0,
+            borderTop: "1px solid #e2e8f0",
+            margin: "12px 0",
+          }}
+        />
+
+        <div style={{ marginBottom: 8, color: "#0f172a", fontWeight: 600 }}>
+          Highlights
+        </div>
+        {highlightKeys.map((key) => (
+          <div key={key} style={{ marginBottom: 10 }}>
+            <div style={row}>
+              <div
+                style={{ ...label, minWidth: 120, textTransform: "capitalize" }}
+              >
+                {key.replace(/([A-Z])/g, " $1")}
+              </div>
+              <input
+                type="color"
+                value={highlightParsed[key].hex}
+                onChange={setHighlightHex(key)}
+                style={inputColor}
+              />
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.01}
+                value={highlightParsed[key].alpha}
+                onChange={setHighlightAlpha(key)}
+                aria-label={`${key} alpha`}
+                style={{ flex: 1 }}
+              />
+              <span style={{ fontSize: 12, minWidth: 36, textAlign: "right" }}>
+                {Math.round(highlightParsed[key].alpha * 100)}%
+              </span>
+            </div>
+          </div>
+        ))}
+
+        <hr
+          style={{
+            border: 0,
+            borderTop: "1px solid #e2e8f0",
+            margin: "12px 0",
+          }}
+        />
+
+        <div style={{ marginBottom: 8, color: "#0f172a", fontWeight: 600 }}>
+          Pieces
+        </div>
+        {/* Single-column layout to avoid clipping in narrow sidebar */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
+          {(["light", "dark"] as const).map((side) => (
+            <div
+              key={side}
+              style={{
+                border: "1px solid #e2e8f0",
+                borderRadius: 10,
+                padding: 12,
+              }}
+            >
+              <div
+                style={{
+                  ...label,
+                  marginBottom: 8,
+                  textTransform: "capitalize",
+                }}
+              >
+                {side} pieces
+              </div>
+              {(["fill", "stroke", "background"] as const).map((field) => {
+                const defaults: Record<PieceField, string> = {
+                  fill: side === "light" ? "#ffffff" : "#000000",
+                  stroke: side === "light" ? "#000000" : "#ffffff",
+                  background: "#ffffff",
+                };
+                const value =
+                  draft.pieces?.[side]?.[field] ??
+                  (theme.pieces as any)?.[side]?.[field] ??
+                  defaults[field];
+                return (
+                  <div key={field} style={row}>
+                    <div
+                      style={{
+                        ...label,
+                        minWidth: 110,
+                        textTransform: "capitalize",
+                      }}
+                    >
+                      {field}
+                    </div>
+                    <input
+                      type="color"
+                      value={value}
+                      onChange={onPieceSideChange(side, field)}
+                      style={inputColor}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => clearPieceSideField(side, field)}
+                      style={{
+                        padding: "4px 8px",
+                        borderRadius: 6,
+                        border: "1px solid #e2e8f0",
+                        background: "#f8fafc",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ marginTop: 12 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              type="checkbox"
+              checked={showSpecificPieces}
+              onChange={(e) => setShowSpecificPieces(e.target.checked)}
+            />
+            Advanced: per-piece overrides
+          </label>
+        </div>
+
+        {showSpecificPieces && (
+          // Single-column advanced grid for better fit
+          <div
+            style={{
+              marginTop: 12,
+              display: "grid",
+              gridTemplateColumns: "1fr",
+              gap: 12,
+            }}
+          >
+            {pieceKeys.map((key) => (
+              <div
+                key={key}
+                style={{
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 10,
+                  padding: 12,
+                }}
+              >
+                <div style={{ ...label, marginBottom: 8 }}>{key}</div>
+                {(["fill", "stroke", "background"] as const).map((field) => {
+                  const defaults: Record<PieceField, string> = {
+                    fill: key[0] === "w" ? "#ffffff" : "#000000",
+                    stroke: key[0] === "w" ? "#000000" : "#ffffff",
+                    background: "#ffffff",
+                  };
+                  const value =
+                    draft.pieces?.specific?.[key]?.[field] ??
+                    (theme.pieces as any)?.specific?.[key]?.[field] ??
+                    defaults[field];
+                  return (
+                    <div key={field} style={row}>
+                      <div
+                        style={{
+                          ...label,
+                          minWidth: 110,
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        {field}
+                      </div>
+                      <input
+                        type="color"
+                        value={value}
+                        onChange={onSpecificPieceChange(key, field)}
+                        style={inputColor}
+                      />
+                    </div>
+                  );
+                })}
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <button
+                    type="button"
+                    onClick={() => clearSpecificPiece(key)}
+                    style={{
+                      padding: "4px 8px",
+                      borderRadius: 6,
+                      border: "1px solid #e2e8f0",
+                      background: "#f8fafc",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Clear overrides
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div
+        style={{
+          ...card,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div style={{ width: 520, maxWidth: "100%" }}>
+          <ChessGame.Root theme={theme}>
+            <ChessGame.Board />
+          </ChessGame.Root>
+        </div>
       </div>
     </div>
-  );
-};
-
-/**
- * Theme Playground Component for Storybook
- * Provides an interactive interface for customizing chess game themes
- * Includes error boundary for graceful error handling
- */
-export const ThemePlayground: React.FC = () => {
-  return (
-    <ThemeErrorBoundary>
-      <ThemePlaygroundCore />
-    </ThemeErrorBoundary>
   );
 };
