@@ -64,6 +64,24 @@ export const BoardControlsPanel: React.FC<BoardControlsPanelProps> = ({
     [colors],
   );
 
+  const lightSquareContrast = React.useMemo(
+    () =>
+      checkContrastCompliance(
+        theme.notation?.lightSquareColor || "#000000",
+        theme.colors.lightSquare,
+      ),
+    [theme.notation?.lightSquareColor, theme.colors.lightSquare],
+  );
+
+  const darkSquareContrast = React.useMemo(
+    () =>
+      checkContrastCompliance(
+        theme.notation?.darkSquareColor || "#ffffff",
+        theme.colors.darkSquare,
+      ),
+    [theme.notation?.darkSquareColor, theme.colors.darkSquare],
+  );
+
   if (!isVisible) return null;
 
   return (
@@ -140,36 +158,18 @@ export const BoardControlsPanel: React.FC<BoardControlsPanelProps> = ({
         }}
       >
         <h4 style={modernStyles.sectionTitle}>🔍 Contrast Validation</h4>
-        {React.useMemo(() => {
-          const lightSquareContrast = checkContrastCompliance(
-            theme.notation?.lightSquareColor || "#000000",
-            theme.colors.lightSquare,
-          );
-          const darkSquareContrast = checkContrastCompliance(
-            theme.notation?.darkSquareColor || "#ffffff",
-            theme.colors.darkSquare,
-          );
-
-          return (
-            <>
-              <ContrastIndicator
-                label="Light Square Notation"
-                result={lightSquareContrast}
-                colors={colors}
-              />
-              <ContrastIndicator
-                label="Dark Square Notation"
-                result={darkSquareContrast}
-                colors={colors}
-              />
-            </>
-          );
-        }, [
-          theme.colors.lightSquare,
-          theme.colors.darkSquare,
-          theme.notation,
-          colors,
-        ])}
+        <>
+          <ContrastIndicator
+            label="Light Square Notation"
+            result={lightSquareContrast}
+            colors={colors}
+          />
+          <ContrastIndicator
+            label="Dark Square Notation"
+            result={darkSquareContrast}
+            colors={colors}
+          />
+        </>
       </div>
     </div>
   );

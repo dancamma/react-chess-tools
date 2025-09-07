@@ -11,12 +11,7 @@ import {
   buildThemeColors,
   buildThemePieces,
 } from "../lib/themeTypes";
-import {
-  rgbToHex,
-  parseRgba,
-  rgbaStringFromHexAlpha,
-  hexToRgb,
-} from "../lib/colorUtils";
+import { rgbToHex, parseRgba, rgbaStringFromHexAlpha } from "../lib/colorUtils";
 import { ThemeErrorBoundary } from "./ThemeErrorBoundary";
 import { ThemePresetGrid } from "./ThemePresetGrid";
 import { TabNavigation } from "./TabNavigation";
@@ -34,8 +29,6 @@ import { BoardPreview } from "./BoardPreview";
 const ThemePlaygroundCore: React.FC = () => {
   const [base, setBase] = React.useState<keyof typeof themes>("classic");
   const [draft, setDraft] = React.useState<ThemeDraft>({});
-  const [history, setHistory] = React.useState<ThemeDraft[]>([]);
-  const [historyIndex, setHistoryIndex] = React.useState(-1);
   const [activeTab, setActiveTab] = React.useState<ThemePlaygroundTab>("board");
   const [isMobile, setIsMobile] = React.useState(false);
   const [copyFeedback, setCopyFeedback] = React.useState("");
@@ -335,121 +328,10 @@ const ThemePlaygroundCore: React.FC = () => {
     [isMobile, currentColors],
   );
 
-  // Event handlers with history tracking - memoized to prevent unnecessary re-renders
-  const updateDraft = React.useCallback(
-    (newDraft: ThemeDraft) => {
-      setHistory((prev) => [...prev.slice(0, historyIndex + 1), draft]);
-      setHistoryIndex((prev) => prev + 1);
-      setDraft(newDraft);
-    },
-    [historyIndex, draft],
-  );
-
-  const undo = React.useCallback(() => {
-    if (historyIndex >= 0) {
-      setDraft(history[historyIndex]);
-      setHistoryIndex((prev) => prev - 1);
-    }
-  }, [historyIndex, history]);
-
-  // Keyboard shortcuts and navigation
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Global shortcuts
-      if (e.ctrlKey || e.metaKey) {
-        switch (e.key) {
-          case "z":
-            e.preventDefault();
-            undo();
-            break;
-        }
-      }
-
-      // Tab navigation between sections
-      if (e.key === "Tab" && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
-        const tabs = ["board", "highlights", "pieces", "advanced"] as const;
-        const currentIndex = tabs.indexOf(activeTab);
-        const focusedElement = document.activeElement;
-
-        // If focused on last interactive element in current tab, move to next tab
-        if (
-          focusedElement &&
-          focusedElement.matches(
-            'input[type="color"], input[type="range"], input[type="checkbox"], button',
-          )
-        ) {
-          const nextTab = tabs[(currentIndex + 1) % tabs.length];
-          if (
-            currentIndex === tabs.length - 1 ||
-            (focusedElement.closest('[role="tabpanel"]') &&
-              !focusedElement.nextElementSibling)
-          ) {
-            e.preventDefault();
-            setActiveTab(nextTab);
-          }
-        }
-      }
-
-      // Arrow key navigation for color inputs
-      if (e.target instanceof HTMLInputElement && e.target.type === "color") {
-        const step = e.shiftKey ? 10 : 1;
-        let handled = false;
-
-        switch (e.key) {
-          case "ArrowUp":
-          case "ArrowRight":
-            e.preventDefault();
-            adjustColorBrightness(e.target, step);
-            handled = true;
-            break;
-          case "ArrowDown":
-          case "ArrowLeft":
-            e.preventDefault();
-            adjustColorBrightness(e.target, -step);
-            handled = true;
-            break;
-        }
-
-        if (handled) {
-          // Trigger change event to update theme
-          e.target.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-      }
-
-      // Arrow key navigation for range inputs
-      if (e.target instanceof HTMLInputElement && e.target.type === "range") {
-        const currentValue = parseFloat(e.target.value);
-        const min = parseFloat(e.target.min) || 0;
-        const max = parseFloat(e.target.max) || 1;
-        const step = parseFloat(e.target.step) || 0.01;
-        const adjustStep = e.shiftKey ? step * 10 : step;
-
-        switch (e.key) {
-          case "ArrowUp":
-          case "ArrowRight":
-            e.preventDefault();
-            e.target.value = Math.min(
-              max,
-              currentValue + adjustStep,
-            ).toString();
-            e.target.dispatchEvent(new Event("change", { bubbles: true }));
-            break;
-          case "ArrowDown":
-          case "ArrowLeft":
-            e.preventDefault();
-            e.target.value = Math.max(
-              min,
-              currentValue - adjustStep,
-            ).toString();
-            e.target.dispatchEvent(new Event("change", { bubbles: true }));
-            break;
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [undo, activeTab]);
+  // Event handlers - memoized to prevent unnecessary re-renders
+  const updateDraft = React.useCallback((newDraft: ThemeDraft) => {
+    setDraft(newDraft);
+  }, []);
 
   const setColor = React.useCallback(
     (field: keyof ChessTheme["colors"]) =>
@@ -561,47 +443,6 @@ const ThemePlaygroundCore: React.FC = () => {
     setBase("classic");
   }, [updateDraft]);
 
-  // Utility function for keyboard navigation of color inputs
-  const adjustColorBrightness = React.useCallback(
-    (input: HTMLInputElement, step: number) => {
-      try {
-        const currentColor = input.value;
-        const rgb = hexToRgb(currentColor);
-
-        if (!rgb) return;
-
-        // Adjust brightness by modifying HSL lightness
-        const { r, g, b } = rgb;
-        const max = Math.max(r, g, b) / 255;
-        const min = Math.min(r, g, b) / 255;
-        const lightness = (max + min) / 2;
-
-        // Calculate new lightness (0-100 scale for easier adjustment)
-        const newLightness = Math.max(0, Math.min(100, lightness * 100 + step));
-        const lightnessFactor = newLightness / 100 / (lightness || 0.01);
-
-        // Apply lightness adjustment to RGB components
-        const newR = Math.max(
-          0,
-          Math.min(255, Math.round(r * lightnessFactor)),
-        );
-        const newG = Math.max(
-          0,
-          Math.min(255, Math.round(g * lightnessFactor)),
-        );
-        const newB = Math.max(
-          0,
-          Math.min(255, Math.round(b * lightnessFactor)),
-        );
-
-        input.value = rgbToHex(newR, newG, newB);
-      } catch (error) {
-        console.warn("Failed to adjust color brightness:", error);
-      }
-    },
-    [],
-  );
-
   return (
     <div style={modernStyles.container}>
       <div style={modernStyles.layout}>
@@ -655,12 +496,10 @@ const ThemePlaygroundCore: React.FC = () => {
 
           {/* Action Buttons */}
           <ActionButtonsPanel
-            onUndo={undo}
             onReset={resetTheme}
             onExport={exportTheme}
             onCopy={copyThemeCode}
             copyFeedback={copyFeedback}
-            canUndo={historyIndex >= 0}
             colors={currentColors}
             isMobile={isMobile}
           />

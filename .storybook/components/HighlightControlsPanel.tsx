@@ -90,6 +90,33 @@ export const HighlightControlsPanel: React.FC<HighlightControlsPanelProps> = ({
     [colors, isMobile],
   );
 
+  const highlightParsed = React.useMemo(() => {
+    const keys = ["lastMove", "check", "validMove", "validCapture"] as const;
+    const result: Record<
+      (typeof keys)[number],
+      { parsed: { r: number; g: number; b: number; a: number }; hex: string }
+    > = {
+      lastMove: { parsed: { r: 0, g: 0, b: 0, a: 1 }, hex: "#000000" },
+      check: { parsed: { r: 0, g: 0, b: 0, a: 1 }, hex: "#000000" },
+      validMove: { parsed: { r: 0, g: 0, b: 0, a: 1 }, hex: "#000000" },
+      validCapture: { parsed: { r: 0, g: 0, b: 0, a: 1 }, hex: "#000000" },
+    };
+
+    keys.forEach((key) => {
+      const current = theme.colors.highlight[key];
+      const parsed = parseRgba(current) || { r: 0, g: 0, b: 0, a: 1 };
+      const hex = rgbToHex(parsed.r, parsed.g, parsed.b);
+      result[key] = { parsed, hex };
+    });
+
+    return result;
+  }, [
+    theme.colors.highlight.lastMove,
+    theme.colors.highlight.check,
+    theme.colors.highlight.validMove,
+    theme.colors.highlight.validCapture,
+  ]);
+
   if (!isVisible) return null;
 
   return (
@@ -102,22 +129,7 @@ export const HighlightControlsPanel: React.FC<HighlightControlsPanelProps> = ({
       <h4 style={modernStyles.sectionTitle}>Highlight Effects</h4>
       {(["lastMove", "check", "validMove", "validCapture"] as const).map(
         (key) => {
-          const current = theme.colors.highlight[key];
-          // Memoize color parsing to avoid expensive calculations on every render
-          const { parsed, hex } = React.useMemo(() => {
-            const parsedColor = parseRgba(current) || {
-              r: 0,
-              g: 0,
-              b: 0,
-              a: 1,
-            };
-            const hexColor = rgbToHex(
-              parsedColor.r,
-              parsedColor.g,
-              parsedColor.b,
-            );
-            return { parsed: parsedColor, hex: hexColor };
-          }, [current]);
+          const { parsed, hex } = highlightParsed[key];
           return (
             <div key={key}>
               <div style={modernStyles.controlRow}>

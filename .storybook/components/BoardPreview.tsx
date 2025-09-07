@@ -85,63 +85,6 @@ export const BoardPreview: React.FC<BoardPreviewProps> = ({
           <ChessGame.Board />
         </ChessGame.Root>
       </div>
-
-      <div
-        style={modernStyles.themeInfo}
-        role="complementary"
-        aria-labelledby="keyboard-help-heading"
-      >
-        <div
-          id="keyboard-help-heading"
-          style={{ fontWeight: 600, marginBottom: "8px" }}
-        >
-          ⌨️ Keyboard Navigation & Tips
-        </div>
-        <div style={{ opacity: 0.8, lineHeight: 1.4 }}>
-          {isMobile ? (
-            <>
-              <div style={{ marginBottom: "4px" }}>
-                • <kbd>Ctrl+Z</kbd>: Undo changes
-              </div>
-              <div style={{ marginBottom: "4px" }}>
-                • <kbd>Tab</kbd>: Navigate between controls
-              </div>
-              <div style={{ marginBottom: "4px" }}>
-                • Touch & hold color inputs for precise selection
-              </div>
-              <div
-                style={{
-                  fontSize: "11px",
-                  fontStyle: "italic",
-                  marginTop: "8px",
-                }}
-              >
-                💡 Use larger touch targets for easier interaction
-              </div>
-            </>
-          ) : (
-            <>
-              <div style={{ marginBottom: "4px" }}>
-                • <kbd>Ctrl+Z</kbd>: Undo • <kbd>Tab</kbd>: Navigate sections
-              </div>
-              <div style={{ marginBottom: "4px" }}>
-                • <kbd>↑↓←→</kbd>: Adjust colors/opacity •{" "}
-                <kbd>Shift+Arrow</kbd>: Fine adjust
-              </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  fontStyle: "italic",
-                  marginTop: "8px",
-                }}
-              >
-                💡 Hover over controls for detailed tooltips • Check contrast
-                indicators for WCAG compliance
-              </div>
-            </>
-          )}
-        </div>
-      </div>
     </div>
   );
 };
