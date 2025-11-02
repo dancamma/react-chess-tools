@@ -16,6 +16,7 @@ export type { KeyboardControls } from "./components/ChessGame/parts/KeyboardCont
 
 // Utility Types
 export type { GameInfo } from "./utils/chess";
+export { deepMergeChessboardOptions } from "./utils/board";
 
 // Component Props
 export type { ChessGameProps } from "./components/ChessGame/parts/Board";
