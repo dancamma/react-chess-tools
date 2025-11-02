@@ -67,6 +67,33 @@ export const Example = (args: RootProps) => {
   );
 };
 
+export const WithOrientation = (args: RootProps) => {
+  const [puzzleIndex, setPuzzleIndex] = React.useState(0);
+  const puzzle = {
+    fen: "4kbnr/2p1pp1p/pp4p1/5b2/8/2NB1N2/PP3PPP/RKB4R b k - 0 1",
+    makeFirstMove: false,
+    moves: ["Bxd3"],
+  };
+  return (
+    <div>
+      <ChessPuzzle.Root {...args} puzzle={puzzle}>
+        <ChessPuzzle.Board options={{ boardOrientation: "black" }} />
+        <ChessPuzzle.Reset asChild>
+          <button>restart</button>
+        </ChessPuzzle.Reset>
+        <ChessPuzzle.Reset
+          asChild
+          puzzle={puzzle}
+          onReset={() => setPuzzleIndex((puzzleIndex + 1) % puzzles.length)}
+        >
+          <button>next</button>
+        </ChessPuzzle.Reset>
+        <ChessPuzzle.Hint>hint</ChessPuzzle.Hint>
+      </ChessPuzzle.Root>
+    </div>
+  );
+};
+
 export const Underpromotion = (args: RootProps) => {
   const puzzle = {
     fen: "8/8/5R1p/8/3pb1P1/kpKp4/8/8 w - - 0 54",
