@@ -1,5 +1,11 @@
 # @react-chess-tools/react-chess-game
 
+## 0.5.2
+
+### Patch Changes
+
+- 9d33423: Fix PuzzleBoard options merging
+
 ## 0.5.1
 
 ### Patch Changes

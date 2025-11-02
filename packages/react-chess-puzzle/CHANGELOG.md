@@ -1,5 +1,13 @@
 # @react-chess-tools/react-chess-puzzle
 
+## 0.6.2
+
+### Patch Changes
+
+- 9d33423: Fix PuzzleBoard options merging
+- Updated dependencies [9d33423]
+  - @react-chess-tools/react-chess-game@0.5.2
+
 ## 0.6.1
 
 ### Patch Changes
