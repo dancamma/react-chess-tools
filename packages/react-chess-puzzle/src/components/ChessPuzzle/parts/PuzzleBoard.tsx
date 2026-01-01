@@ -7,8 +7,9 @@ import {
 import { getCustomSquareStyles, stringToMove } from "../../../utils";
 import { useChessPuzzleContext } from "../../..";
 
-export interface PuzzleBoardProps
-  extends React.ComponentProps<typeof ChessGame.Board> {}
+export interface PuzzleBoardProps extends React.ComponentProps<
+  typeof ChessGame.Board
+> {}
 export const PuzzleBoard: React.FC<PuzzleBoardProps> = ({
   options = {},
   ...rest
