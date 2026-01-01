@@ -8,9 +8,17 @@ import _ from "lodash";
  * @returns A new Chess.js instance with the same state as the original.
  */
 export const cloneGame = (game: Chess) => {
-  const copy = new Chess();
-  copy.loadPgn(game.pgn());
-  return copy;
+  try {
+    const copy = new Chess();
+    const pgn = game?.pgn();
+    if (pgn) {
+      copy.loadPgn(pgn);
+    }
+    return copy;
+  } catch (e) {
+    console.error("Failed to clone game:", e);
+    return new Chess();
+  }
 };
 
 /**
@@ -74,6 +82,10 @@ export const requiresPromotion = (
   game: Chess,
   move: Parameters<Chess["move"]>[0],
 ) => {
+  if (!game) {
+    throw new Error("Game is required");
+  }
+
   try {
     const copy = cloneGame(game);
     const result = copy.move(move);
@@ -100,13 +112,21 @@ export const getCurrentFen = (
   const tempGame = new Chess();
   if (currentMoveIndex === -1) {
     if (fen) {
-      tempGame.load(fen);
+      try {
+        tempGame.load(fen);
+      } catch (e) {
+        console.error("Failed to load FEN in getCurrentFen:", fen, e);
+      }
     }
   } else {
     const moves = game.history().slice(0, currentMoveIndex + 1);
 
     if (fen) {
-      tempGame.load(fen);
+      try {
+        tempGame.load(fen);
+      } catch (e) {
+        console.error("Failed to load FEN in getCurrentFen:", fen, e);
+      }
     }
     moves.forEach((move) => tempGame.move(move));
   }

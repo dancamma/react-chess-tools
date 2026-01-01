@@ -33,13 +33,13 @@
   "license": "MIT",
   "dependencies": {
     "@react-chess-tools/react-chess-game": "0.5.2",
-    "chess.js": "^1.0.0-beta.8",
+    "chess.js": "^1.4.0",
     "lodash": "^4.17.21"
   },
   "devDependencies": {
-    "@types/lodash": "^4.17.15",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "@types/lodash": "^4.17.21",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
   },
   "peerDependencies": {
     "react": ">=16.14.0",

@@ -11,10 +11,22 @@ export const useChessGame = ({
   fen,
   orientation: initialOrientation,
 }: useChessGameProps = {}) => {
-  const [game, setGame] = React.useState(new Chess(fen));
+  const [game, setGame] = React.useState(() => {
+    try {
+      return new Chess(fen);
+    } catch (e) {
+      console.error("Invalid FEN:", fen, e);
+      return new Chess(); // Return empty board
+    }
+  });
 
   useEffect(() => {
-    setGame(new Chess(fen));
+    try {
+      setGame(new Chess(fen));
+    } catch (e) {
+      console.error("Invalid FEN:", fen, e);
+      setGame(new Chess());
+    }
   }, [fen]);
 
   const [orientation, setOrientation] = React.useState<Color>(
@@ -44,11 +56,15 @@ export const useChessGame = ({
   );
 
   const setPosition = React.useCallback((fen: string, orientation: Color) => {
-    const newGame = new Chess();
-    newGame.load(fen);
-    setOrientation(orientation);
-    setGame(newGame);
-    setCurrentMoveIndex(-1);
+    try {
+      const newGame = new Chess();
+      newGame.load(fen);
+      setOrientation(orientation);
+      setGame(newGame);
+      setCurrentMoveIndex(-1);
+    } catch (e) {
+      console.error("Failed to load FEN:", fen, e);
+    }
   }, []);
 
   const makeMove = React.useCallback(
