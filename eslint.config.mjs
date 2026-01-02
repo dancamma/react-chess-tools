@@ -1,40 +1,34 @@
-import typescriptEslint from "@typescript-eslint/eslint-plugin";
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
 import react from "eslint-plugin-react";
 import globals from "globals";
-import tsParser from "@typescript-eslint/parser";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import js from "@eslint/js";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-});
 
 export default [
-  ...compat.extends(
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended",
-  ),
+  { ignores: ["**/dist/*", "**/coverage/*"] },
+
+  // Base JavaScript rules
+  js.configs.recommended,
+
+  // TypeScript recommended rules (new v8 approach)
+  ...tseslint.configs.recommended,
+
+  // React + TypeScript rules
   {
     plugins: {
-      "@typescript-eslint": typescriptEslint,
       react,
     },
 
     languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        project: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
       globals: {
         ...globals.browser,
       },
-
-      parser: tsParser,
-      ecmaVersion: "latest",
-      sourceType: "module",
     },
 
     settings: {
@@ -45,21 +39,36 @@ export default [
 
     rules: {
       "react/prop-types": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrors: "none",
+        },
+      ],
+      "@typescript-eslint/no-empty-object-type": "off",
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
-  {
-    files: ["**/.eslintrc.{js,cjs}"],
 
+  // Config files not in TypeScript project - disable type-aware linting
+  {
+    files: [
+      ".storybook/**/*.{js,ts}",
+      "jest.config.js",
+      "jest.setup.js",
+      "tsup.config.ts",
+      "eslint.config.mjs",
+    ],
     languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        project: null,
+      },
       globals: {
         ...globals.node,
       },
-
-      ecmaVersion: 5,
-      sourceType: "commonjs",
     },
-  },
-  {
-    ignores: ["**/dist/*"],
   },
 ];
