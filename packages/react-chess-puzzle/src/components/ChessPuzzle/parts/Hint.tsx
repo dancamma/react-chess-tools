@@ -4,6 +4,10 @@ import { useChessPuzzleContext } from "../../..";
 
 export interface HintProps {
   asChild?: boolean;
+  /**
+   * The puzzle statuses in which the hint button should be visible.
+   * @default ["not-started", "in-progress"]
+   */
   showOn?: Status[];
 }
 

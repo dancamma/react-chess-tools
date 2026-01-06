@@ -73,7 +73,7 @@ function App() {
     <ChessPuzzle.Root puzzle={puzzle}>
       <ChessPuzzle.Board />
       <ChessPuzzle.Reset>Restart</ChessPuzzle.Reset>
-      <ChessPuzzle.Hint showOn={["in-progress"]}>Get Hint</ChessPuzzle.Hint>
+      <ChessPuzzle.Hint>Get Hint</ChessPuzzle.Hint>
     </ChessPuzzle.Root>
   );
 }
@@ -203,7 +203,7 @@ const puzzle = {
 
 <ChessPuzzle.Root puzzle={puzzle}>
   <ChessPuzzle.Board />
-  <ChessPuzzle.Hint showOn={["in-progress", "not-started"]}>
+  <ChessPuzzle.Hint>
     Show Hint
   </ChessPuzzle.Hint>
 </ChessPuzzle.Root>
@@ -425,7 +425,7 @@ function PuzzleTrainer() {
 
         <div className="controls">
           <ChessPuzzle.Reset>Restart</ChessPuzzle.Reset>
-          <ChessPuzzle.Hint showOn={["in-progress"]}>Hint</ChessPuzzle.Hint>
+          <ChessPuzzle.Hint>Hint</ChessPuzzle.Hint>
           <ChessPuzzle.Reset puzzle={puzzles[(currentIndex + 1) % puzzles.length]}>
             Skip
           </ChessPuzzle.Reset>

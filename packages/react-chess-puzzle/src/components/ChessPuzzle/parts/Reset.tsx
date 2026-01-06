@@ -6,6 +6,10 @@ export interface ResetProps {
   asChild?: boolean;
   puzzle?: Puzzle;
   onReset?: (puzzleContext: ChessPuzzleContextType) => void;
+  /**
+   * The puzzle statuses in which the reset button should be visible.
+   * @default ["failed", "solved"]
+   */
   showOn?: Status[];
 }
 
