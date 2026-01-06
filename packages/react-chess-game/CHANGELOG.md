@@ -1,5 +1,20 @@
 # @react-chess-tools/react-chess-game
 
+## 1.0.0
+
+### Major Changes
+
+- b8f72df: Add comprehensive theming system with ThemeProvider, preset themes (Default, Lichess, Chess.com), Storybook documentation with interactive playgrounds, and comprehensive tests.
+
+### Minor Changes
+
+- 8f16568: Add dual package ESM + CJS support with conditional exports for better compatibility across different environments and build tools.
+- 15482ec: Upgrade dependencies including ESLint 9, TypeScript-ESLint 8, Jest 30, React 19.2.3, chess.js 1.4.0, and more.
+
+### Patch Changes
+
+- b38be2f: Add automated release workflow with modern CI/CD pipeline. Fix changesets config and simplify package.json scripts.
+
 ## 0.5.2
 
 ### Patch Changes
