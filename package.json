@@ -12,8 +12,10 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "npm run build && storybook build",
     "prepare": "husky install",
-    "release": "npm run build && changeset version",
-    "publish": "npm run build && changeset publish",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "prerelease": "npm run build",
+    "release": "changeset publish",
     "lint": "eslint ."
   },
   "keywords": [],
