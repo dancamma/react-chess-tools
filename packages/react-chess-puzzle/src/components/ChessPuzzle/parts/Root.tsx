@@ -6,14 +6,26 @@ import {
 } from "../../../hooks/useChessPuzzle";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 import { ChessPuzzleContext } from "../../../hooks/useChessPuzzleContext";
+import { PuzzleThemeProvider } from "../../../theme/context";
+import { mergePuzzleTheme } from "../../../theme/utils";
+import type { PartialChessPuzzleTheme } from "../../../theme/types";
 
 export interface RootProps {
   puzzle: Puzzle;
   onSolve?: (puzzleContext: ChessPuzzleContextType) => void;
   onFail?: (puzzleContext: ChessPuzzleContextType) => void;
+  /** Optional theme configuration. Supports partial themes - only override the colors you need. */
+  theme?: PartialChessPuzzleTheme;
 }
 
-const PuzzleRoot: React.FC<React.PropsWithChildren<RootProps>> = ({
+interface PuzzleRootInnerProps {
+  puzzle: Puzzle;
+  onSolve?: (puzzleContext: ChessPuzzleContextType) => void;
+  onFail?: (puzzleContext: ChessPuzzleContextType) => void;
+  children: React.ReactNode;
+}
+
+const PuzzleRootInner: React.FC<PuzzleRootInnerProps> = ({
   puzzle,
   onSolve,
   onFail,
@@ -32,13 +44,23 @@ export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
   puzzle,
   onSolve,
   onFail,
+  theme,
   children,
 }) => {
+  // Merge partial theme with defaults
+  const mergedTheme = React.useMemo(() => mergePuzzleTheme(theme), [theme]);
+
   return (
-    <ChessGame.Root fen={puzzle.fen} orientation={getOrientation(puzzle)}>
-      <PuzzleRoot puzzle={puzzle} onSolve={onSolve} onFail={onFail}>
-        {children}
-      </PuzzleRoot>
+    <ChessGame.Root
+      fen={puzzle.fen}
+      orientation={getOrientation(puzzle)}
+      theme={mergedTheme}
+    >
+      <PuzzleThemeProvider theme={mergedTheme}>
+        <PuzzleRootInner puzzle={puzzle} onSolve={onSolve} onFail={onFail}>
+          {children}
+        </PuzzleRootInner>
+      </PuzzleThemeProvider>
     </ChessGame.Root>
   );
 };

@@ -21,3 +21,22 @@ export { deepMergeChessboardOptions } from "./utils/board";
 // Component Props
 export type { ChessGameProps } from "./components/ChessGame/parts/Board";
 export type { RootProps } from "./components/ChessGame/parts/Root";
+
+// Theme - Types
+export type {
+  ChessGameTheme,
+  BoardTheme,
+  StateTheme,
+  IndicatorTheme,
+  PartialChessGameTheme,
+  DeepPartial,
+} from "./theme/types";
+
+// Theme - Values
+export { defaultGameTheme } from "./theme/defaults";
+export { lichessTheme, chessComTheme } from "./theme/presets";
+export { themes } from "./theme";
+
+// Theme - Utilities
+export { mergeTheme, mergeThemeWith } from "./theme/utils";
+export { useChessGameTheme, ChessGameThemeContext } from "./theme/context";

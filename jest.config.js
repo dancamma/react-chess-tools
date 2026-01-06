@@ -10,6 +10,10 @@ module.exports = {
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   moduleNameMapper: {
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+    "^@react-chess-tools/react-chess-game$":
+      "<rootDir>/packages/react-chess-game/src/index.ts",
+    "^@react-chess-tools/react-chess-puzzle$":
+      "<rootDir>/packages/react-chess-puzzle/src/index.ts",
   },
   collectCoverage: true,
   collectCoverageFrom: [

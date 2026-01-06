@@ -1,6 +1,8 @@
 import { Chess } from "chess.js";
 import { getCustomSquareStyles, deepMergeChessboardOptions } from "../board";
 import { getGameInfo } from "../chess";
+import { defaultGameTheme } from "../../theme/defaults";
+import type { ChessGameTheme } from "../../theme/types";
 
 describe("Board Utilities", () => {
   describe("getCustomSquareStyles", () => {
@@ -138,6 +140,122 @@ describe("Board Utilities", () => {
       expect(styles).toHaveProperty("c3");
       expect(styles.a3.background).toContain("25%");
       expect(styles.c3.background).toContain("25%");
+    });
+
+    describe("with custom theme", () => {
+      const customTheme: ChessGameTheme = {
+        ...defaultGameTheme,
+        state: {
+          ...defaultGameTheme.state,
+          lastMove: "rgba(100, 200, 100, 0.6)",
+          check: "rgba(200, 50, 50, 0.7)",
+          activeSquare: "rgba(100, 100, 255, 0.5)",
+        },
+        indicators: {
+          move: "rgba(50, 50, 50, 0.2)",
+          capture: "rgba(200, 50, 50, 0.3)",
+        },
+      };
+
+      it("should use custom theme colors for last move", () => {
+        const game = new Chess();
+        game.move("e4");
+        const orientation = "w";
+        const info = getGameInfo(game, orientation);
+        const activeSquare = null;
+
+        const styles = getCustomSquareStyles(
+          game,
+          info,
+          activeSquare,
+          customTheme,
+        );
+
+        expect(styles.e2).toHaveProperty(
+          "backgroundColor",
+          "rgba(100, 200, 100, 0.6)",
+        );
+        expect(styles.e4).toHaveProperty(
+          "backgroundColor",
+          "rgba(100, 200, 100, 0.6)",
+        );
+      });
+
+      it("should use custom theme colors for active square", () => {
+        const game = new Chess();
+        const orientation = "w";
+        const info = getGameInfo(game, orientation);
+        const activeSquare = "e2";
+
+        const styles = getCustomSquareStyles(
+          game,
+          info,
+          activeSquare,
+          customTheme,
+        );
+
+        expect(styles.e2).toHaveProperty(
+          "backgroundColor",
+          "rgba(100, 100, 255, 0.5)",
+        );
+      });
+
+      it("should use custom theme colors for check", () => {
+        const game = new Chess(
+          "rnbqkbnr/ppp2ppp/8/3pp3/4P3/5Q2/PPPP1PPP/RNB1KBNR b KQkq - 1 3",
+        );
+        const orientation = "b";
+        const info = getGameInfo(game, orientation);
+        const modifiedInfo = { ...info, isCheck: true };
+        const activeSquare = null;
+
+        const styles = getCustomSquareStyles(
+          game,
+          modifiedInfo,
+          activeSquare,
+          customTheme,
+        );
+
+        expect(styles.e8).toHaveProperty(
+          "backgroundColor",
+          "rgba(200, 50, 50, 0.7)",
+        );
+      });
+
+      it("should use custom theme colors for move indicators", () => {
+        const game = new Chess();
+        const orientation = "w";
+        const info = getGameInfo(game, orientation);
+        const activeSquare = "e2";
+
+        const styles = getCustomSquareStyles(
+          game,
+          info,
+          activeSquare,
+          customTheme,
+        );
+
+        expect(styles.e3.background).toContain("rgba(50, 50, 50, 0.2)");
+        expect(styles.e4.background).toContain("rgba(50, 50, 50, 0.2)");
+      });
+
+      it("should use custom theme colors for capture indicators", () => {
+        const game = new Chess(
+          "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+        );
+        const orientation = "w";
+        const info = getGameInfo(game, orientation);
+        const activeSquare = "e4";
+
+        const styles = getCustomSquareStyles(
+          game,
+          info,
+          activeSquare,
+          customTheme,
+        );
+
+        expect(styles.d5.background).toContain("rgba(200, 50, 50, 0.3)");
+      });
     });
   });
 

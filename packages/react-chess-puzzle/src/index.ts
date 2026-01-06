@@ -13,3 +13,17 @@ export type { HintProps } from "./components/ChessPuzzle/parts/Hint";
 export type { ResetProps } from "./components/ChessPuzzle/parts/Reset";
 export type { PuzzleBoardProps } from "./components/ChessPuzzle/parts/PuzzleBoard";
 export type { RootProps } from "./components/ChessPuzzle/parts/Root";
+
+// Theme - Types
+export type {
+  ChessPuzzleTheme,
+  PuzzleStateTheme,
+  PartialChessPuzzleTheme,
+} from "./theme/types";
+
+// Theme - Values
+export { defaultPuzzleTheme } from "./theme/defaults";
+
+// Theme - Utilities
+export { mergePuzzleTheme } from "./theme/utils";
+export { useChessPuzzleTheme, ChessPuzzleThemeContext } from "./theme/context";
