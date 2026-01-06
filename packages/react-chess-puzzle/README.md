@@ -195,6 +195,12 @@ A button that highlights the next correct move on the board.
 #### Example
 
 ```tsx
+const puzzle = {
+  fen: "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+  moves: ["d2d4", "e5d4", "f3d4"],
+  makeFirstMove: false,
+};
+
 <ChessPuzzle.Root puzzle={puzzle}>
   <ChessPuzzle.Board />
   <ChessPuzzle.Hint showOn={["in-progress", "not-started"]}>
@@ -275,6 +281,11 @@ import { ChessPuzzle } from "@react-chess-tools/react-chess-puzzle";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 
 function PuzzleWithSounds() {
+  const puzzle = {
+    fen: "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+    moves: ["d2d4", "e5d4", "f3d4"],
+  };
+
   return (
     <ChessPuzzle.Root puzzle={puzzle}>
       <ChessGame.Sounds />
@@ -291,6 +302,11 @@ import { ChessPuzzle } from "@react-chess-tools/react-chess-puzzle";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 
 function PuzzleWithKeyboard() {
+  const puzzle = {
+    fen: "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+    moves: ["d2d4", "e5d4", "f3d4"],
+  };
+
   return (
     <ChessPuzzle.Root puzzle={puzzle}>
       <ChessGame.KeyboardControls />
@@ -438,13 +454,23 @@ function PuzzleStatusDisplay() {
   return <div className={`status ${puzzleState}`}>{messages[puzzleState]}</div>;
 }
 
+function ResetLabel() {
+  const { puzzleState } = useChessPuzzleContext();
+  return puzzleState === "solved" ? "Next Puzzle" : "Try Again";
+}
+
 function PuzzleWithStatus() {
+  const puzzle = {
+    fen: "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+    moves: ["d2d4", "e5d4", "f3d4"],
+  };
+
   return (
     <ChessPuzzle.Root puzzle={puzzle}>
       <PuzzleStatusDisplay />
       <ChessPuzzle.Board />
       <ChessPuzzle.Reset showOn={["solved", "failed"]}>
-        {({ puzzleState }) => (puzzleState === "solved" ? "Next Puzzle" : "Try Again")}
+        <ResetLabel />
       </ChessPuzzle.Reset>
     </ChessPuzzle.Root>
   );
