@@ -14,6 +14,7 @@
     "prepare": "husky install",
     "changeset": "changeset",
     "version": "changeset version",
+    "prerelease": "npm run build",
     "release": "changeset publish",
     "lint": "eslint ."
   },
