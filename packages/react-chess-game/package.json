@@ -2,9 +2,18 @@
   "name": "@react-chess-tools/react-chess-game",
   "version": "0.5.2",
   "description": "react-chess-game is a React component bridging chess.js with react-chessboard to offer a full-featured, ready-to-integrate chess board experience.",
-  "main": "dist/index.mjs",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.mts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsup src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
