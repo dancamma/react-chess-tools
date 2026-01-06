@@ -6,16 +6,19 @@ import {
 } from "@react-chess-tools/react-chess-game";
 import { getCustomSquareStyles, stringToMove } from "../../../utils";
 import { useChessPuzzleContext } from "../../..";
+import { useChessPuzzleTheme } from "../../../theme/context";
 
 export interface PuzzleBoardProps extends React.ComponentProps<
   typeof ChessGame.Board
 > {}
+
 export const PuzzleBoard: React.FC<PuzzleBoardProps> = ({
   options = {},
   ...rest
 }) => {
   const puzzleContext = useChessPuzzleContext();
   const gameContext = useChessGameContext();
+  const theme = useChessPuzzleTheme();
 
   if (!puzzleContext) {
     throw new Error("PuzzleContext not found");
@@ -34,6 +37,7 @@ export const PuzzleBoard: React.FC<PuzzleBoardProps> = ({
       isPlayerTurn,
       game,
       stringToMove(game, nextMove),
+      theme,
     ),
   });
 

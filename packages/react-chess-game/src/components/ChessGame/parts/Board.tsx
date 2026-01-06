@@ -12,6 +12,7 @@ import {
 } from "../../../utils/board";
 import { isLegalMove, requiresPromotion } from "../../../utils/chess";
 import { useChessGameContext } from "../../../hooks/useChessGameContext";
+import { useChessGameTheme } from "../../../theme/context";
 
 export interface ChessGameProps {
   options?: ChessboardOptions;
@@ -19,6 +20,7 @@ export interface ChessGameProps {
 
 export const Board: React.FC<ChessGameProps> = ({ options = {} }) => {
   const gameContext = useChessGameContext();
+  const theme = useChessGameTheme();
 
   if (!gameContext) {
     throw new Error("ChessGameContext not found");
@@ -121,18 +123,18 @@ export const Board: React.FC<ChessGameProps> = ({ options = {} }) => {
   }, [promotionMove, squareWidth, orientation]);
 
   const baseOptions: ChessboardOptions = {
-    squareStyles: getCustomSquareStyles(game, info, activeSquare),
+    squareStyles: getCustomSquareStyles(game, info, activeSquare, theme),
     boardOrientation: orientation === "b" ? "black" : "white",
     position: currentFen,
     showNotation: true,
     showAnimations: isLatestMove,
+    lightSquareStyle: theme.board.lightSquare,
+    darkSquareStyle: theme.board.darkSquare,
     canDragPiece: ({ piece }) => {
       if (isGameOver) return false;
       return piece.pieceType[0] === turn;
     },
-    dropSquareStyle: {
-      backgroundColor: "rgba(255, 255, 0, 0.4)",
-    },
+    dropSquareStyle: theme.state.dropSquare,
     onPieceDrag: ({ piece, square }) => {
       if (piece.pieceType[0] === turn) {
         setActiveSquare(square as Square);

@@ -3,14 +3,23 @@ import { type CSSProperties } from "react";
 import { merge } from "lodash";
 import type { ChessboardOptions } from "react-chessboard";
 import { getDestinationSquares, type GameInfo } from "./chess";
+import type { ChessGameTheme } from "../theme/types";
+import { defaultGameTheme } from "../theme/defaults";
 
-const LAST_MOVE_COLOR = "rgba(255, 255, 0, 0.5)";
-const CHECK_COLOR = "rgba(255, 0, 0, 0.5)";
-
+/**
+ * Generates custom square styles based on game state and theme.
+ *
+ * @param game - Chess.js game instance
+ * @param info - Game info containing lastMove, isCheck, turn
+ * @param activeSquare - Currently selected square (if any)
+ * @param theme - Theme configuration (defaults to defaultGameTheme)
+ * @returns Record of square names to CSS properties
+ */
 export const getCustomSquareStyles = (
   game: Chess,
   info: GameInfo,
   activeSquare: Square | null,
+  theme: ChessGameTheme = defaultGameTheme,
 ) => {
   const customSquareStyles: Record<string, CSSProperties> = {};
 
@@ -18,16 +27,16 @@ export const getCustomSquareStyles = (
 
   if (lastMove) {
     customSquareStyles[lastMove.from] = {
-      backgroundColor: LAST_MOVE_COLOR,
+      backgroundColor: theme.state.lastMove,
     };
     customSquareStyles[lastMove.to] = {
-      backgroundColor: LAST_MOVE_COLOR,
+      backgroundColor: theme.state.lastMove,
     };
   }
 
   if (activeSquare) {
     customSquareStyles[activeSquare] = {
-      backgroundColor: LAST_MOVE_COLOR,
+      backgroundColor: theme.state.activeSquare,
     };
   }
 
@@ -37,8 +46,8 @@ export const getCustomSquareStyles = (
       customSquareStyles[square] = {
         background:
           game.get(square) && game.get(square)?.color !== turn
-            ? "radial-gradient(circle, rgba(1, 0, 0, 0.1) 85%, transparent 85%)"
-            : "radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)",
+            ? `radial-gradient(circle, ${theme.indicators.capture} 85%, transparent 85%)`
+            : `radial-gradient(circle, ${theme.indicators.move} 25%, transparent 25%)`,
       };
     });
   }
@@ -48,7 +57,7 @@ export const getCustomSquareStyles = (
       return row.forEach((square) => {
         if (square?.type === "k" && square?.color === info.turn) {
           customSquareStyles[square.square] = {
-            backgroundColor: CHECK_COLOR,
+            backgroundColor: theme.state.check,
           };
         }
       });

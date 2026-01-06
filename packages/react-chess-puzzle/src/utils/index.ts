@@ -1,6 +1,8 @@
 import { type Color, Chess, Move } from "chess.js";
 import React, { CSSProperties, ReactElement, ReactNode } from "react";
 import _ from "lodash";
+import type { ChessPuzzleTheme } from "../theme/types";
+import { defaultPuzzleTheme } from "../theme/defaults";
 
 export type Status = "not-started" | "in-progress" | "solved" | "failed";
 
@@ -12,10 +14,6 @@ export type Puzzle = {
   // if the first move of the puzzle has to be made by the cpu, as in chess.com puzzles
   makeFirstMove?: boolean;
 };
-
-const FAIL_COLOR = "rgba(201, 52, 48, 0.5)";
-const SUCCESS_COLOR = "rgba(172, 206, 89, 0.5)";
-const HINT_COLOR = "rgba(27, 172, 166, 0.5)";
 
 export const getOrientation = (puzzle: Puzzle): Color => {
   const fen = puzzle.fen;
@@ -36,12 +34,24 @@ export const isClickableElement = (
   element: ReactNode,
 ): element is ClickableElement => React.isValidElement(element);
 
+/**
+ * Generates custom square styles for puzzle states based on theme.
+ *
+ * @param status - Current puzzle status
+ * @param hint - Current hint level
+ * @param isPlayerTurn - Whether it's the player's turn
+ * @param game - Chess.js game instance
+ * @param nextMove - The next expected move (for hints)
+ * @param theme - Theme configuration (defaults to defaultPuzzleTheme)
+ * @returns Record of square names to CSS properties
+ */
 export const getCustomSquareStyles = (
   status: Status,
   hint: Hint,
   isPlayerTurn: boolean,
   game: Chess,
   nextMove?: Move | null,
+  theme: ChessPuzzleTheme = defaultPuzzleTheme,
 ) => {
   const customSquareStyles: Record<string, CSSProperties> = {};
 
@@ -49,10 +59,10 @@ export const getCustomSquareStyles = (
 
   if (status === "failed" && lastMove) {
     customSquareStyles[lastMove.from] = {
-      backgroundColor: FAIL_COLOR,
+      backgroundColor: theme.puzzle.failure,
     };
     customSquareStyles[lastMove.to] = {
-      backgroundColor: FAIL_COLOR,
+      backgroundColor: theme.puzzle.failure,
     };
   }
 
@@ -61,17 +71,17 @@ export const getCustomSquareStyles = (
     (status === "solved" || (status !== "failed" && !isPlayerTurn))
   ) {
     customSquareStyles[lastMove.from] = {
-      backgroundColor: SUCCESS_COLOR,
+      backgroundColor: theme.puzzle.success,
     };
     customSquareStyles[lastMove.to] = {
-      backgroundColor: SUCCESS_COLOR,
+      backgroundColor: theme.puzzle.success,
     };
   }
 
   if (hint === "piece") {
     if (nextMove) {
       customSquareStyles[nextMove.from] = {
-        backgroundColor: HINT_COLOR,
+        backgroundColor: theme.puzzle.hint,
       };
     }
   }
@@ -79,10 +89,10 @@ export const getCustomSquareStyles = (
   if (hint === "move") {
     if (nextMove) {
       customSquareStyles[nextMove.from] = {
-        backgroundColor: HINT_COLOR,
+        backgroundColor: theme.puzzle.hint,
       };
       customSquareStyles[nextMove.to] = {
-        backgroundColor: HINT_COLOR,
+        backgroundColor: theme.puzzle.hint,
       };
     }
   }

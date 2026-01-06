@@ -1,0 +1,255 @@
+{/* Theming.mdx */}
+import { Meta, ColorPalette, ColorItem } from '@storybook/blocks';
+
+<Meta title="react-chess-puzzle/Theming" />
+
+# Puzzle Theming
+
+React Chess Puzzle extends the game theming system with puzzle-specific colors for hints, success, and failure states.
+
+## Quick Start
+
+Pass a theme to `ChessPuzzle.Root` to customize puzzle appearance:
+
+```tsx
+import { ChessPuzzle } from "@react-chess-tools/react-chess-puzzle";
+
+const puzzle = {
+  fen: "4kb1r/p2r1ppp/4qn2/1B2p1B1/4P3/1Q6/PPP2PPP/2KR4 w k - 0 1",
+  moves: ["Bxd7+", "Nxd7", "Qb8+", "Nxb8", "Rd8#"],
+};
+
+function App() {
+  return (
+    <ChessPuzzle.Root
+      puzzle={puzzle}
+      theme={{ puzzle: { hint: "rgba(255, 215, 0, 0.6)" } }}
+    >
+      <ChessPuzzle.Board />
+      <ChessPuzzle.Hint>Show Hint</ChessPuzzle.Hint>
+    </ChessPuzzle.Root>
+  );
+}
+```
+
+## Puzzle Theme Structure
+
+The puzzle theme extends `ChessGameTheme` with an additional `puzzle` section:
+
+```typescript
+interface ChessPuzzleTheme extends ChessGameTheme {
+  puzzle: {
+    success: string; // Color for correct moves (RGBA)
+    failure: string; // Color for incorrect moves (RGBA)
+    hint: string; // Color for hint squares (RGBA)
+  };
+}
+```
+
+## Puzzle-Specific Colors
+
+The puzzle theme adds three new color options:
+
+<table>
+  <thead>
+    <tr>
+      <th>Color</th>
+      <th>Usage</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>puzzle.success</code>
+      </td>
+      <td>Highlights squares when a correct move is made</td>
+    </tr>
+    <tr>
+      <td>
+        <code>puzzle.failure</code>
+      </td>
+      <td>Highlights squares when an incorrect move is made</td>
+    </tr>
+    <tr>
+      <td>
+        <code>puzzle.hint</code>
+      </td>
+      <td>Highlights the hint square(s) when hint is requested</td>
+    </tr>
+  </tbody>
+</table>
+
+## Creating a Custom Puzzle Theme
+
+You can customize both game and puzzle colors:
+
+```tsx
+import { ChessPuzzle } from "@react-chess-tools/react-chess-puzzle";
+import type { PartialChessPuzzleTheme } from "@react-chess-tools/react-chess-puzzle";
+
+const neonTheme: PartialChessPuzzleTheme = {
+  // Customize board colors (inherited from game theme)
+  board: {
+    lightSquare: { backgroundColor: "#2a2a2a" },
+    darkSquare: { backgroundColor: "#1a1a1a" },
+  },
+  // Customize game state colors
+  state: {
+    lastMove: "rgba(0, 255, 255, 0.4)",
+  },
+  // Customize puzzle-specific colors
+  puzzle: {
+    success: "rgba(0, 255, 127, 0.6)",
+    failure: "rgba(255, 0, 127, 0.6)",
+    hint: "rgba(0, 191, 255, 0.6)",
+  },
+};
+
+function App() {
+  return (
+    <ChessPuzzle.Root puzzle={puzzle} theme={neonTheme}>
+      <ChessPuzzle.Board />
+    </ChessPuzzle.Root>
+  );
+}
+```
+
+## Partial Theme Overrides
+
+Override only the puzzle colors you need:
+
+```tsx
+// Only change the hint color to gold
+const goldHint: PartialChessPuzzleTheme = {
+  puzzle: {
+    hint: "rgba(255, 215, 0, 0.6)",
+  },
+};
+
+// Only change success/failure colors
+const customFeedback: PartialChessPuzzleTheme = {
+  puzzle: {
+    success: "rgba(0, 200, 100, 0.7)",
+    failure: "rgba(200, 0, 50, 0.7)",
+  },
+};
+```
+
+## Theme Inheritance
+
+Puzzle themes inherit all game theme properties. You can:
+
+1. **Only specify puzzle colors** - game colors use defaults
+2. **Only specify game colors** - puzzle colors use defaults
+3. **Mix both** - customize any combination
+
+```tsx
+// Example: Custom board + default puzzle colors
+const customBoard: PartialChessPuzzleTheme = {
+  board: {
+    lightSquare: { backgroundColor: "#e8e8e8" },
+    darkSquare: { backgroundColor: "#4a4a4a" },
+  },
+};
+
+// Example: Default board + custom puzzle colors
+const customPuzzle: PartialChessPuzzleTheme = {
+  puzzle: {
+    success: "rgba(100, 255, 100, 0.5)",
+    failure: "rgba(255, 100, 100, 0.5)",
+    hint: "rgba(100, 100, 255, 0.5)",
+  },
+};
+```
+
+## Using Theme Utilities
+
+### mergePuzzleTheme
+
+Merge a partial puzzle theme with defaults:
+
+```tsx
+import {
+  mergePuzzleTheme,
+  defaultPuzzleTheme,
+} from "@react-chess-tools/react-chess-puzzle";
+
+const myTheme = mergePuzzleTheme({
+  puzzle: { hint: "rgba(255, 215, 0, 0.6)" },
+});
+// myTheme is now a complete ChessPuzzleTheme
+```
+
+### useChessPuzzleTheme Hook
+
+Access the current puzzle theme from any component:
+
+```tsx
+import { useChessPuzzleTheme } from "@react-chess-tools/react-chess-puzzle";
+
+function HintButton() {
+  const theme = useChessPuzzleTheme();
+
+  return (
+    <button style={{ backgroundColor: theme.puzzle.hint }}>Show Hint</button>
+  );
+}
+```
+
+## Default Puzzle Colors
+
+<ColorPalette>
+  <ColorItem
+    title="Puzzle Colors"
+    subtitle="Puzzle state feedback"
+    colors={{
+      Success: "rgba(172, 206, 89, 0.5)",
+      Failure: "rgba(201, 52, 48, 0.5)",
+      Hint: "rgba(27, 172, 166, 0.5)",
+    }}
+  />
+</ColorPalette>
+
+## Example Theme Variations
+
+### Pastel Theme
+
+```tsx
+const pastelTheme: PartialChessPuzzleTheme = {
+  puzzle: {
+    success: "rgba(152, 251, 152, 0.6)", // Pale green
+    failure: "rgba(255, 182, 193, 0.6)", // Light pink
+    hint: "rgba(173, 216, 230, 0.6)", // Light blue
+  },
+};
+```
+
+### High Contrast Theme
+
+```tsx
+const highContrastTheme: PartialChessPuzzleTheme = {
+  puzzle: {
+    success: "rgba(0, 255, 0, 0.7)",
+    failure: "rgba(255, 0, 0, 0.7)",
+    hint: "rgba(0, 255, 255, 0.7)",
+  },
+};
+```
+
+## TypeScript Support
+
+All puzzle theme types are exported:
+
+```typescript
+import type {
+  ChessPuzzleTheme,
+  PartialChessPuzzleTheme,
+  PuzzleStateTheme,
+} from "@react-chess-tools/react-chess-puzzle";
+```
+
+## Next Steps
+
+- Try the **[Puzzle Theme Playground](/story/react-chess-puzzle-theme-playground--puzzle-playground)** to experiment with colors
+- See **[Puzzle Theme Examples](/story/react-chess-puzzle-theme-playground--puzzle-theme-examples)** for inspiration
+- Check out **[Game Theming](/docs/react-chess-game-theming--docs)** for board and state color options
