@@ -24,16 +24,6 @@ export const getOrientation = (puzzle: Puzzle): Color => {
   return game.turn();
 };
 
-interface ClickableElement extends ReactElement {
-  props: {
-    onClick?: () => void;
-  };
-}
-
-export const isClickableElement = (
-  element: ReactNode,
-): element is ClickableElement => React.isValidElement(element);
-
 /**
  * Generates custom square styles for puzzle states based on theme.
  *

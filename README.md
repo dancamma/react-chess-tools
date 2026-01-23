@@ -2,10 +2,11 @@
   <h1>react-chess-tools</h1>
   <p>A set of React components for building chess apps</p>
 
-  [![npm version](https://img.shields.io/npm/v/@react-chess-tools/react-chess-game.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-game)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
-  [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev/)
+[![npm version](https://img.shields.io/npm/v/@react-chess-tools/react-chess-game.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-game)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev/)
+
 </div>
 
 ## Overview
@@ -14,15 +15,18 @@
 
 ## Packages
 
-| Package | Description | Version |
-|---------|-------------|---------|
-| [@react-chess-tools/react-chess-game](packages/react-chess-game/README.md) | A chess game component with sounds, move highlighting, and keyboard controls | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-game.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-game) |
-| [@react-chess-tools/react-chess-puzzle](packages/react-chess-puzzle/README.md) | A chess puzzle component for creating interactive puzzle experiences | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-puzzle.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-puzzle) |
+| Package                                                                        | Description                                                                  | Version                                                                                                                                               |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@react-chess-tools/react-chess-game](packages/react-chess-game/README.md)     | A chess game component with sounds, move highlighting, and keyboard controls | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-game.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-game)     |
+| [@react-chess-tools/react-chess-puzzle](packages/react-chess-puzzle/README.md) | A chess puzzle component for creating interactive puzzle experiences         | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-puzzle.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-puzzle) |
 
 ## Features
 
 - **Easy to Use** - Simple API with sensible defaults, get started in minutes
-- **Customizable** - Compound component pattern (similar to Radix UI) for maximum flexibility
+- **Composition Pattern** - Compound component pattern (similar to Radix UI) for maximum flexibility
+- **asChild Support** - Render components as custom elements using the Slot pattern
+- **Ref Forwarding** - Programmatic access to component DOM nodes
+- **Full HTML Attribute Support** - Apply className, style, id, data-_, and aria-_ attributes
 - **Full-Featured** - Built-in sounds, move highlighting, keyboard controls, and more
 - **TypeScript** - Full TypeScript support with comprehensive type definitions
 - **Modern React** - Built for React 19 with hooks and context API

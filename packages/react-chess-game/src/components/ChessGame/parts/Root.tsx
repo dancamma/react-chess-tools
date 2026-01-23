@@ -30,3 +30,5 @@ export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
     </ChessGameContext.Provider>
   );
 };
+
+Root.displayName = "ChessGame.Root";

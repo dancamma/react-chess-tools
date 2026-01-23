@@ -2,10 +2,10 @@
   <h1>@react-chess-tools/react-chess-game</h1>
   <p>An easy-customizable, ready-to-use chess game component for React</p>
 
-  [![npm version](https://img.shields.io/npm/v/@react-chess-tools/react-chess-game.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-game)
-  [![npm downloads](https://img.shields.io/npm/dm/@react-chess-tools/react-chess-game.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-game)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@react-chess-tools/react-chess-game.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-game)
+[![npm downloads](https://img.shields.io/npm/dm/@react-chess-tools/react-chess-game.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-game)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
 
   <p>
     <a href="https://github.com/Clariity/react-chessboard">react-chessboard</a> +
@@ -86,14 +86,16 @@ Visit the [live demo](https://react-chess-tools.vercel.app/) to see the componen
 
 The root component that provides `ChessGameContext` to all child components. It instantiates a `Chess` instance using the `fen` prop.
 
+**Note:** This is a logic-only component (Context Provider). It does not render any DOM elements.
+
 #### Props
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `children` | `ReactNode` | - | Child components |
-| `fen` | `string` | Starting position | Initial FEN string for the chess game |
-| `orientation` | `"w" \| "b"` | `"w"` | Board orientation (white or black at bottom) |
-| `theme` | `PartialChessGameTheme` | - | Optional theme configuration |
+| Name          | Type                    | Default           | Description                                  |
+| ------------- | ----------------------- | ----------------- | -------------------------------------------- |
+| `children`    | `ReactNode`             | -                 | Child components                             |
+| `fen`         | `string`                | Starting position | Initial FEN string for the chess game        |
+| `orientation` | `"w" \| "b"`            | `"w"`             | Board orientation (white or black at bottom) |
+| `theme`       | `PartialChessGameTheme` | -                 | Optional theme configuration                 |
 
 #### Example
 
@@ -110,11 +112,17 @@ The root component that provides `ChessGameContext` to all child components. It 
 
 The main chess board component. Renders the board and pieces using `react-chessboard` v5.
 
+Supports **ref forwarding** and all standard **HTML div attributes** (className, style, id, data-_, aria-_, etc.).
+
 #### Props
 
-| Name | Type | Description |
-|------|------|-------------|
-| `options` | `ChessboardOptions` | Options forwarded to `react-chessboard`. Your values merge with defaults. |
+| Name        | Type                             | Description                                                               |
+| ----------- | -------------------------------- | ------------------------------------------------------------------------- |
+| `options`   | `ChessboardOptions`              | Options forwarded to `react-chessboard`. Your values merge with defaults. |
+| `ref`       | `Ref<HTMLDivElement>`            | Forwarded ref to the wrapper div element                                  |
+| `className` | `string`                         | Custom CSS class names                                                    |
+| `style`     | `CSSProperties`                  | Custom inline styles                                                      |
+| `...`       | `HTMLAttributes<HTMLDivElement>` | All standard HTML div attributes                                          |
 
 #### Example
 
@@ -130,6 +138,10 @@ The main chess board component. Renders the board and pieces using `react-chessb
       showNotation: true,
       animationDurationInMs: 300,
     }}
+    className="my-custom-board"
+    style={{ borderRadius: "8px" }}
+    id="game-board"
+    data-testid="chess-board"
   />
 </ChessGame.Root>
 ```
@@ -138,11 +150,13 @@ The main chess board component. Renders the board and pieces using `react-chessb
 
 Provides sound effects for the chess game. Uses built-in sounds by default, but custom sounds can be provided as base64-encoded strings.
 
+**Note:** This is a logic-only component that returns `null`. It sets up audio functionality via hooks.
+
 #### Props
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `sounds` | `Partial<Record<Sound, string>>` | - | Custom sounds configuration. Keys: `move`, `capture`, `check`, `gameOver` |
+| Name     | Type                             | Default | Description                                                               |
+| -------- | -------------------------------- | ------- | ------------------------------------------------------------------------- |
+| `sounds` | `Partial<Record<Sound, string>>` | -       | Custom sounds configuration. Keys: `move`, `capture`, `check`, `gameOver` |
 
 #### Example
 
@@ -162,13 +176,16 @@ Provides sound effects for the chess game. Uses built-in sounds by default, but 
 
 Enables keyboard navigation through the game history.
 
+**Note:** This is a logic-only component that returns `null`. It sets up keyboard event listeners via hooks.
+
 #### Props
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
+| Name       | Type               | Default                   | Description                                   |
+| ---------- | ------------------ | ------------------------- | --------------------------------------------- |
 | `controls` | `KeyboardControls` | `defaultKeyboardControls` | Object mapping key names to handler functions |
 
 **Default Controls:**
+
 - `ArrowLeft` - Go to previous move
 - `ArrowRight` - Go to next move
 - `ArrowUp` - Go to starting position
@@ -215,49 +232,49 @@ function GameStatus() {
 
 #### Return Values
 
-| Name | Type | Description |
-|------|------|-------------|
-| `game` | `Chess` | The underlying chess.js instance |
-| `orientation` | `"w" \| "b"` | Current board orientation |
-| `currentFen` | `string` | Current FEN string |
-| `currentPosition` | `string` | Current position in game history |
-| `currentMoveIndex` | `number` | Index of current move in history |
-| `isLatestMove` | `boolean` | Whether viewing the latest position |
-| `methods` | `Methods` | Methods to interact with the game |
-| `info` | `Info` | Game state information |
+| Name               | Type         | Description                         |
+| ------------------ | ------------ | ----------------------------------- |
+| `game`             | `Chess`      | The underlying chess.js instance    |
+| `orientation`      | `"w" \| "b"` | Current board orientation           |
+| `currentFen`       | `string`     | Current FEN string                  |
+| `currentPosition`  | `string`     | Current position in game history    |
+| `currentMoveIndex` | `number`     | Index of current move in history    |
+| `isLatestMove`     | `boolean`    | Whether viewing the latest position |
+| `methods`          | `Methods`    | Methods to interact with the game   |
+| `info`             | `Info`       | Game state information              |
 
 #### Methods
 
-| Method | Type | Description |
-|--------|------|-------------|
-| `makeMove` | `(move: string \| MoveObject) => boolean` | Make a move, returns true if successful |
-| `setPosition` | `(fen: string, orientation: "w" \| "b") => void` | Set a new position |
-| `flipBoard` | `() => void` | Flip the board orientation |
-| `goToMove` | `(moveIndex: number) => void` | Jump to specific move (-1 = start) |
-| `goToStart` | `() => void` | Go to starting position |
-| `goToEnd` | `() => void` | Go to latest move |
-| `goToPreviousMove` | `() => void` | Go to previous move |
-| `goToNextMove` | `() => void` | Go to next move |
+| Method             | Type                                             | Description                             |
+| ------------------ | ------------------------------------------------ | --------------------------------------- |
+| `makeMove`         | `(move: string \| MoveObject) => boolean`        | Make a move, returns true if successful |
+| `setPosition`      | `(fen: string, orientation: "w" \| "b") => void` | Set a new position                      |
+| `flipBoard`        | `() => void`                                     | Flip the board orientation              |
+| `goToMove`         | `(moveIndex: number) => void`                    | Jump to specific move (-1 = start)      |
+| `goToStart`        | `() => void`                                     | Go to starting position                 |
+| `goToEnd`          | `() => void`                                     | Go to latest move                       |
+| `goToPreviousMove` | `() => void`                                     | Go to previous move                     |
+| `goToNextMove`     | `() => void`                                     | Go to next move                         |
 
 #### Info Object
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `turn` | `"w" \| "b"` | Current turn |
-| `isPlayerTurn` | `boolean` | Whether it's the player's turn |
-| `isOpponentTurn` | `boolean` | Whether it's the opponent's turn |
-| `moveNumber` | `number` | Current move number |
-| `lastMove` | `Move` | Last move made |
-| `isCheck` | `boolean` | Whether current player is in check |
-| `isCheckmate` | `boolean` | Whether it's checkmate |
-| `isDraw` | `boolean` | Whether the game is a draw |
-| `isDrawn` | `boolean` | Alias for `isDraw` |
-| `isStalemate` | `boolean` | Whether it's stalemate |
-| `isThreefoldRepetition` | `boolean` | Whether threefold repetition occurred |
-| `isInsufficientMaterial` | `boolean` | Whether there's insufficient material |
-| `isGameOver` | `boolean` | Whether the game has ended |
-| `hasPlayerWon` | `boolean` | Whether the player has won |
-| `hasPlayerLost` | `boolean` | Whether the player has lost |
+| Property                 | Type         | Description                           |
+| ------------------------ | ------------ | ------------------------------------- |
+| `turn`                   | `"w" \| "b"` | Current turn                          |
+| `isPlayerTurn`           | `boolean`    | Whether it's the player's turn        |
+| `isOpponentTurn`         | `boolean`    | Whether it's the opponent's turn      |
+| `moveNumber`             | `number`     | Current move number                   |
+| `lastMove`               | `Move`       | Last move made                        |
+| `isCheck`                | `boolean`    | Whether current player is in check    |
+| `isCheckmate`            | `boolean`    | Whether it's checkmate                |
+| `isDraw`                 | `boolean`    | Whether the game is a draw            |
+| `isDrawn`                | `boolean`    | Alias for `isDraw`                    |
+| `isStalemate`            | `boolean`    | Whether it's stalemate                |
+| `isThreefoldRepetition`  | `boolean`    | Whether threefold repetition occurred |
+| `isInsufficientMaterial` | `boolean`    | Whether there's insufficient material |
+| `isGameOver`             | `boolean`    | Whether the game has ended            |
+| `hasPlayerWon`           | `boolean`    | Whether the player has won            |
+| `hasPlayerLost`          | `boolean`    | Whether the player has lost           |
 
 ## Examples
 
@@ -284,7 +301,8 @@ import { ChessGame } from "@react-chess-tools/react-chess-game";
 
 function CustomPosition() {
   // Sicilian Defense starting position
-  const sicilianFen = "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2";
+  const sicilianFen =
+    "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2";
 
   return (
     <ChessGame.Root fen={sicilianFen}>
@@ -297,7 +315,10 @@ function CustomPosition() {
 ### Game with Move History Display
 
 ```tsx
-import { ChessGame, useChessGameContext } from "@react-chess-tools/react-chess-game";
+import {
+  ChessGame,
+  useChessGameContext,
+} from "@react-chess-tools/react-chess-game";
 
 function MoveHistory() {
   const { game, currentMoveIndex, methods } = useChessGameContext();
@@ -332,13 +353,20 @@ function GameWithHistory() {
 ### Game with Status Display
 
 ```tsx
-import { ChessGame, useChessGameContext } from "@react-chess-tools/react-chess-game";
+import {
+  ChessGame,
+  useChessGameContext,
+} from "@react-chess-tools/react-chess-game";
 
 function GameStatus() {
   const { info } = useChessGameContext();
 
   if (info.isCheckmate) {
-    return <div className="status">Checkmate! {info.hasPlayerWon ? "You win!" : "You lose!"}</div>;
+    return (
+      <div className="status">
+        Checkmate! {info.hasPlayerWon ? "You win!" : "You lose!"}
+      </div>
+    );
   }
   if (info.isDraw) {
     return <div className="status">Draw!</div>;
@@ -346,7 +374,9 @@ function GameStatus() {
   if (info.isCheck) {
     return <div className="status">Check!</div>;
   }
-  return <div className="status">Turn: {info.turn === "w" ? "White" : "Black"}</div>;
+  return (
+    <div className="status">Turn: {info.turn === "w" ? "White" : "Black"}</div>
+  );
 }
 
 function GameWithStatus() {

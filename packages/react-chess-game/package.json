@@ -39,6 +39,7 @@
   "author": "Daniele Cammareri <daniele.cammareri@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
     "chess.js": "^1.4.0",
     "lodash": "^4.17.21",
     "react-chessboard": "^5.8.6"

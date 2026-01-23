@@ -64,3 +64,5 @@ export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
     </ChessGame.Root>
   );
 };
+
+Root.displayName = "ChessPuzzle.Root";

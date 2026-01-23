@@ -12,34 +12,35 @@ export interface PuzzleBoardProps extends React.ComponentProps<
   typeof ChessGame.Board
 > {}
 
-export const PuzzleBoard: React.FC<PuzzleBoardProps> = ({
-  options = {},
-  ...rest
-}) => {
-  const puzzleContext = useChessPuzzleContext();
-  const gameContext = useChessGameContext();
-  const theme = useChessPuzzleTheme();
+export const PuzzleBoard = React.forwardRef<HTMLDivElement, PuzzleBoardProps>(
+  ({ options, ...rest }, ref) => {
+    const puzzleContext = useChessPuzzleContext();
+    const gameContext = useChessGameContext();
+    const theme = useChessPuzzleTheme();
 
-  if (!puzzleContext) {
-    throw new Error("PuzzleContext not found");
-  }
-  if (!gameContext) {
-    throw new Error("ChessGameContext not found");
-  }
+    if (!puzzleContext) {
+      throw new Error("PuzzleContext not found");
+    }
+    if (!gameContext) {
+      throw new Error("ChessGameContext not found");
+    }
 
-  const { game } = gameContext;
-  const { status, hint, isPlayerTurn, nextMove } = puzzleContext;
+    const { game } = gameContext;
+    const { status, hint, isPlayerTurn, nextMove } = puzzleContext;
 
-  const mergedOptions = deepMergeChessboardOptions(options, {
-    squareStyles: getCustomSquareStyles(
-      status,
-      hint,
-      isPlayerTurn,
-      game,
-      stringToMove(game, nextMove),
-      theme,
-    ),
-  });
+    const mergedOptions = deepMergeChessboardOptions(options || {}, {
+      squareStyles: getCustomSquareStyles(
+        status,
+        hint,
+        isPlayerTurn,
+        game,
+        stringToMove(game, nextMove),
+        theme,
+      ),
+    });
 
-  return <ChessGame.Board {...rest} options={mergedOptions} />;
-};
+    return <ChessGame.Board ref={ref} {...rest} options={mergedOptions} />;
+  },
+);
+
+PuzzleBoard.displayName = "ChessPuzzle.PuzzleBoard";

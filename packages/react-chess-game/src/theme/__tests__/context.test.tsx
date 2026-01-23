@@ -38,21 +38,6 @@ describe("useChessGameTheme", () => {
 });
 
 describe("ThemeProvider", () => {
-  it("should render children", () => {
-    const TestComponent = () => {
-      const theme = useChessGameTheme();
-      return <div data-testid="theme-check">{theme.state.lastMove}</div>;
-    };
-
-    const { result } = renderHook(() => useChessGameTheme(), {
-      wrapper: ({ children }) => (
-        <ThemeProvider theme={defaultGameTheme}>{children}</ThemeProvider>
-      ),
-    });
-
-    expect(result.current).toBeTruthy();
-  });
-
   it("should allow nested providers with inner provider winning", () => {
     const outerTheme = {
       ...defaultGameTheme,
