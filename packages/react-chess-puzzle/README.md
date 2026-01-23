@@ -2,10 +2,11 @@
   <h1>@react-chess-tools/react-chess-puzzle</h1>
   <p>A lightweight, customizable React component library for rendering and interacting with chess puzzles</p>
 
-  [![npm version](https://img.shields.io/npm/v/@react-chess-tools/react-chess-puzzle.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-puzzle)
-  [![npm downloads](https://img.shields.io/npm/dm/@react-chess-tools/react-chess-puzzle.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-puzzle)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
+[![npm version](https://img.shields.io/npm/v/@react-chess-tools/react-chess-puzzle.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-puzzle)
+[![npm downloads](https://img.shields.io/npm/dm/@react-chess-tools/react-chess-puzzle.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-puzzle)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
+
 </div>
 
 ## Table of Contents
@@ -99,23 +100,25 @@ Visit the [live demo](https://react-chess-tools.vercel.app/) to see the componen
 
 The root component that provides puzzle context to all child components.
 
+**Note:** This is a logic-only component (Context Provider). It does not render any DOM elements.
+
 #### Props
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `puzzle` | `Puzzle` | - | The puzzle configuration (required) |
-| `onSolve` | `(ctx: ChessPuzzleContextType) => void` | - | Callback when puzzle is solved |
-| `onFail` | `(ctx: ChessPuzzleContextType) => void` | - | Callback when an incorrect move is made |
-| `theme` | `PartialChessPuzzleTheme` | - | Optional theme configuration |
-| `children` | `ReactNode` | - | Child components |
+| Name       | Type                                    | Default | Description                             |
+| ---------- | --------------------------------------- | ------- | --------------------------------------- |
+| `puzzle`   | `Puzzle`                                | -       | The puzzle configuration (required)     |
+| `onSolve`  | `(ctx: ChessPuzzleContextType) => void` | -       | Callback when puzzle is solved          |
+| `onFail`   | `(ctx: ChessPuzzleContextType) => void` | -       | Callback when an incorrect move is made |
+| `theme`    | `PartialChessPuzzleTheme`               | -       | Optional theme configuration            |
+| `children` | `ReactNode`                             | -       | Child components                        |
 
 #### Puzzle Object
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `fen` | `string` | - | Initial position in FEN notation |
-| `moves` | `string[]` | - | Solution moves in algebraic or UCI notation |
-| `makeFirstMove` | `boolean` | `false` | Whether to auto-play the first move |
+| Property        | Type       | Default | Description                                 |
+| --------------- | ---------- | ------- | ------------------------------------------- |
+| `fen`           | `string`   | -       | Initial position in FEN notation            |
+| `moves`         | `string[]` | -       | Solution moves in algebraic or UCI notation |
+| `makeFirstMove` | `boolean`  | `false` | Whether to auto-play the first move         |
 
 #### Example
 
@@ -137,11 +140,17 @@ The root component that provides puzzle context to all child components.
 
 Renders the chess board. Delegates to `ChessGame.Board` under the hood.
 
+Supports **ref forwarding** and all standard **HTML div attributes** (className, style, id, data-_, aria-_, etc.).
+
 #### Props
 
-| Name | Type | Description |
-|------|------|-------------|
-| `options` | `ChessboardOptions` | Options forwarded to `react-chessboard` v5 |
+| Name        | Type                             | Description                                   |
+| ----------- | -------------------------------- | --------------------------------------------- |
+| `options`   | `ChessboardOptions`              | Options forwarded to `react-chessboard` v5    |
+| `ref`       | `Ref<HTMLDivElement>`            | Forwarded ref to the underlying board element |
+| `className` | `string`                         | Custom CSS class names                        |
+| `style`     | `CSSProperties`                  | Custom inline styles                          |
+| `...`       | `HTMLAttributes<HTMLDivElement>` | All standard HTML div attributes              |
 
 #### Example
 
@@ -152,6 +161,8 @@ Renders the chess board. Delegates to `ChessGame.Board` under the hood.
       showNotation: true,
       animationDurationInMs: 200,
     }}
+    className="puzzle-board"
+    style={{ boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}
   />
 </ChessPuzzle.Root>
 ```
@@ -160,14 +171,19 @@ Renders the chess board. Delegates to `ChessGame.Board` under the hood.
 
 A button component that resets the current puzzle or loads a new one.
 
+Supports **ref forwarding**, **asChild pattern**, and all standard **HTML button attributes** (className, style, disabled, etc.).
+
 #### Props
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `puzzle` | `Puzzle` | - | New puzzle to load (resets current if not provided) |
-| `onReset` | `(ctx: ChessPuzzleContextType) => void` | - | Callback after reset |
-| `showOn` | `Status[]` | `["failed", "solved"]` | States in which the button is visible |
-| `asChild` | `boolean` | `false` | Render as child element (slot pattern) |
+| Name        | Type                                      | Default                             | Description                                         |
+| ----------- | ----------------------------------------- | ----------------------------------- | --------------------------------------------------- |
+| `puzzle`    | `Puzzle`                                  | -                                   | New puzzle to load (resets current if not provided) |
+| `onReset`   | `(ctx: ChessPuzzleContextType) => void`   | -                                   | Callback after reset                                |
+| `showOn`    | `Status[]`                                | `["failed", "solved"]`              | States in which the button is visible               |
+| `asChild`   | `boolean`                                 | `false`                             | Render as child element (slot pattern)              |
+| `ref`       | `Ref<HTMLButtonElement>`                  | Forwarded ref to the button element |
+| `className` | `string`                                  | Custom CSS class names              |
+| `...`       | `ButtonHTMLAttributes<HTMLButtonElement>` | All standard HTML button attributes |
 
 **Status values:** `"not-started"`, `"in-progress"`, `"solved"`, `"failed"`
 
@@ -181,16 +197,58 @@ A button component that resets the current puzzle or loads a new one.
 </ChessPuzzle.Root>
 ```
 
+#### Using asChild Pattern
+
+```tsx
+// Render as a custom button component
+import { MyCustomButton } from './MyButton';
+
+<ChessPuzzle.Root puzzle={puzzle}>
+  <ChessPuzzle.Board />
+  <ChessPuzzle.Reset asChild>
+    <MyCustomButton variant="primary">Try Again</MyCustomButton>
+  </ChessPuzzle.Reset>
+</ChessPuzzle.Root>
+
+// Render as a link
+<ChessPuzzle.Root puzzle={puzzle}>
+  <ChessPuzzle.Board />
+  <ChessPuzzle.Reset asChild>
+    <a href="#" onClick={(e) => e.preventDefault()}>
+      Restart Puzzle
+    </a>
+  </ChessPuzzle.Reset>
+</ChessPuzzle.Root>
+```
+
+#### Event Handler Composition
+
+When using `asChild`, both your component's onClick and the Reset's onClick handler will work together:
+
+```tsx
+<ChessPuzzle.Reset asChild>
+  <button onClick={() => console.log("Custom handler")} className="custom-btn">
+    Try Again
+  </button>
+</ChessPuzzle.Reset>
+// Both custom handler and reset logic will execute
+```
+
 ### ChessPuzzle.Hint
 
 A button that highlights the next correct move on the board.
 
+Supports **ref forwarding**, **asChild pattern**, and all standard **HTML button attributes** (className, style, disabled, etc.).
+
 #### Props
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| `showOn` | `Status[]` | `["not-started", "in-progress"]` | States in which the button is visible |
-| `asChild` | `boolean` | `false` | Render as child element (slot pattern) |
+| Name        | Type                                      | Default                             | Description                            |
+| ----------- | ----------------------------------------- | ----------------------------------- | -------------------------------------- |
+| `showOn`    | `Status[]`                                | `["not-started", "in-progress"]`    | States in which the button is visible  |
+| `asChild`   | `boolean`                                 | `false`                             | Render as child element (slot pattern) |
+| `ref`       | `Ref<HTMLButtonElement>`                  | Forwarded ref to the button element |
+| `className` | `string`                                  | Custom CSS class names              |
+| `...`       | `ButtonHTMLAttributes<HTMLButtonElement>` | All standard HTML button attributes |
 
 #### Example
 
@@ -203,8 +261,17 @@ const puzzle = {
 
 <ChessPuzzle.Root puzzle={puzzle}>
   <ChessPuzzle.Board />
-  <ChessPuzzle.Hint>
-    Show Hint
+  <ChessPuzzle.Hint>Show Hint</ChessPuzzle.Hint>
+</ChessPuzzle.Root>;
+```
+
+#### Using asChild Pattern
+
+```tsx
+<ChessPuzzle.Root puzzle={puzzle}>
+  <ChessPuzzle.Board />
+  <ChessPuzzle.Hint asChild>
+    <button className="hint-btn">💡 Show Hint</button>
   </ChessPuzzle.Hint>
 </ChessPuzzle.Root>
 ```
@@ -237,19 +304,19 @@ function PuzzleStatus() {
 
 #### Return Values
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `status` | `Status` | Current puzzle state |
-| `puzzleState` | `Status` | Alias for `status` |
-| `movesPlayed` | `number` | Number of correct moves made |
-| `totalMoves` | `number` | Total moves in the solution |
-| `puzzle` | `Puzzle` | The current puzzle object |
-| `hint` | `Hint` | Current hint state |
-| `nextMove` | `string \| null` | The next correct move |
-| `isPlayerTurn` | `boolean` | Whether it's the player's turn to move |
-| `changePuzzle` | `(puzzle: Puzzle) => void` | Load a new puzzle |
-| `resetPuzzle` | `() => void` | Reset the current puzzle |
-| `onHint` | `() => void` | Show hint for next move |
+| Property       | Type                       | Description                            |
+| -------------- | -------------------------- | -------------------------------------- |
+| `status`       | `Status`                   | Current puzzle state                   |
+| `puzzleState`  | `Status`                   | Alias for `status`                     |
+| `movesPlayed`  | `number`                   | Number of correct moves made           |
+| `totalMoves`   | `number`                   | Total moves in the solution            |
+| `puzzle`       | `Puzzle`                   | The current puzzle object              |
+| `hint`         | `Hint`                     | Current hint state                     |
+| `nextMove`     | `string \| null`           | The next correct move                  |
+| `isPlayerTurn` | `boolean`                  | Whether it's the player's turn to move |
+| `changePuzzle` | `(puzzle: Puzzle) => void` | Load a new puzzle                      |
+| `resetPuzzle`  | `() => void`               | Reset the current puzzle               |
+| `onHint`       | `() => void`               | Show hint for next move                |
 
 ### useChessGameContext
 
@@ -343,7 +410,10 @@ function BasicPuzzle() {
 ### Puzzle with Callbacks
 
 ```tsx
-import { ChessPuzzle, type ChessPuzzleContextType } from "@react-chess-tools/react-chess-puzzle";
+import {
+  ChessPuzzle,
+  type ChessPuzzleContextType,
+} from "@react-chess-tools/react-chess-puzzle";
 import { useState } from "react";
 
 function PuzzleWithScore() {
@@ -362,7 +432,11 @@ function PuzzleWithScore() {
   return (
     <div>
       <p>Score: {score}</p>
-      <ChessPuzzle.Root puzzle={puzzle} onSolve={handleSolve} onFail={handleFail}>
+      <ChessPuzzle.Root
+        puzzle={puzzle}
+        onSolve={handleSolve}
+        onFail={handleFail}
+      >
         <ChessPuzzle.Board />
         <ChessPuzzle.Reset>Try Again</ChessPuzzle.Reset>
       </ChessPuzzle.Root>
@@ -374,7 +448,10 @@ function PuzzleWithScore() {
 ### Puzzle Trainer with Multiple Puzzles
 
 ```tsx
-import { ChessPuzzle, type ChessPuzzleContextType } from "@react-chess-tools/react-chess-puzzle";
+import {
+  ChessPuzzle,
+  type ChessPuzzleContextType,
+} from "@react-chess-tools/react-chess-puzzle";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 import { useState } from "react";
 
@@ -426,7 +503,9 @@ function PuzzleTrainer() {
         <div className="controls">
           <ChessPuzzle.Reset>Restart</ChessPuzzle.Reset>
           <ChessPuzzle.Hint>Hint</ChessPuzzle.Hint>
-          <ChessPuzzle.Reset puzzle={puzzles[(currentIndex + 1) % puzzles.length]}>
+          <ChessPuzzle.Reset
+            puzzle={puzzles[(currentIndex + 1) % puzzles.length]}
+          >
             Skip
           </ChessPuzzle.Reset>
         </div>
@@ -439,7 +518,10 @@ function PuzzleTrainer() {
 ### Custom Status Display
 
 ```tsx
-import { ChessPuzzle, useChessPuzzleContext } from "@react-chess-tools/react-chess-puzzle";
+import {
+  ChessPuzzle,
+  useChessPuzzleContext,
+} from "@react-chess-tools/react-chess-puzzle";
 
 function PuzzleStatusDisplay() {
   const { puzzleState, movesPlayed, totalMoves } = useChessPuzzleContext();

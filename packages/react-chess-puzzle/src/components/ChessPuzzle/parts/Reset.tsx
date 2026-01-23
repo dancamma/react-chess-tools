@@ -1,8 +1,12 @@
 import React from "react";
-import { isClickableElement, type Puzzle, type Status } from "../../../utils";
+import { Slot } from "@radix-ui/react-slot";
+import { type Puzzle, type Status } from "../../../utils";
 import { useChessPuzzleContext, type ChessPuzzleContextType } from "../../..";
 
-export interface ResetProps {
+export interface ResetProps extends Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  "onReset"
+> {
   asChild?: boolean;
   puzzle?: Puzzle;
   onReset?: (puzzleContext: ChessPuzzleContextType) => void;
@@ -15,41 +19,53 @@ export interface ResetProps {
 
 const defaultShowOn: Status[] = ["failed", "solved"];
 
-export const Reset: React.FC<React.PropsWithChildren<ResetProps>> = ({
-  children,
-  asChild,
-  puzzle,
-  onReset,
-  showOn = defaultShowOn,
-}) => {
-  const puzzleContext = useChessPuzzleContext();
-  if (!puzzleContext) {
-    throw new Error("PuzzleContext not found");
-  }
-  const { changePuzzle, status } = puzzleContext;
-  const handleClick = () => {
-    changePuzzle(puzzle || puzzleContext.puzzle);
-    onReset?.(puzzleContext);
-  };
-
-  if (!showOn.includes(status)) {
-    return null;
-  }
-
-  if (asChild) {
-    const child = React.Children.only(children);
-    if (isClickableElement(child)) {
-      return React.cloneElement(child, {
-        onClick: handleClick,
-      });
-    } else {
-      throw new Error("Change child must be a clickable element");
+export const Reset = React.forwardRef<
+  HTMLElement,
+  React.PropsWithChildren<ResetProps>
+>(
+  (
+    {
+      children,
+      asChild,
+      puzzle,
+      onReset,
+      showOn = defaultShowOn,
+      className,
+      ...rest
+    },
+    ref,
+  ) => {
+    const puzzleContext = useChessPuzzleContext();
+    if (!puzzleContext) {
+      throw new Error("PuzzleContext not found");
     }
-  }
+    const { changePuzzle, puzzle: contextPuzzle, status } = puzzleContext;
 
-  return (
-    <button type="button" onClick={handleClick}>
-      {children}
-    </button>
-  );
-};
+    const handleClick = React.useCallback(() => {
+      changePuzzle(puzzle || contextPuzzle);
+      onReset?.(puzzleContext);
+    }, [changePuzzle, puzzle, contextPuzzle, puzzleContext, onReset]);
+
+    if (!showOn.includes(status)) {
+      return null;
+    }
+
+    return asChild ? (
+      <Slot ref={ref} onClick={handleClick} className={className} {...rest}>
+        {children}
+      </Slot>
+    ) : (
+      <button
+        ref={ref as React.RefObject<HTMLButtonElement>}
+        type="button"
+        className={className}
+        onClick={handleClick}
+        {...rest}
+      >
+        {children}
+      </button>
+    );
+  },
+);
+
+Reset.displayName = "ChessPuzzle.Reset";

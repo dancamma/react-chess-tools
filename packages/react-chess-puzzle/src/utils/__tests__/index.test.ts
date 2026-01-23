@@ -1,8 +1,6 @@
 import { Chess, Move } from "chess.js";
-import React from "react";
 import {
   getOrientation,
-  isClickableElement,
   getCustomSquareStyles,
   stringToMove,
   Puzzle,
@@ -37,21 +35,6 @@ describe("Puzzle Utilities", () => {
 
       // After e4, it should be black's turn
       expect(getOrientation(puzzle)).toBe("b");
-    });
-  });
-
-  describe("isClickableElement", () => {
-    it("should return true for valid clickable elements", () => {
-      const clickableElement = React.createElement("button", {
-        onClick: () => {},
-      });
-      expect(isClickableElement(clickableElement)).toBe(true);
-    });
-
-    it("should return false for non-React elements", () => {
-      expect(isClickableElement("not an element")).toBe(false);
-      expect(isClickableElement(null)).toBe(false);
-      expect(isClickableElement(undefined)).toBe(false);
     });
   });
 

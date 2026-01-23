@@ -1,8 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta } from "@storybook/react";
 import React, { useState } from "react";
 import { ChessGame } from "./index";
 import { defaultGameTheme, themes } from "../../theme";
-import type { ChessGameTheme, PartialChessGameTheme } from "../../theme/types";
+import type { ChessGameTheme } from "../../theme/types";
 
 const meta = {
   title: "react-chess-game/Theme/Playground",

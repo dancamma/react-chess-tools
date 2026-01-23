@@ -4,7 +4,7 @@ import react from "eslint-plugin-react";
 import globals from "globals";
 
 export default [
-  { ignores: ["**/dist/*", "**/coverage/*"] },
+  { ignores: ["**/dist/*", "**/coverage/*", "**/storybook-static/*"] },
 
   // Base JavaScript rules
   js.configs.recommended,
