@@ -1,5 +1,11 @@
 # @react-chess-tools/react-chess-game
 
+## 1.0.1
+
+### Patch Changes
+
+- f9b7665: feat: add ref forwarding, HTML attributes, and improved asChild pattern
+
 ## 1.0.0
 
 ### Major Changes
