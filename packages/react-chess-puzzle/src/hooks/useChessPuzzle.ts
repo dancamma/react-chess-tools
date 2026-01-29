@@ -21,6 +21,7 @@ export const useChessPuzzle = (
   puzzle: Puzzle,
   onSolve?: (puzzleContext: ChessPuzzleContextType) => void,
   onFail?: (puzzleContext: ChessPuzzleContextType) => void,
+  solveOnCheckmate: boolean = true,
 ): ChessPuzzleContextType => {
   const gameContext = useChessGameContext();
 
@@ -111,6 +112,7 @@ export const useChessPuzzle = (
           move: gameContext?.game?.history({ verbose: true })?.pop() ?? null,
           puzzleContext,
           game: game,
+          solveOnCheckmate,
         },
       });
 

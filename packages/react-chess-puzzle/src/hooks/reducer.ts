@@ -35,6 +35,7 @@ export type Action =
         move?: Move | null;
         puzzleContext: ChessPuzzleContextType;
         game: Chess;
+        solveOnCheckmate?: boolean;
       };
     }
   | { type: "MARK_SOLVE_INVOKED" }
@@ -96,7 +97,18 @@ export const reducer = (state: State, action: Action): State => {
       };
 
     case "PLAYER_MOVE": {
-      const { move } = action.payload;
+      const { move, game, solveOnCheckmate } = action.payload;
+
+      if (move && solveOnCheckmate !== false && game.isCheckmate()) {
+        return {
+          ...state,
+          status: "solved",
+          nextMove: null,
+          hint: "none",
+          isPlayerTurn: false,
+          onSolveInvoked: false,
+        };
+      }
 
       const isMoveRight = [move?.san, move?.lan].includes(
         state?.nextMove || "",

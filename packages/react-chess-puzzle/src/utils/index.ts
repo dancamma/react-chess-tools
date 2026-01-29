@@ -1,5 +1,5 @@
 import { type Color, Chess, Move } from "chess.js";
-import React, { CSSProperties, ReactElement, ReactNode } from "react";
+import { type CSSProperties } from "react";
 import _ from "lodash";
 import type { ChessPuzzleTheme } from "../theme/types";
 import { defaultPuzzleTheme } from "../theme/defaults";

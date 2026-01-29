@@ -137,3 +137,49 @@ export const WithKeyboardControls = (args: RootProps) => {
     </ChessPuzzle.Root>
   );
 };
+
+// Puzzle with multiple checkmate solutions for testing solveOnCheckmate prop
+const multiMatePuzzle = {
+  fen: "7k/R7/1R6/2Q5/4Q3/8/8/7K w - - 0 1",
+  moves: ["a7a8"], // Canonical solution
+  makeFirstMove: false,
+};
+
+export const MultiMatePuzzle = (args: RootProps) => {
+  return (
+    <div>
+      <p style={{ marginBottom: "1rem", fontSize: "0.875rem" }}>
+        <strong>solveOnCheckmate=true (default):</strong> Any checkmate move
+        solves the puzzle. Try Qc8# (queen mate), Qf8# (queen mate), Rb8# (rook
+        mate), or the canonical Ra8#.
+      </p>
+      <ChessPuzzle.Root {...args} puzzle={multiMatePuzzle}>
+        <ChessPuzzle.Board />
+        <ChessPuzzle.Reset asChild>
+          <button>restart</button>
+        </ChessPuzzle.Reset>
+      </ChessPuzzle.Root>
+    </div>
+  );
+};
+
+export const MultiMatePuzzleStrict = (args: RootProps) => {
+  return (
+    <div>
+      <p style={{ marginBottom: "1rem", fontSize: "0.875rem" }}>
+        <strong>solveOnCheckmate=false:</strong> Only the canonical solution
+        (a7a8#) is accepted. Alternative mates like Qc8# will fail the puzzle.
+      </p>
+      <ChessPuzzle.Root
+        {...args}
+        puzzle={multiMatePuzzle}
+        solveOnCheckmate={false}
+      >
+        <ChessPuzzle.Board />
+        <ChessPuzzle.Reset asChild>
+          <button>restart</button>
+        </ChessPuzzle.Reset>
+      </ChessPuzzle.Root>
+    </div>
+  );
+};

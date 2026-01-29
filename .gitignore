@@ -38,3 +38,7 @@ storybook-static
 .vercel
 
 **/dist
+
+.specs
+_bmad
+.claude

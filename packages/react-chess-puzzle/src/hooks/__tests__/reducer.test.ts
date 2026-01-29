@@ -271,4 +271,138 @@ describe("reducer", () => {
       expect(newState.status).toBe("failed");
     });
   });
+
+  describe("solveOnCheckmate feature", () => {
+    // Puzzle with multiple checkmate solutions
+    const multiMatePuzzle: Puzzle = {
+      fen: "7k/R7/1R6/2Q5/4Q3/8/8/7K w - - 0 1",
+      moves: ["a7a8"],
+      makeFirstMove: false,
+    };
+
+    const multiMateInitialState: State = {
+      puzzle: multiMatePuzzle,
+      currentMoveIndex: 0,
+      status: "not-started",
+      nextMove: "a7a8",
+      hint: "none",
+      cpuMove: null,
+      needCpuMove: false,
+      isPlayerTurn: true,
+      onSolveInvoked: false,
+      onFailInvoked: false,
+    };
+
+    it("should solve puzzle when alternative checkmate move is made and solveOnCheckmate=true", () => {
+      const game = new Chess(multiMatePuzzle.fen);
+      // Alternative mate: Qc8# (queen mate from c5 to c8) instead of canonical Ra8#
+      game.move("Qc8");
+      const alternativeMateMove = game.history({ verbose: true }).pop() as Move;
+
+      const action: Action = {
+        type: "PLAYER_MOVE",
+        payload: {
+          move: alternativeMateMove,
+          puzzleContext: {} as ChessPuzzleContextType,
+          game,
+          solveOnCheckmate: true,
+        },
+      };
+
+      const newState = reducer(multiMateInitialState, action);
+
+      expect(newState.status).toBe("solved");
+      expect(newState.nextMove).toBe(null);
+      expect(newState.isPlayerTurn).toBe(false);
+    });
+
+    it("should fail puzzle when alternative checkmate move is made and solveOnCheckmate=false", () => {
+      const game = new Chess(multiMatePuzzle.fen);
+      // Alternative mate: Qf8# (queen mate from c5 to f8) instead of canonical Ra8#
+      game.move("Qf8");
+      const alternativeMateMove = game.history({ verbose: true }).pop() as Move;
+
+      const action: Action = {
+        type: "PLAYER_MOVE",
+        payload: {
+          move: alternativeMateMove,
+          puzzleContext: {} as ChessPuzzleContextType,
+          game,
+          solveOnCheckmate: false,
+        },
+      };
+
+      const newState = reducer(multiMateInitialState, action);
+
+      expect(newState.status).toBe("failed");
+      expect(newState.nextMove).toBe(null);
+    });
+
+    it("should still solve puzzle when canonical solution move is made with solveOnCheckmate=true", () => {
+      const game = new Chess(multiMatePuzzle.fen);
+      // Make the canonical checkmate move on the game so isCheckmate() returns true
+      game.move("a7a8");
+      // Canonical move: Ra8# (rook mate from b6 to b8)
+      const canonicalMove = game.history({ verbose: true }).pop() as Move;
+
+      const action: Action = {
+        type: "PLAYER_MOVE",
+        payload: {
+          move: canonicalMove,
+          puzzleContext: {} as ChessPuzzleContextType,
+          game,
+          solveOnCheckmate: true,
+        },
+      };
+
+      const newState = reducer(multiMateInitialState, action);
+
+      expect(newState.status).toBe("solved");
+      expect(newState.nextMove).toBe(null);
+    });
+
+    it("should fail puzzle when non-mate incorrect move is made with solveOnCheckmate=true", () => {
+      const game = new Chess(multiMatePuzzle.fen);
+      // Make a non-mate incorrect move (Qa3 checks but doesn't mate)
+      const incorrectResult = game.move("Qa3");
+      const incorrectMove = incorrectResult as Move;
+
+      const action: Action = {
+        type: "PLAYER_MOVE",
+        payload: {
+          move: incorrectMove,
+          puzzleContext: {} as ChessPuzzleContextType,
+          game,
+          solveOnCheckmate: true,
+        },
+      };
+
+      const newState = reducer(multiMateInitialState, action);
+
+      // Not a checkmate (Qa3 is not mate), so should fail as incorrect move
+      expect(newState.status).toBe("failed");
+    });
+
+    it("should enable checkmate detection when solveOnCheckmate is undefined in payload", () => {
+      const game = new Chess(multiMatePuzzle.fen);
+      // Make an alternative checkmate move on the game so isCheckmate() returns true
+      game.move("Qe8");
+      // Alternative mate: Qe8# (queen mate from e4 to e8)
+      const alternativeMateMove = game.history({ verbose: true }).pop() as Move;
+
+      const action: Action = {
+        type: "PLAYER_MOVE",
+        payload: {
+          move: alternativeMateMove,
+          puzzleContext: {} as ChessPuzzleContextType,
+          game,
+          // solveOnCheckmate not provided - should default to true
+        },
+      };
+
+      const newState = reducer(multiMateInitialState, action);
+
+      expect(newState.status).toBe("solved");
+    });
+  });
 });
