@@ -43,6 +43,7 @@
 - **Sound Effects** - Integrates with ChessGame.Sounds for audio feedback
 - **Keyboard Controls** - Navigate through puzzle moves with keyboard
 - **TypeScript** - Full TypeScript support with comprehensive type definitions
+- **Multiple solutions** - Accept any checkmate as a solution (configurable via `solveOnCheckmate`)
 
 ## Installation
 
@@ -104,13 +105,14 @@ The root component that provides puzzle context to all child components.
 
 #### Props
 
-| Name       | Type                                    | Default | Description                             |
-| ---------- | --------------------------------------- | ------- | --------------------------------------- |
-| `puzzle`   | `Puzzle`                                | -       | The puzzle configuration (required)     |
-| `onSolve`  | `(ctx: ChessPuzzleContextType) => void` | -       | Callback when puzzle is solved          |
-| `onFail`   | `(ctx: ChessPuzzleContextType) => void` | -       | Callback when an incorrect move is made |
-| `theme`    | `PartialChessPuzzleTheme`               | -       | Optional theme configuration            |
-| `children` | `ReactNode`                             | -       | Child components                        |
+| Name               | Type                                    | Default | Description                                     |
+| ------------------ | --------------------------------------- | ------- | ----------------------------------------------- |
+| `puzzle`           | `Puzzle`                                | -       | The puzzle configuration (required)             |
+| `onSolve`          | `(ctx: ChessPuzzleContextType) => void` | -       | Callback when puzzle is solved                  |
+| `onFail`           | `(ctx: ChessPuzzleContextType) => void` | -       | Callback when an incorrect move is made         |
+| `solveOnCheckmate` | `boolean`                               | `true`  | When true, any checkmate move solves the puzzle |
+| `theme`            | `PartialChessPuzzleTheme`               | -       | Optional theme configuration                    |
+| `children`         | `ReactNode`                             | -       | Child components                                |
 
 #### Puzzle Object
 
