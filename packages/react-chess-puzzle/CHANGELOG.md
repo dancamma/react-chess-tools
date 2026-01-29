@@ -1,5 +1,11 @@
 # @react-chess-tools/react-chess-puzzle
 
+## 1.0.2
+
+### Patch Changes
+
+- aa6db4a: feat: add solveOnCheckmate prop
+
 ## 1.0.1
 
 ### Patch Changes
