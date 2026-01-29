@@ -16,12 +16,15 @@ export interface RootProps {
   onFail?: (puzzleContext: ChessPuzzleContextType) => void;
   /** Optional theme configuration. Supports partial themes - only override the colors you need. */
   theme?: PartialChessPuzzleTheme;
+  /** When true, any checkmate move solves the puzzle (not just the canonical solution). Defaults to true. */
+  solveOnCheckmate?: boolean;
 }
 
 interface PuzzleRootInnerProps {
   puzzle: Puzzle;
   onSolve?: (puzzleContext: ChessPuzzleContextType) => void;
   onFail?: (puzzleContext: ChessPuzzleContextType) => void;
+  solveOnCheckmate: boolean;
   children: React.ReactNode;
 }
 
@@ -29,9 +32,10 @@ const PuzzleRootInner: React.FC<PuzzleRootInnerProps> = ({
   puzzle,
   onSolve,
   onFail,
+  solveOnCheckmate,
   children,
 }) => {
-  const context = useChessPuzzle(puzzle, onSolve, onFail);
+  const context = useChessPuzzle(puzzle, onSolve, onFail, solveOnCheckmate);
 
   return (
     <ChessPuzzleContext.Provider value={context}>
@@ -45,6 +49,7 @@ export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
   onSolve,
   onFail,
   theme,
+  solveOnCheckmate = true,
   children,
 }) => {
   // Merge partial theme with defaults
@@ -57,7 +62,12 @@ export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
       theme={mergedTheme}
     >
       <PuzzleThemeProvider theme={mergedTheme}>
-        <PuzzleRootInner puzzle={puzzle} onSolve={onSolve} onFail={onFail}>
+        <PuzzleRootInner
+          puzzle={puzzle}
+          onSolve={onSolve}
+          onFail={onFail}
+          solveOnCheckmate={solveOnCheckmate}
+        >
           {children}
         </PuzzleRootInner>
       </PuzzleThemeProvider>

@@ -58,7 +58,7 @@ export default [
       ".storybook/**/*.{js,ts}",
       "jest.config.js",
       "jest.setup.js",
-      "tsup.config.ts",
+      "**/tsup.config.ts",
       "eslint.config.mjs",
     ],
     languageOptions: {
