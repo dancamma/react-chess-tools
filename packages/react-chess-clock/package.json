@@ -1,7 +1,7 @@
 {
-  "name": "@react-chess-tools/react-chess-game",
-  "version": "1.0.1",
-  "description": "react-chess-game is a React component bridging chess.js with react-chessboard to offer a full-featured, ready-to-integrate chess board experience.",
+  "name": "@react-chess-tools/react-chess-clock",
+  "version": "1.0.0",
+  "description": "A standalone chess clock component for React with support for multiple timing methods (Fischer, delay, Bronstein) and seamless integration with react-chess-game.",
   "type": "module",
   "exports": {
     ".": {
@@ -16,22 +16,20 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsup src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [
     "chess",
     "react",
-    "board",
-    "game",
-    "chess.js",
-    "react-chessboard",
+    "clock",
+    "timer",
+    "chess-clock",
+    "increment",
+    "delay",
+    "bronstein",
+    "fischer",
     "component",
-    "play",
-    "strategy",
-    "checkmate",
-    "interactive",
-    "UI",
-    "boardgame"
+    "time-control"
   ],
   "publishConfig": {
     "access": "public"
@@ -39,20 +37,20 @@
   "author": "Daniele Cammareri <daniele.cammareri@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@radix-ui/react-slot": "^1.2.4",
-    "@react-chess-tools/react-chess-clock": "^1.0.0",
-    "chess.js": "^1.4.0",
-    "lodash": "^4.17.21",
-    "react-chessboard": "^5.8.6"
+    "@radix-ui/react-slot": "^1.2.4"
   },
   "devDependencies": {
-    "@types/lodash": "^4.17.21",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^19.2.7",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
   "peerDependencies": {
-    "react": ">=16.14.0",
-    "react-dom": ">=16.14.0"
+    "react": ">=16.14.0"
   },
   "repository": {
     "type": "git",

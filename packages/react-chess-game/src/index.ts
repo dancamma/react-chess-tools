@@ -1,6 +1,16 @@
 // Components
 export { ChessGame } from "./components/ChessGame";
 
+// Clock - Re-export from react-chess-clock for convenience
+export { ChessClock } from "@react-chess-tools/react-chess-clock";
+export type {
+  TimeControlConfig,
+  TimeControlInput,
+  TimingMethod,
+  ClockStartMode,
+  UseChessClockReturn,
+} from "@react-chess-tools/react-chess-clock";
+
 // Hooks & Context
 export { useChessGameContext } from "./hooks/useChessGameContext";
 export { useChessGame } from "./hooks/useChessGame";

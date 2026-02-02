@@ -1,22 +1,27 @@
 import React, { useEffect } from "react";
 import { Chess, Color } from "chess.js";
 import { cloneGame, getCurrentFen, getGameInfo } from "../utils/chess";
+import { useOptionalChessClock } from "@react-chess-tools/react-chess-clock";
+import type { TimeControlConfig } from "@react-chess-tools/react-chess-clock";
 
 export type useChessGameProps = {
   fen?: string;
   orientation?: Color;
+  /** Optional clock configuration to enable chess clock functionality */
+  timeControl?: TimeControlConfig;
 };
 
 export const useChessGame = ({
   fen,
   orientation: initialOrientation,
+  timeControl,
 }: useChessGameProps = {}) => {
   const [game, setGame] = React.useState(() => {
     try {
       return new Chess(fen);
     } catch (e) {
       console.error("Invalid FEN:", fen, e);
-      return new Chess(); // Return empty board
+      return new Chess();
     }
   });
 
@@ -47,13 +52,24 @@ export const useChessGame = ({
 
   const currentFen = React.useMemo(
     () => getCurrentFen(fen, game, currentMoveIndex),
-    [game, currentMoveIndex],
+    [fen, game, currentMoveIndex],
   );
 
   const currentPosition = React.useMemo(
     () => game.history()[currentMoveIndex],
     [game, currentMoveIndex],
   );
+
+  const clockState = useOptionalChessClock(timeControl);
+
+  // Auto-pause clock on game over
+  useEffect(() => {
+    if (!clockState) return;
+
+    if (info.isGameOver && clockState.status === "running") {
+      clockState.methods.pause();
+    }
+  }, [info.isGameOver, clockState]);
 
   const setPosition = React.useCallback((fen: string, orientation: Color) => {
     try {
@@ -79,12 +95,18 @@ export const useChessGame = ({
         copy.move(move);
         setGame(copy);
         setCurrentMoveIndex(copy.history().length - 1);
+
+        // Switch clock after a move is made
+        if (clockState?.status !== "finished") {
+          clockState?.methods.switch();
+        }
+
         return true;
       } catch (e) {
         return false;
       }
     },
-    [isLatestMove, game],
+    [isLatestMove, game, clockState],
   );
 
   const flipBoard = React.useCallback(() => {
@@ -145,5 +167,6 @@ export const useChessGame = ({
     isLatestMove,
     info,
     methods,
+    clock: clockState,
   };
 };

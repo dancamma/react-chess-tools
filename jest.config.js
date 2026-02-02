@@ -14,6 +14,8 @@ module.exports = {
       "<rootDir>/packages/react-chess-game/src/index.ts",
     "^@react-chess-tools/react-chess-puzzle$":
       "<rootDir>/packages/react-chess-puzzle/src/index.ts",
+    "^@react-chess-tools/react-chess-clock$":
+      "<rootDir>/packages/react-chess-clock/src/index.ts",
   },
   collectCoverage: true,
   collectCoverageFrom: [
