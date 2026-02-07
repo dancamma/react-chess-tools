@@ -25,7 +25,7 @@ export function calculateSwitchTime(
   }
 
   // Decrement time, ensuring it doesn't go below zero
-  let newTime = Math.max(0, currentTime - effectiveElapsed);
+  const newTime = Math.max(0, currentTime - effectiveElapsed);
 
   // Apply timing method adjustments (Fischer increment, Bronstein)
   return calculateSwitchAdjustment(

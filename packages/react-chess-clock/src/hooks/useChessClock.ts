@@ -154,7 +154,6 @@ export function useChessClock(options: TimeControlConfig): UseChessClockReturn {
     if (state.status === "running" && state.activePlayer !== null) {
       optionsRef.current.onTimeUpdate?.(displayTimes);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tick]);
 
   // Timeout Detection

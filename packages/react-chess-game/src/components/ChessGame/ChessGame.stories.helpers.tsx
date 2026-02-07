@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useChessGameContext } from "../../hooks/useChessGameContext";
 import type { ClockColor } from "@react-chess-tools/react-chess-clock";
 
