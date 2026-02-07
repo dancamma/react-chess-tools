@@ -25,6 +25,7 @@
   - [ChessGame.Board](#chessgameboard)
   - [ChessGame.Sounds](#chessgamesounds)
   - [ChessGame.KeyboardControls](#chessgamekeyboardcontrols)
+  - [ChessGame.Clock](#chessgameclock)
 - [Hooks](#hooks)
   - [useChessGameContext](#usechessgamecontext)
 - [Examples](#examples)
@@ -36,12 +37,15 @@
 
 Built using a compound component pattern (similar to [Radix UI](https://www.radix-ui.com/)), it provides a `ChessGameContext` that you can use to customize and enhance the game while maintaining sensible defaults.
 
+The package now includes integrated chess clock functionality powered by [`@react-chess-tools/react-chess-clock`](https://www.npmjs.com/package/@react-chess-tools/react-chess-clock).
+
 ## Features
 
 - **Move-by-click** - Click to select and move pieces
 - **Sound effects** - Built-in sounds for moves, captures, check, and game over
 - **Square highlighting** - Visual feedback for valid moves and last move
 - **Keyboard controls** - Navigate through game history with arrow keys
+- **Integrated Chess Clock** - Built-in clock support with multiple timing methods
 - **Full game state** - Access to check, checkmate, stalemate, draw detection
 - **TypeScript** - Full TypeScript support with comprehensive type definitions
 - **Customizable** - Override any default with your own implementation
@@ -76,6 +80,23 @@ function App() {
 }
 ```
 
+With a chess clock:
+
+```tsx
+import { ChessGame } from "@react-chess-tools/react-chess-game";
+
+function App() {
+  return (
+    <ChessGame.Root timeControl={{ time: "5+3" }}>
+      <ChessGame.Clock.Display color="white" />
+      <ChessGame.Board />
+      <ChessGame.Clock.Display color="black" />
+      <ChessGame.Clock.PlayPause />
+    </ChessGame.Root>
+  );
+}
+```
+
 ## Demo
 
 Visit the [live demo](https://react-chess-tools.vercel.app/) to see the component in action.
@@ -84,18 +105,20 @@ Visit the [live demo](https://react-chess-tools.vercel.app/) to see the componen
 
 ### ChessGame.Root
 
-The root component that provides `ChessGameContext` to all child components. It instantiates a `Chess` instance using the `fen` prop.
+The root component that provides `ChessGameContext` to all child components. It instantiates a `Chess` instance using the `fen` prop and optionally sets up a chess clock.
 
 **Note:** This is a logic-only component (Context Provider). It does not render any DOM elements.
 
 #### Props
 
-| Name          | Type                    | Default           | Description                                  |
-| ------------- | ----------------------- | ----------------- | -------------------------------------------- |
-| `children`    | `ReactNode`             | -                 | Child components                             |
-| `fen`         | `string`                | Starting position | Initial FEN string for the chess game        |
-| `orientation` | `"w" \| "b"`            | `"w"`             | Board orientation (white or black at bottom) |
-| `theme`       | `PartialChessGameTheme` | -                 | Optional theme configuration                 |
+| Name               | Type                    | Default           | Description                                              |
+| ------------------ | ----------------------- | ----------------- | -------------------------------------------------------- |
+| `children`         | `ReactNode`             | -                 | Child components                                         |
+| `fen`              | `string`                | Starting position | Initial FEN string for the chess game                    |
+| `orientation`      | `"w" \| "b"`            | `"w"`             | Board orientation (white or black at bottom)             |
+| `theme`            | `PartialChessGameTheme` | -                 | Optional theme configuration                             |
+| `timeControl`      | `TimeControlConfig`     | -                 | Optional clock configuration to enable chess clock       |
+| `autoSwitchOnMove` | `boolean`               | `true`            | Auto-switch clock on move (when timeControl is provided) |
 
 #### Example
 
@@ -103,6 +126,7 @@ The root component that provides `ChessGameContext` to all child components. It 
 <ChessGame.Root
   fen="rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
   orientation="b"
+  timeControl={{ time: "10+5" }}
 >
   <ChessGame.Board />
 </ChessGame.Root>
@@ -207,6 +231,108 @@ Enables keyboard navigation through the game history.
 </ChessGame.Root>
 ```
 
+### ChessGame.Clock
+
+Integrated chess clock components. When `timeControl` is provided to `ChessGame.Root`, these components become available to display and control the clock.
+
+The clock automatically switches when moves are made on the board (can be disabled with `autoSwitchOnMove={false}`).
+
+**Note:** These are wrapper components that use the clock state from `ChessGame.Root`. No need for a separate `ChessClock.Root` provider.
+
+#### Available Components
+
+| Component                   | Description                                  |
+| --------------------------- | -------------------------------------------- |
+| `ChessGame.Clock.Display`   | Displays the current time for a player       |
+| `ChessGame.Clock.Switch`    | Button to manually switch the active clock   |
+| `ChessGame.Clock.PlayPause` | Button to start, pause, and resume the clock |
+| `ChessGame.Clock.Reset`     | Button to reset the clock                    |
+
+#### ChessGame.Clock.Display
+
+Displays the current time for a player.
+
+```tsx
+<ChessGame.Clock.Display
+  color="white"
+  format="auto"
+  style={{ fontFamily: "monospace", fontSize: "24px" }}
+/>
+```
+
+**Props:**
+
+| Name         | Type                                        | Default  | Description                        |
+| ------------ | ------------------------------------------- | -------- | ---------------------------------- |
+| `color`      | `"white" \| "black"`                        | -        | Player color to display (required) |
+| `format`     | `"auto" \| "mm:ss" \| "ss.d" \| "hh:mm:ss"` | `"auto"` | Time format                        |
+| `formatTime` | `(milliseconds: number) => string`          | -        | Custom time formatting function    |
+| `...`        | `HTMLAttributes<HTMLDivElement>`            | -        | All standard HTML div attributes   |
+
+#### ChessGame.Clock.Switch
+
+A button that manually switches the active player's clock.
+
+```tsx
+<ChessGame.Clock.Switch>Switch Turn</ChessGame.Clock.Switch>
+```
+
+**Props:**
+
+| Name      | Type                                      | Default | Description                            |
+| --------- | ----------------------------------------- | ------- | -------------------------------------- |
+| `asChild` | `boolean`                                 | `false` | Render as child element (slot pattern) |
+| `...`     | `ButtonHTMLAttributes<HTMLButtonElement>` | -       | All standard HTML button attributes    |
+
+#### ChessGame.Clock.PlayPause
+
+A button to start, pause, and resume the clock.
+
+```tsx
+<ChessGame.Clock.PlayPause
+  startContent="Start Game"
+  pauseContent="Pause"
+  resumeContent="Resume"
+/>
+```
+
+**Props:**
+
+| Name              | Type                                      | Default       | Description                            |
+| ----------------- | ----------------------------------------- | ------------- | -------------------------------------- |
+| `startContent`    | `ReactNode`                               | `"Start"`     | Content shown when clock is idle       |
+| `pauseContent`    | `ReactNode`                               | `"Pause"`     | Content shown when clock is running    |
+| `resumeContent`   | `ReactNode`                               | `"Resume"`    | Content shown when clock is paused     |
+| `delayedContent`  | `ReactNode`                               | `"Start"`     | Content shown when clock is delayed    |
+| `finishedContent` | `ReactNode`                               | `"Game Over"` | Content shown when clock is finished   |
+| `asChild`         | `boolean`                                 | `false`       | Render as child element (slot pattern) |
+| `...`             | `ButtonHTMLAttributes<HTMLButtonElement>` | -             | All standard HTML button attributes    |
+
+#### ChessGame.Clock.Reset
+
+A button that resets the clock.
+
+```tsx
+<ChessGame.Clock.Reset>Reset</ChessGame.Clock.Reset>;
+
+{
+  /* Reset with new time control */
+}
+<ChessGame.Clock.Reset timeControl="10+5">
+  Change to 10+5
+</ChessGame.Clock.Reset>;
+```
+
+**Props:**
+
+| Name          | Type                                      | Description                                   |
+| ------------- | ----------------------------------------- | --------------------------------------------- |
+| `timeControl` | `TimeControlInput`                        | New time control to apply on reset (optional) |
+| `asChild`     | `boolean`                                 | Render as child element (slot pattern)        |
+| `...`         | `ButtonHTMLAttributes<HTMLButtonElement>` | All standard HTML button attributes           |
+
+For more details on time control formats, timing methods, and clock start modes, see the [`@react-chess-tools/react-chess-clock` documentation](https://www.npmjs.com/package/@react-chess-tools/react-chess-clock).
+
 ## Hooks
 
 ### useChessGameContext
@@ -217,13 +343,14 @@ Access the chess game context from any child component.
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
 
 function GameStatus() {
-  const { currentFen, info, methods } = useChessGameContext();
+  const { currentFen, info, methods, clock } = useChessGameContext();
 
   return (
     <div>
       <p>Turn: {info.turn === "w" ? "White" : "Black"}</p>
       {info.isCheck && <p>Check!</p>}
       {info.isCheckmate && <p>Checkmate!</p>}
+      {clock && <p>White: {clock.times.white}ms</p>}
       <button onClick={() => methods.flipBoard()}>Flip Board</button>
     </div>
   );
@@ -232,16 +359,17 @@ function GameStatus() {
 
 #### Return Values
 
-| Name               | Type         | Description                         |
-| ------------------ | ------------ | ----------------------------------- |
-| `game`             | `Chess`      | The underlying chess.js instance    |
-| `orientation`      | `"w" \| "b"` | Current board orientation           |
-| `currentFen`       | `string`     | Current FEN string                  |
-| `currentPosition`  | `string`     | Current position in game history    |
-| `currentMoveIndex` | `number`     | Index of current move in history    |
-| `isLatestMove`     | `boolean`    | Whether viewing the latest position |
-| `methods`          | `Methods`    | Methods to interact with the game   |
-| `info`             | `Info`       | Game state information              |
+| Name               | Type                          | Description                           |
+| ------------------ | ----------------------------- | ------------------------------------- |
+| `game`             | `Chess`                       | The underlying chess.js instance      |
+| `orientation`      | `"w" \| "b"`                  | Current board orientation             |
+| `currentFen`       | `string`                      | Current FEN string                    |
+| `currentPosition`  | `string`                      | Current position in game history      |
+| `currentMoveIndex` | `number`                      | Index of current move in history      |
+| `isLatestMove`     | `boolean`                     | Whether viewing the latest position   |
+| `methods`          | `Methods`                     | Methods to interact with the game     |
+| `info`             | `Info`                        | Game state information                |
+| `clock`            | `UseChessClockReturn \| null` | Clock state (if timeControl provided) |
 
 #### Methods
 
@@ -289,6 +417,24 @@ function FullFeaturedGame() {
       <ChessGame.Sounds />
       <ChessGame.KeyboardControls />
       <ChessGame.Board />
+    </ChessGame.Root>
+  );
+}
+```
+
+### Game with Chess Clock
+
+```tsx
+import { ChessGame } from "@react-chess-tools/react-chess-game";
+
+function GameWithClock() {
+  return (
+    <ChessGame.Root timeControl={{ time: "5+3" }}>
+      <ChessGame.Clock.Display color="white" />
+      <ChessGame.Board />
+      <ChessGame.Clock.Display color="black" />
+      <ChessGame.Clock.PlayPause />
+      <ChessGame.Clock.Reset>Reset</ChessGame.Clock.Reset>
     </ChessGame.Root>
   );
 }
@@ -386,6 +532,30 @@ function GameWithStatus() {
       <ChessGame.Board />
       <ChessGame.Sounds />
     </ChessGame.Root>
+  );
+}
+```
+
+### Using ChessClock Directly
+
+You can also use `ChessClock` components directly alongside `ChessGame`:
+
+```tsx
+import { ChessGame, ChessClock } from "@react-chess-tools/react-chess-game";
+
+function GameWithSeparateClock() {
+  return (
+    <div>
+      <ChessClock.Root timeControl={{ time: "10+0" }}>
+        <ChessClock.Display color="white" />
+        <ChessClock.Display color="black" />
+        <ChessClock.PlayPause />
+      </ChessClock.Root>
+
+      <ChessGame.Root>
+        <ChessGame.Board />
+      </ChessGame.Root>
+    </div>
   );
 }
 ```
