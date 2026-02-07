@@ -35,9 +35,15 @@ export function formatClockTime(
     }
 
     case "mm:ss": {
-      const minutes = Math.floor(totalSeconds / 60);
+      const totalMinutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
-      return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+      // Show hours if time exceeds 60 minutes
+      if (totalMinutes >= 60) {
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+      }
+      return `${totalMinutes}:${seconds.toString().padStart(2, "0")}`;
     }
 
     case "hh:mm:ss": {

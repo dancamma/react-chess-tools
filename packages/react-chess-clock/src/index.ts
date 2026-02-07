@@ -2,6 +2,10 @@
 // Components
 // ============================================================================
 export { ChessClock } from "./components/ChessClock";
+export { Display } from "./components/ChessClock/parts/Display";
+export { Switch } from "./components/ChessClock/parts/Switch";
+export { PlayPause } from "./components/ChessClock/parts/PlayPause";
+export { Reset } from "./components/ChessClock/parts/Reset";
 
 // ============================================================================
 // Hooks
@@ -21,7 +25,9 @@ export {
   normalizeTimeControl,
   parseTimeControlConfig,
   getInitialTimes,
+  parseMultiPeriodTimeControl,
 } from "./utils/timeControl";
+export { presets } from "./utils/presets";
 
 // ============================================================================
 // Types
@@ -29,12 +35,14 @@ export {
 export type {
   // Time control types
   TimeControlString,
-  SinglePeriodTimeControl,
+  TimeControl,
+  TimeControlPhase,
   TimeControlInput,
   TimingMethod,
   ClockStartMode,
   TimeControlConfig,
   NormalizedTimeControl,
+  PeriodState,
   // State types
   ClockStatus,
   ClockColor,

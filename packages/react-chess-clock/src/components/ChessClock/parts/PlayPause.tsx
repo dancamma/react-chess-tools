@@ -90,7 +90,7 @@ export const PlayPause = React.forwardRef<
     // Treat "delayed" like "idle" - clock hasn't started yet
     const shouldShowStart = isIdle || isDelayed;
 
-    const isDisabled = disabled || isFinished;
+    const isDisabled = disabled || isFinished || isDelayed;
 
     const handleClick = React.useCallback(
       (e: React.MouseEvent<HTMLElement>) => {

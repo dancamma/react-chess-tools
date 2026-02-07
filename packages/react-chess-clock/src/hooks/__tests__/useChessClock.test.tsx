@@ -122,13 +122,57 @@ describe("useChessClock", () => {
   });
 
   describe("methods.start", () => {
-    it("should start the clock", () => {
-      const { result } = renderHook(() => useChessClock({ time: "5+0" }));
+    it("should start the clock from manual mode", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: "5+0",
+          clockStart: "manual",
+        }),
+      );
 
       act(() => {
         result.current.methods.start();
       });
 
+      expect(result.current.status).toBe("running");
+      expect(result.current.activePlayer).toBe("white");
+      expect(result.current.info.isRunning).toBe(true);
+    });
+
+    it("should not start countdown in delayed mode until after black's first move", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: "5+0",
+          clockStart: "delayed",
+        }),
+      );
+
+      expect(result.current.status).toBe("delayed");
+
+      act(() => {
+        result.current.methods.start();
+      });
+
+      // In delayed mode, START doesn't change the status
+      expect(result.current.status).toBe("delayed");
+      expect(result.current.activePlayer).toBeNull();
+      expect(result.current.info.isRunning).toBe(false);
+
+      // First switch (white moves)
+      act(() => {
+        result.current.methods.switch();
+      });
+
+      // Still delayed, black is now active
+      expect(result.current.status).toBe("delayed");
+      expect(result.current.activePlayer).toBe("black");
+
+      // Second switch (black moves) - clock starts running
+      act(() => {
+        result.current.methods.switch();
+      });
+
+      // Now the clock is running
       expect(result.current.status).toBe("running");
       expect(result.current.activePlayer).toBe("white");
       expect(result.current.info.isRunning).toBe(true);
@@ -179,6 +223,40 @@ describe("useChessClock", () => {
       });
 
       expect(result.current.status).toBe("idle");
+    });
+
+    it("should maintain correct time when paused (not jump back to move start)", async () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: "5+0",
+          clockStart: "immediate",
+        }),
+      );
+
+      const initialTime = result.current.times.white;
+      expect(initialTime).toBe(300_000);
+
+      // Wait for time to pass (the display updates every 100ms)
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      act(() => {
+        result.current.methods.pause();
+      });
+
+      const pausedTime = result.current.times.white;
+      // Time should have decreased from initial (time elapsed)
+      expect(pausedTime).toBeLessThan(initialTime);
+      expect(pausedTime).toBeGreaterThan(200_000); // Should be around 4:50 left
+
+      // Resume and check time continues from paused time (not from move start)
+      act(() => {
+        result.current.methods.resume();
+      });
+
+      const resumedTime = result.current.times.white;
+      // Time should be close to paused time (not jump back to initial)
+      expect(resumedTime).toBeLessThan(initialTime);
+      expect(resumedTime).toBeGreaterThan(pausedTime - 1000); // Within 1 second of paused time
     });
   });
 
@@ -462,7 +540,7 @@ describe("useOptionalChessClock", () => {
   });
 
   it("should work the same as useChessClock when enabled", () => {
-    const config = { time: "10+5" as const, clockStart: "immediate" as const };
+    const config = { time: "10+5" as const };
 
     const { result: optionalResult } = renderHook(() =>
       useOptionalChessClock(config),
@@ -476,5 +554,361 @@ describe("useOptionalChessClock", () => {
     expect(optionalResult.current?.activePlayer).toEqual(
       requiredResult.current.activePlayer,
     );
+  });
+});
+
+describe("useChessClock - multi-period time controls", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTime = 0;
+  });
+
+  describe("initialization", () => {
+    it("should initialize with multi-period state from array config", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: [
+            { baseTime: 5400, increment: 30, moves: 40 },
+            { baseTime: 1800, increment: 30 },
+          ],
+        }),
+      );
+
+      expect(result.current.totalPeriods).toBe(2);
+      expect(result.current.currentPeriodIndex).toEqual({ white: 0, black: 0 });
+      expect(result.current.periodMoves).toEqual({ white: 0, black: 0 });
+      expect(result.current.currentPeriod.white).toEqual({
+        baseTime: 5400,
+        increment: 30,
+        moves: 40,
+      });
+      expect(result.current.currentPeriod.black).toEqual({
+        baseTime: 5400,
+        increment: 30,
+        moves: 40,
+      });
+    });
+
+    it("should expose total periods correctly", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: [
+            { baseTime: 5400, increment: 30, moves: 40 },
+            { baseTime: 3600, increment: 30, moves: 20 },
+            { baseTime: 900, increment: 30 },
+          ],
+        }),
+      );
+
+      expect(result.current.totalPeriods).toBe(3);
+    });
+
+    it("should initialize with single period when not multi-period", () => {
+      const { result } = renderHook(() => useChessClock({ time: "5+3" }));
+
+      expect(result.current.totalPeriods).toBe(1);
+      expect(result.current.currentPeriodIndex).toEqual({ white: 0, black: 0 });
+      expect(result.current.currentPeriod.white).toMatchObject({
+        baseTime: 300,
+        increment: 3,
+      });
+      // Note: delay may be present in the actual object
+    });
+
+    it("should initialize initial times from first period", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: [
+            { baseTime: 5400, increment: 30, moves: 40 }, // 90 minutes
+            { baseTime: 1800, increment: 30 },
+          ],
+        }),
+      );
+
+      expect(result.current.times.white).toBe(5_400_000); // 90 minutes in ms
+      expect(result.current.times.black).toBe(5_400_000);
+    });
+  });
+
+  describe("period transitions", () => {
+    it("should track period moves for each player", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: [
+            { baseTime: 300, increment: 5, moves: 3 }, // 5 min, 3 moves to advance
+            { baseTime: 180, increment: 3 },
+          ],
+          clockStart: "immediate",
+        }),
+      );
+
+      // Initial state
+      expect(result.current.periodMoves).toEqual({ white: 0, black: 0 });
+
+      // White's first move
+      act(() => {
+        result.current.methods.switch();
+      });
+
+      expect(result.current.periodMoves).toEqual({ white: 1, black: 0 });
+
+      // Black's first move
+      act(() => {
+        result.current.methods.switch();
+      });
+
+      expect(result.current.periodMoves).toEqual({ white: 1, black: 1 });
+
+      // White's second move
+      act(() => {
+        result.current.methods.switch();
+      });
+
+      expect(result.current.periodMoves).toEqual({ white: 2, black: 1 });
+    });
+
+    it("should advance player to next period after completing required moves", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: [
+            { baseTime: 300, increment: 5, moves: 2 }, // 2 moves to advance
+            { baseTime: 180, increment: 3 },
+          ],
+          clockStart: "immediate",
+        }),
+      );
+
+      const initialWhiteTime = result.current.times.white;
+
+      // Make moves: white(1), black(1), white(2) -> white advances
+      act(() => {
+        result.current.methods.switch(); // white moves
+      });
+      expect(result.current.currentPeriodIndex.white).toBe(0);
+
+      act(() => {
+        result.current.methods.switch(); // black moves
+      });
+      expect(result.current.currentPeriodIndex.black).toBe(0);
+
+      act(() => {
+        result.current.methods.switch(); // white moves again (2nd move)
+      });
+
+      // White should advance to period 1
+      expect(result.current.currentPeriodIndex.white).toBe(1);
+      // Black should still be in period 0
+      expect(result.current.currentPeriodIndex.black).toBe(0);
+      // White's period moves should reset
+      expect(result.current.periodMoves.white).toBe(0);
+      // White should receive period 1's base time (180s = 180,000ms) plus increments from switches
+      expect(result.current.times.white).toBeGreaterThanOrEqual(
+        initialWhiteTime + 180_000,
+      );
+      expect(result.current.times.white).toBeLessThanOrEqual(
+        initialWhiteTime + 180_000 + 20_000, // Allow for increment variance
+      );
+      // White's current period should reflect new settings
+      expect(result.current.currentPeriod.white).toMatchObject({
+        baseTime: 180,
+        increment: 3,
+      });
+    });
+
+    it("should handle both players advancing simultaneously", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: [
+            { baseTime: 300, increment: 5, moves: 2 },
+            { baseTime: 180, increment: 3 },
+          ],
+          clockStart: "immediate",
+        }),
+      );
+
+      // Make 2 moves each: both should advance to period 1
+      for (let i = 0; i < 4; i++) {
+        act(() => {
+          result.current.methods.switch();
+        });
+      }
+
+      expect(result.current.currentPeriodIndex).toEqual({ white: 1, black: 1 });
+      expect(result.current.periodMoves).toEqual({ white: 0, black: 0 });
+    });
+
+    it("should not advance from sudden death period", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: [
+            { baseTime: 300, increment: 5, moves: 2 },
+            { baseTime: 180, increment: 3 }, // Sudden death
+          ],
+          clockStart: "immediate",
+        }),
+      );
+
+      // Advance to period 1
+      for (let i = 0; i < 4; i++) {
+        act(() => {
+          result.current.methods.switch();
+        });
+      }
+
+      expect(result.current.currentPeriodIndex).toEqual({ white: 1, black: 1 });
+
+      const whiteTimeAfterAdvance = result.current.times.white;
+
+      // Make more moves - should not advance further
+      for (let i = 0; i < 4; i++) {
+        act(() => {
+          result.current.methods.switch();
+        });
+      }
+
+      // Still in period 1
+      expect(result.current.currentPeriodIndex).toEqual({ white: 1, black: 1 });
+      // Period moves continue to increment
+      expect(result.current.periodMoves.white).toBeGreaterThan(0);
+      // No additional base time added
+      expect(result.current.times.white).not.toBeGreaterThan(
+        whiteTimeAfterAdvance + 10_000, // Allow for small timing variation
+      );
+    });
+  });
+
+  describe("reset with multi-period", () => {
+    it("should reset period state on reset", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: [
+            { baseTime: 300, increment: 5, moves: 2 },
+            { baseTime: 180, increment: 3 },
+          ],
+          clockStart: "immediate",
+        }),
+      );
+
+      // Advance to period 1
+      for (let i = 0; i < 4; i++) {
+        act(() => {
+          result.current.methods.switch();
+        });
+      }
+
+      expect(result.current.currentPeriodIndex).toEqual({ white: 1, black: 1 });
+
+      // Reset
+      act(() => {
+        result.current.methods.reset();
+      });
+
+      // Period state should be reset
+      expect(result.current.currentPeriodIndex).toEqual({ white: 0, black: 0 });
+      expect(result.current.periodMoves).toEqual({ white: 0, black: 0 });
+    });
+
+    it("should reset to new multi-period time control", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: [
+            { baseTime: 300, increment: 5, moves: 2 },
+            { baseTime: 180, increment: 3 },
+          ],
+        }),
+      );
+
+      expect(result.current.totalPeriods).toBe(2);
+
+      // Reset to single period
+      act(() => {
+        result.current.methods.reset("10+5");
+      });
+
+      expect(result.current.totalPeriods).toBe(1);
+      expect(result.current.currentPeriodIndex).toEqual({ white: 0, black: 0 });
+    });
+  });
+
+  describe("three-period time control", () => {
+    it("should handle three-period tournament time control", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: [
+            { baseTime: 5400, increment: 30, moves: 40 }, // Period 1
+            { baseTime: 3600, increment: 30, moves: 20 }, // Period 2
+            { baseTime: 900, increment: 30 }, // Period 3 (sudden death)
+          ],
+          clockStart: "immediate",
+        }),
+      );
+
+      expect(result.current.totalPeriods).toBe(3);
+
+      // Simulate completing period 1 (40 moves each)
+      // We'll do 4 moves to demonstrate the mechanics
+      const initialWhiteTime = result.current.times.white;
+
+      act(() => {
+        result.current.methods.switch(); // 1
+      });
+      act(() => {
+        result.current.methods.switch(); // 2
+      });
+      act(() => {
+        result.current.methods.switch(); // 3
+      });
+      act(() => {
+        result.current.methods.switch(); // 4
+      });
+
+      // After 4 moves (2 each), still in period 0
+      expect(result.current.currentPeriodIndex.white).toBe(0);
+      expect(result.current.periodMoves.white).toBe(2);
+      // Time should have increased due to increments (30 seconds per white move = 2 moves)
+      expect(result.current.times.white).toBeGreaterThan(initialWhiteTime);
+      expect(result.current.times.white).toBeLessThanOrEqual(
+        initialWhiteTime + 70_000, // Allow some variance
+      );
+    });
+  });
+
+  describe("independent player advancement", () => {
+    it("should handle white advancing while black stays in earlier period", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: [
+            { baseTime: 300, increment: 5, moves: 2 },
+            { baseTime: 180, increment: 3, moves: 2 },
+            { baseTime: 60, increment: 2 },
+          ],
+          clockStart: "immediate",
+        }),
+      );
+
+      // Make moves to demonstrate independent advancement
+      // With 2 moves per period:
+      // Switch 1: W=1, B=0
+      // Switch 2: W=1, B=1
+      // Switch 3: W=2->0 (advances), B=1
+      // Switch 4: W=0, B=2->0 (advances)
+      // Switch 5: W=1, B=0
+      // Switch 6: W=1, B=1
+      // Switch 7: W=2->0 (advances), B=1
+      // Switch 8: W=0, B=2->0 (advances)
+      for (let i = 0; i < 8; i++) {
+        act(() => {
+          result.current.methods.switch();
+        });
+      }
+
+      // After 8 moves (4 each), both players advance twice:
+      // - Each completes 2 moves in period 0 -> advance to period 1
+      // - Each completes 2 more moves in period 1 -> advance to period 2
+      expect(result.current.currentPeriodIndex.white).toBe(2);
+      expect(result.current.currentPeriodIndex.black).toBe(2);
+      expect(result.current.periodMoves.white).toBe(0); // Reset after second advancement
+      expect(result.current.periodMoves.black).toBe(0);
+    });
   });
 });

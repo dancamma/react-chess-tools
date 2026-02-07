@@ -9,12 +9,16 @@ export type useChessGameProps = {
   orientation?: Color;
   /** Optional clock configuration to enable chess clock functionality */
   timeControl?: TimeControlConfig;
+  /** Automatically switch the clock after each move (default: true).
+   * Set to false to let players manually press the clock, mimicking real-life over-the-board play. */
+  autoSwitchOnMove?: boolean;
 };
 
 export const useChessGame = ({
   fen,
   orientation: initialOrientation,
   timeControl,
+  autoSwitchOnMove = true,
 }: useChessGameProps = {}) => {
   const [game, setGame] = React.useState(() => {
     try {
@@ -40,10 +44,8 @@ export const useChessGame = ({
   const [currentMoveIndex, setCurrentMoveIndex] = React.useState(-1);
 
   const history = React.useMemo(() => game.history(), [game]);
-  const isLatestMove = React.useMemo(
-    () => currentMoveIndex === history.length - 1 || currentMoveIndex === -1,
-    [currentMoveIndex, history.length],
-  );
+  const isLatestMove =
+    currentMoveIndex === history.length - 1 || currentMoveIndex === -1;
 
   const info = React.useMemo(
     () => getGameInfo(game, orientation),
@@ -55,21 +57,9 @@ export const useChessGame = ({
     [fen, game, currentMoveIndex],
   );
 
-  const currentPosition = React.useMemo(
-    () => game.history()[currentMoveIndex],
-    [game, currentMoveIndex],
-  );
+  const currentPosition = game.history()[currentMoveIndex];
 
   const clockState = useOptionalChessClock(timeControl);
-
-  // Auto-pause clock on game over
-  useEffect(() => {
-    if (!clockState) return;
-
-    if (info.isGameOver && clockState.status === "running") {
-      clockState.methods.pause();
-    }
-  }, [info.isGameOver, clockState]);
 
   const setPosition = React.useCallback((fen: string, orientation: Color) => {
     try {
@@ -90,15 +80,38 @@ export const useChessGame = ({
         return false;
       }
 
+      // Don't allow moves after clock timeout
+      if (clockState && clockState.timeout !== null) {
+        return false;
+      }
+
       try {
         const copy = cloneGame(game);
         copy.move(move);
         setGame(copy);
         setCurrentMoveIndex(copy.history().length - 1);
 
-        // Switch clock after a move is made
-        if (clockState?.status !== "finished") {
-          clockState?.methods.switch();
+        // Auto-start clock on first move
+        if (clockState && clockState.status === "idle") {
+          clockState.methods.start();
+        }
+
+        // Pause clock on game over (checked immediately after move)
+        if (
+          clockState &&
+          clockState.status === "running" &&
+          copy.isGameOver()
+        ) {
+          clockState.methods.pause();
+        }
+
+        // Auto-switch clock after a move is made if enabled
+        if (
+          autoSwitchOnMove &&
+          clockState &&
+          clockState.status !== "finished"
+        ) {
+          clockState.methods.switch();
         }
 
         return true;
@@ -106,7 +119,7 @@ export const useChessGame = ({
         return false;
       }
     },
-    [isLatestMove, game, clockState],
+    [isLatestMove, game, clockState, autoSwitchOnMove],
   );
 
   const flipBoard = React.useCallback(() => {

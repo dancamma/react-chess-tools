@@ -3,11 +3,15 @@ import {
   createInitialClockState,
   ClockState,
 } from "../clockReducer";
+import { parseTimeControlConfig } from "../../utils/timeControl";
+import { ClockStatus, PeriodState } from "../../types";
 
 describe("clockReducer", () => {
   const initialTimes = { white: 300000, black: 300000 };
+  const defaultConfig = parseTimeControlConfig({ time: "5+0" });
 
-  function createState(overrides: Partial<ClockState> = {}): ClockState {
+  function createState(overrides?: Partial<ClockState>): ClockState {
+    const { moveStartTime, elapsedAtPause, ...rest } = overrides ?? {};
     return {
       times: initialTimes,
       initialTimes,
@@ -15,7 +19,10 @@ describe("clockReducer", () => {
       activePlayer: null,
       timeout: null,
       switchCount: 0,
-      ...overrides,
+      config: defaultConfig,
+      moveStartTime: moveStartTime ?? null,
+      elapsedAtPause: elapsedAtPause ?? 0,
+      ...rest,
     };
   }
 
@@ -193,22 +200,33 @@ describe("clockReducer", () => {
         times: { white: 0, black: 100000 },
       });
 
-      const newInitialTimes = { white: 600000, black: 600000 };
       const result = clockReducer(state, {
         type: "RESET",
-        payload: {
-          initialTimes: newInitialTimes,
-          status: "idle",
-          activePlayer: null,
-        },
+        payload: { time: "10+0" },
       });
 
-      expect(result.times).toEqual(newInitialTimes);
-      expect(result.initialTimes).toEqual(newInitialTimes);
-      expect(result.status).toBe("idle");
+      expect(result.times).toEqual({ white: 600000, black: 600000 });
+      expect(result.initialTimes).toEqual({ white: 600000, black: 600000 });
+      expect(result.status).toBe("delayed");
       expect(result.activePlayer).toBeNull();
       expect(result.timeout).toBeNull();
       expect(result.switchCount).toBe(0);
+    });
+
+    it("should reset to immediate clock start", () => {
+      const state = createState({
+        status: "finished",
+        activePlayer: "black",
+        timeout: "white",
+      });
+
+      const result = clockReducer(state, {
+        type: "RESET",
+        payload: { time: "10+0", clockStart: "immediate" },
+      });
+
+      expect(result.status).toBe("running");
+      expect(result.activePlayer).toBe("white");
     });
   });
 
@@ -270,9 +288,16 @@ describe("clockReducer", () => {
 });
 
 describe("createInitialClockState", () => {
+  const testConfig = parseTimeControlConfig({ time: "5+0" });
+
   it("should create initial state with provided values", () => {
     const initialTimes = { white: 300000, black: 300000 };
-    const state = createInitialClockState(initialTimes, "running", "white");
+    const state = createInitialClockState(
+      initialTimes,
+      "running",
+      "white",
+      testConfig,
+    );
 
     expect(state).toEqual({
       times: initialTimes,
@@ -281,14 +306,497 @@ describe("createInitialClockState", () => {
       activePlayer: "white",
       timeout: null,
       switchCount: 0,
+      periodState: undefined,
+      config: testConfig,
+      moveStartTime: expect.any(Number),
+      elapsedAtPause: 0,
     });
+    expect(state.moveStartTime).toBeGreaterThan(0);
   });
 
   it("should handle delayed status", () => {
     const initialTimes = { white: 600000, black: 600000 };
-    const state = createInitialClockState(initialTimes, "delayed", null);
+    const state = createInitialClockState(
+      initialTimes,
+      "delayed",
+      null,
+      testConfig,
+    );
 
     expect(state.status).toBe("delayed");
     expect(state.activePlayer).toBeNull();
+  });
+
+  it("should include periodState when provided", () => {
+    const initialTimes = { white: 300000, black: 300000 };
+    const periodState: PeriodState = {
+      periodIndex: { white: 0, black: 0 },
+      periodMoves: { white: 0, black: 0 },
+      periods: [
+        { baseTime: 5_400_000, increment: 30_000, moves: 40 },
+        { baseTime: 1_800_000, increment: 30_000 },
+      ],
+    };
+
+    const state = createInitialClockState(
+      initialTimes,
+      "running",
+      "white",
+      testConfig,
+      periodState,
+    );
+
+    expect(state.periodState).toEqual(periodState);
+  });
+});
+
+// ============================================================================
+// Multi-Period Time Control Tests
+// ============================================================================
+
+describe("clockReducer - multi-period time controls", () => {
+  const initialTimes = { white: 300000, black: 300000 };
+  const multiPeriodConfig = parseTimeControlConfig({
+    time: [
+      { baseTime: 5400, increment: 30, moves: 40 },
+      { baseTime: 1800, increment: 30 },
+    ],
+  });
+
+  function createState(overrides?: Partial<ClockState>): ClockState {
+    const { moveStartTime, elapsedAtPause, ...rest } = overrides ?? {};
+    return {
+      times: initialTimes,
+      initialTimes,
+      status: "idle",
+      activePlayer: null,
+      timeout: null,
+      switchCount: 0,
+      config: multiPeriodConfig,
+      moveStartTime: moveStartTime ?? null,
+      elapsedAtPause: elapsedAtPause ?? 0,
+      ...rest,
+    };
+  }
+
+  function createPeriodState(
+    periodIndex: { white: number; black: number },
+    periodMoves: { white: number; black: number },
+    periods: PeriodState["periods"],
+  ): PeriodState {
+    return {
+      periodIndex,
+      periodMoves,
+      periods,
+    };
+  }
+
+  describe("period advancement - both players simultaneously", () => {
+    it("should advance both players to next period when both complete required moves", () => {
+      const periods = [
+        { baseTime: 5_400_000, increment: 30_000, moves: 40 },
+        { baseTime: 1_800_000, increment: 30_000 },
+      ];
+
+      const periodState = createPeriodState(
+        { white: 0, black: 0 },
+        { white: 40, black: 40 },
+        periods,
+      );
+
+      const state = createState({
+        status: "running",
+        activePlayer: "white",
+        periodState,
+      });
+
+      const result = clockReducer(state, {
+        type: "SWITCH",
+        payload: { newTimes: { white: 100000, black: 100000 } },
+      });
+
+      // Both players advance to period 1
+      expect(result.periodState?.periodIndex).toEqual({ white: 1, black: 1 });
+      // Both players have move counters reset
+      expect(result.periodState?.periodMoves).toEqual({ white: 0, black: 0 });
+      // Both players receive next period's base time (1,800,000ms)
+      expect(result.times.white).toBe(100000 + 1_800_000);
+      expect(result.times.black).toBe(100000 + 1_800_000);
+    });
+
+    it("should add correct base time when advancing", () => {
+      const periods = [
+        { baseTime: 300_000, increment: 5_000, moves: 5 },
+        { baseTime: 180_000, increment: 3_000 },
+      ];
+
+      const periodState = createPeriodState(
+        { white: 0, black: 0 },
+        { white: 5, black: 5 },
+        periods,
+      );
+
+      const state = createState({
+        status: "running",
+        activePlayer: "white",
+        periodState,
+        times: { white: 150000, black: 150000 },
+      });
+
+      const result = clockReducer(state, {
+        type: "SWITCH",
+        payload: { newTimes: { white: 150000, black: 150000 } },
+      });
+
+      // Each player gets 180,000ms added
+      expect(result.times.white).toBe(150000 + 180_000);
+      expect(result.times.black).toBe(150000 + 180_000);
+    });
+  });
+
+  describe("period advancement - players at different rates", () => {
+    it("should advance only white when white completes required moves but black does not", () => {
+      const periods = [
+        { baseTime: 5_400_000, increment: 30_000, moves: 40 },
+        { baseTime: 1_800_000, increment: 30_000 },
+      ];
+
+      const periodState = createPeriodState(
+        { white: 0, black: 0 },
+        { white: 40, black: 35 },
+        periods,
+      );
+
+      const state = createState({
+        status: "running",
+        activePlayer: "white",
+        periodState,
+      });
+
+      const result = clockReducer(state, {
+        type: "SWITCH",
+        payload: { newTimes: { white: 100000, black: 100000 } },
+      });
+
+      // White advances, black stays in period 0
+      expect(result.periodState?.periodIndex).toEqual({ white: 1, black: 0 });
+      // White's move counter resets, black's continues
+      expect(result.periodState?.periodMoves).toEqual({ white: 0, black: 35 });
+      // Only white receives additional time
+      expect(result.times.white).toBe(100000 + 1_800_000);
+      expect(result.times.black).toBe(100000);
+    });
+
+    it("should advance only black when black completes required moves but white does not", () => {
+      const periods = [
+        { baseTime: 5_400_000, increment: 30_000, moves: 40 },
+        { baseTime: 1_800_000, increment: 30_000 },
+      ];
+
+      const periodState = createPeriodState(
+        { white: 0, black: 0 },
+        { white: 35, black: 40 },
+        periods,
+      );
+
+      const state = createState({
+        status: "running",
+        activePlayer: "black",
+        periodState,
+      });
+
+      const result = clockReducer(state, {
+        type: "SWITCH",
+        payload: { newTimes: { white: 100000, black: 100000 } },
+      });
+
+      expect(result.periodState?.periodIndex).toEqual({ white: 0, black: 1 });
+      expect(result.periodState?.periodMoves).toEqual({ white: 35, black: 0 });
+      expect(result.times.white).toBe(100000);
+      expect(result.times.black).toBe(100000 + 1_800_000);
+    });
+
+    it("should handle gradual catch-up - white advances first, black catches up later", () => {
+      const periods = [
+        { baseTime: 300_000, increment: 5_000, moves: 3 },
+        { baseTime: 180_000, increment: 3_000 },
+      ];
+
+      // Initial: white has 2 moves, black has 2 moves (one away from advancing)
+      const periodState = createPeriodState(
+        { white: 0, black: 0 },
+        { white: 2, black: 2 },
+        periods,
+      );
+
+      let state = createState({
+        status: "running",
+        activePlayer: "white",
+        periodState,
+      });
+
+      // First switch - white moves (3rd move), advances to period 1
+      let result = clockReducer(state, {
+        type: "SWITCH",
+        payload: { newTimes: { white: 100000, black: 100000 } },
+      });
+
+      expect(result.periodState?.periodIndex).toEqual({ white: 1, black: 0 });
+      expect(result.periodState?.periodMoves).toEqual({ white: 0, black: 2 });
+
+      // Second switch - black moves (3rd move), advances to period 1
+      state = { ...result, times: result.times };
+      result = clockReducer(state, {
+        type: "SWITCH",
+        payload: { newTimes: { white: 1900000, black: 100000 } },
+      });
+
+      // Both players now in period 1
+      expect(result.periodState?.periodIndex).toEqual({ white: 1, black: 1 });
+      expect(result.periodState?.periodMoves).toEqual({ white: 0, black: 0 });
+    });
+  });
+
+  describe("final sudden death period", () => {
+    it("should not advance from sudden death period", () => {
+      const periods = [
+        { baseTime: 5_400_000, increment: 30_000, moves: 40 },
+        { baseTime: 1_800_000, increment: 30_000 },
+      ];
+
+      const periodState = createPeriodState(
+        { white: 1, black: 1 },
+        { white: 50, black: 50 },
+        periods,
+      );
+
+      const state = createState({
+        status: "running",
+        activePlayer: "white",
+        periodState,
+      });
+
+      const result = clockReducer(state, {
+        type: "SWITCH",
+        payload: { newTimes: { white: 100000, black: 100000 } },
+      });
+
+      // No advancement from sudden death
+      expect(result.periodState?.periodIndex).toEqual({ white: 1, black: 1 });
+      // Move counter continues to increment (white was active, so white's count increases)
+      expect(result.periodState?.periodMoves).toEqual({ white: 51, black: 50 });
+      // No additional time added
+      expect(result.times.white).toBe(100000);
+      expect(result.times.black).toBe(100000);
+    });
+
+    it("should handle three-period time control with final sudden death", () => {
+      const periods = [
+        { baseTime: 5_400_000, increment: 30_000, moves: 40 },
+        { baseTime: 3_600_000, increment: 30_000, moves: 20 },
+        { baseTime: 900_000, increment: 30_000 },
+      ];
+
+      const periodState = createPeriodState(
+        { white: 1, black: 2 },
+        { white: 15, black: 25 },
+        periods,
+      );
+
+      const state = createState({
+        status: "running",
+        activePlayer: "white",
+        periodState,
+      });
+
+      const result = clockReducer(state, {
+        type: "SWITCH",
+        payload: { newTimes: { white: 500000, black: 200000 } },
+      });
+
+      // White in period 1, black in period 2 (sudden death)
+      expect(result.periodState?.periodIndex).toEqual({ white: 1, black: 2 });
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should handle exceeding required moves by more than 1", () => {
+      const periods = [
+        { baseTime: 300_000, increment: 5_000, moves: 5 },
+        { baseTime: 180_000, increment: 3_000 },
+      ];
+
+      const periodState = createPeriodState(
+        { white: 0, black: 0 },
+        { white: 10, black: 3 },
+        periods,
+      );
+
+      const state = createState({
+        status: "running",
+        activePlayer: "white",
+        periodState,
+      });
+
+      const result = clockReducer(state, {
+        type: "SWITCH",
+        payload: { newTimes: { white: 100000, black: 100000 } },
+      });
+
+      // White advances despite having way more moves than required
+      expect(result.periodState?.periodIndex).toEqual({ white: 1, black: 0 });
+      expect(result.periodState?.periodMoves).toEqual({ white: 0, black: 3 });
+    });
+
+    it("should handle zero moves required (treated as sudden death, no advancement)", () => {
+      const periods = [
+        { baseTime: 5_400_000, increment: 30_000, moves: 0 },
+        { baseTime: 1_800_000, increment: 30_000 },
+      ];
+
+      const periodState = createPeriodState(
+        { white: 0, black: 0 },
+        { white: 0, black: 0 },
+        periods,
+      );
+
+      const state = createState({
+        status: "running",
+        activePlayer: "white",
+        periodState,
+      });
+
+      const result = clockReducer(state, {
+        type: "SWITCH",
+        payload: { newTimes: { white: 100000, black: 100000 } },
+      });
+
+      // Zero moves is treated as falsy (like undefined), so no advancement occurs
+      // This is because !0 === true in the check at line 78
+      expect(result.periodState?.periodIndex).toEqual({ white: 0, black: 0 });
+      // Move count still increments
+      expect(result.periodState?.periodMoves).toEqual({ white: 1, black: 0 });
+    });
+
+    it("should advance when moves equals required after switch", () => {
+      const periods = [
+        { baseTime: 5_400_000, increment: 30_000, moves: 40 },
+        { baseTime: 1_800_000, increment: 30_000 },
+      ];
+
+      // Start with 39 moves each - one away from advancement
+      const periodState = createPeriodState(
+        { white: 0, black: 0 },
+        { white: 39, black: 39 },
+        periods,
+      );
+
+      const state = createState({
+        status: "running",
+        activePlayer: "white",
+        periodState,
+      });
+
+      const result = clockReducer(state, {
+        type: "SWITCH",
+        payload: { newTimes: { white: 100000, black: 100000 } },
+      });
+
+      // White moves (39 -> 40), which meets the requirement, so white advances
+      expect(result.periodState?.periodIndex).toEqual({ white: 1, black: 0 });
+      expect(result.periodState?.periodMoves).toEqual({ white: 0, black: 39 });
+    });
+  });
+
+  describe("delayed mode with multi-period", () => {
+    it("should track period moves during delayed mode", () => {
+      const periods = [
+        { baseTime: 300_000, increment: 5_000, moves: 2 },
+        { baseTime: 180_000, increment: 3_000 },
+      ];
+
+      const periodState = createPeriodState(
+        { white: 0, black: 0 },
+        { white: 0, black: 0 },
+        periods,
+      );
+
+      const state = createInitialClockState(
+        { white: 300000, black: 300000 },
+        "delayed",
+        null,
+        multiPeriodConfig,
+        periodState,
+      );
+
+      // First switch: white moves (delayed mode)
+      let result = clockReducer(state, { type: "SWITCH", payload: {} });
+
+      expect(result.status).toBe("delayed");
+      expect(result.activePlayer).toBe("black");
+      expect(result.periodState?.periodMoves).toEqual({ white: 1, black: 0 });
+
+      // Second switch: black moves (transition to running)
+      result = clockReducer(result, { type: "SWITCH", payload: {} });
+
+      expect(result.status).toBe("running");
+      expect(result.activePlayer).toBe("white");
+      expect(result.periodState?.periodMoves).toEqual({ white: 1, black: 1 });
+
+      // Third switch: white moves again (completes 2 moves, advances)
+      result = clockReducer(result, {
+        type: "SWITCH",
+        payload: { newTimes: { white: 300000, black: 300000 } },
+      });
+
+      expect(result.periodState?.periodIndex).toEqual({ white: 1, black: 0 });
+      expect(result.periodState?.periodMoves).toEqual({ white: 0, black: 1 });
+    });
+  });
+
+  describe("RESET with multi-period state", () => {
+    it("should reset period state to initial values", () => {
+      const periods = [
+        { baseTime: 5_400_000, increment: 30_000, moves: 40 },
+        { baseTime: 1_800_000, increment: 30_000 },
+      ];
+
+      const periodState: PeriodState = {
+        periodIndex: { white: 1, black: 0 },
+        periodMoves: { white: 15, black: 38 },
+        periods,
+      };
+
+      const state = createInitialClockState(
+        { white: 300000, black: 300000 },
+        "running",
+        "white",
+        multiPeriodConfig,
+        periodState,
+      );
+
+      const modifiedState = {
+        ...state,
+        times: { white: 100000, black: 200000 },
+        status: "paused" as ClockStatus,
+      };
+
+      const result = clockReducer(modifiedState, {
+        type: "RESET",
+        payload: {
+          time: [
+            { baseTime: 5400, increment: 30, moves: 40 },
+            { baseTime: 1800, increment: 30 },
+          ],
+          clockStart: "delayed",
+        },
+      });
+
+      expect(result.times).toEqual({ white: 5400000, black: 5400000 });
+      expect(result.status).toBe("delayed");
+      expect(result.activePlayer).toBeNull();
+      expect(result.periodState?.periodIndex).toEqual({ white: 0, black: 0 });
+      expect(result.periodState?.periodMoves).toEqual({ white: 0, black: 0 });
+    });
   });
 });

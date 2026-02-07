@@ -12,7 +12,7 @@ export type TimeControlString = `${number}+${number}` | `${number}`;
  * Single period time control configuration
  * Used for standalone games or the final period of tournament controls
  */
-export interface SinglePeriodTimeControl {
+export interface TimeControl {
   /** Base time in seconds */
   baseTime: number;
   /** Increment in seconds (default: 0) */
@@ -22,9 +22,20 @@ export interface SinglePeriodTimeControl {
 }
 
 /**
- * Time control input - accepts string notation or object configuration
+ * A single time control period for tournament play
  */
-export type TimeControlInput = TimeControlString | SinglePeriodTimeControl;
+export interface TimeControlPhase extends TimeControl {
+  /** Moves required in this period (undefined = sudden death period) */
+  moves?: number;
+}
+
+/**
+ * Time control input - accepts string notation, object configuration, or multi-period array
+ */
+export type TimeControlInput =
+  | TimeControlString
+  | TimeControl
+  | TimeControlPhase[];
 
 /**
  * Clock timing method
@@ -71,6 +82,7 @@ export interface TimeControlConfig {
   timingMethod?: TimingMethod;
   /** Clock start behavior (default: 'delayed') */
   clockStart?: ClockStartMode;
+
   /** Callback when a player's time runs out */
   onTimeout?: (loser: ClockColor) => void;
   /** Callback when active player switches */
@@ -80,7 +92,25 @@ export interface TimeControlConfig {
 }
 
 /**
- * Normalized time control (internal use)
+ * Period tracking state (only used for multi-period controls)
+ */
+export interface PeriodState {
+  /** Current period index for each player (0-based) */
+  periodIndex: {
+    white: number;
+    black: number;
+  };
+  /** Moves made in current period by each player */
+  periodMoves: {
+    white: number;
+    black: number;
+  };
+  /** All periods for this time control */
+  periods: TimeControlPhase[];
+}
+
+/**
+ * Normalized time control with all times converted to milliseconds
  */
 export interface NormalizedTimeControl {
   baseTime: number; // milliseconds
@@ -90,6 +120,8 @@ export interface NormalizedTimeControl {
   clockStart: ClockStartMode;
   whiteTimeOverride?: number; // milliseconds
   blackTimeOverride?: number; // milliseconds
+  /** Multi-period configuration (present only for multi-period time controls) */
+  periods?: TimeControlPhase[];
 }
 
 // ============================================================================
@@ -148,6 +180,20 @@ export interface UseChessClockReturn {
 
   // Computed
   info: ClockInfo;
+
+  currentPeriodIndex: {
+    white: number;
+    black: number;
+  };
+  totalPeriods: number;
+  currentPeriod: {
+    white: TimeControlPhase;
+    black: TimeControlPhase;
+  };
+  periodMoves: {
+    white: number;
+    black: number;
+  };
 
   // Methods
   methods: ClockMethods;

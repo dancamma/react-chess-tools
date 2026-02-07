@@ -27,6 +27,13 @@ describe("formatClockTime", () => {
       expect(formatClockTime(300_000, "mm:ss")).toBe("5:00");
       expect(formatClockTime(365_000, "mm:ss")).toBe("6:05");
     });
+
+    it("should show hours when time exceeds 60 minutes", () => {
+      expect(formatClockTime(3_600_000, "mm:ss")).toBe("1:00:00");
+      expect(formatClockTime(3_665_000, "mm:ss")).toBe("1:01:05");
+      expect(formatClockTime(5_400_000, "mm:ss")).toBe("1:30:00");
+      expect(formatClockTime(7_200_000, "mm:ss")).toBe("2:00:00");
+    });
   });
 
   describe("ss.d format", () => {

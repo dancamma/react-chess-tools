@@ -12,8 +12,10 @@ import type {
   ClockMethods,
   ClockTimes,
   NormalizedTimeControl,
+  PeriodState,
   TimeControlConfig,
   TimeControlInput,
+  UseChessClockReturn,
 } from "../types";
 import { parseTimeControlConfig, getInitialTimes } from "../utils/timeControl";
 import { formatClockTime } from "../utils/formatTime";
@@ -29,54 +31,24 @@ const DISABLED_CLOCK_CONFIG: TimeControlConfig = {
   time: { baseTime: 0 },
 };
 
-/**
- * Timing refs track elapsed time without triggering React re-renders.
- *
- * Chess clocks need millisecond-precision timing for smooth countdown display.
- * Using React state for timing would cause re-renders on every "tick", degrading
- * performance. Refs provide mutable storage that persists across renders.
- *
- * Key concept: Display time is calculated as `baseTime - elapsed`, where `elapsed`
- * is derived from these refs combined with the current timestamp.
- */
-interface TimingRefs {
-  /**
-   * Timestamp (ms since epoch) when the current player's move started.
-   * Used to calculate elapsed time as `Date.now() - moveStartTime`.
-   * Set to null when the clock hasn't started yet.
-   */
-  moveStartTime: number | null;
-
-  /**
-   * When the clock is paused, this stores the elapsed time (in ms) at the
-   * moment of pause. This allows resuming without "losing" the paused time.
-   *
-   * On resume, moveStartTime is adjusted backward by this amount so the
-   * elapsed calculation continues seamlessly.
-   */
-  elapsedAtPause: number;
-}
-
-/** Creates a fresh TimingRefs object with initial values. Used on clock reset. */
-function createTimingRefs(): TimingRefs {
-  return {
-    moveStartTime: null,
-    elapsedAtPause: 0,
-  };
-}
-
 function calculateDisplayTime(
   baseTime: number,
   moveStartTime: number | null,
   elapsedAtPause: number,
-  isPaused: boolean,
   timingMethod: string,
   delay: number,
 ): number {
-  if (moveStartTime === null) return baseTime;
+  // When paused, use the elapsed time stored at pause moment
+  if (moveStartTime === null) {
+    let effectiveElapsed = elapsedAtPause;
+    if (timingMethod === "delay") {
+      effectiveElapsed = Math.max(0, elapsedAtPause - delay);
+    }
+    return Math.max(0, baseTime - effectiveElapsed);
+  }
 
   const now = Date.now();
-  const rawElapsed = isPaused ? elapsedAtPause : now - moveStartTime;
+  const rawElapsed = now - moveStartTime;
 
   // Apply delay method: time doesn't decrement during delay period
   let effectiveElapsed = rawElapsed;
@@ -88,123 +60,110 @@ function calculateDisplayTime(
 }
 
 /**
- * Main hook for chess clock state management
- * Provides timing functionality for chess games with various timing methods
+ * Main hook for chess clock state management.
+ * Provides timing functionality for chess games with various timing methods.
+ *
+ * For server-authoritative clocks, use `methods.setTime()` to sync server times.
+ * The clock will restart its display interpolation from the new value on each call.
  *
  * @param options - Clock configuration options
  * @returns Clock state, info, and methods
  */
-export function useChessClock(options: TimeControlConfig) {
+export function useChessClock(options: TimeControlConfig): UseChessClockReturn {
   // Parse and normalize time control configuration
-  const config = useMemo<NormalizedTimeControl>(
-    () => parseTimeControlConfig(options),
-    [options],
-  );
+  // Note: Not memoized - parseTimeControlConfig is lightweight and options is
+  // typically passed inline (e.g., useChessClock({ time: "5+3" }))
+  const initialConfig: NormalizedTimeControl = parseTimeControlConfig(options);
 
   // Get initial times
-  const initialTimesValue = useMemo(() => getInitialTimes(config), [config]);
+  const initialTimesValue = getInitialTimes(initialConfig);
+
+  // Initialize period state for multi-period time controls
+  const initialPeriodState: PeriodState | undefined =
+    initialConfig.periods && initialConfig.periods.length > 1
+      ? {
+          periodIndex: { white: 0, black: 0 },
+          periodMoves: { white: 0, black: 0 },
+          periods: initialConfig.periods,
+        }
+      : undefined;
 
   // Initialize reducer with computed initial state
   const [state, dispatch] = useReducer(clockReducer, null, () =>
     createInitialClockState(
       initialTimesValue,
-      getInitialStatus(config.clockStart),
-      getInitialActivePlayer(config.clockStart),
+      getInitialStatus(initialConfig.clockStart),
+      getInitialActivePlayer(initialConfig.clockStart),
+      initialConfig,
+      initialPeriodState,
     ),
   );
-
-  // Timing refs stored in a single ref object to track elapsed time without triggering re-renders.
-  // Display updates every 100ms for smooth-enough animation.
-  const timing = useRef<TimingRefs>(createTimingRefs());
-
-  // Display times - local state for periodic updates, synced with times in state
-  const [displayTimes, setDisplayTimes] =
-    useState<ClockTimes>(initialTimesValue);
 
   // Options ref for callbacks (avoid stale closures)
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  // Sync display times with state times when they change (e.g., after SWITCH, ADD_TIME, etc.)
-  useEffect(() => {
-    setDisplayTimes(state.times);
-  }, [state.times]);
+  // State ref for callbacks (avoid stale closures)
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
-  // Initialize move start time when clock starts
-  useEffect(() => {
-    if (
-      state.status === "running" &&
-      state.activePlayer !== null &&
-      timing.current.moveStartTime === null
-    ) {
-      timing.current.moveStartTime = Date.now();
-    }
-  }, [state.status, state.activePlayer]);
+  // ============================================================================
+  // DISPLAY STATE
+  // ============================================================================
 
-  // Pause/Resume Handling (adjust timing refs)
-  const prevStatusRef = useRef(state.status);
-  useEffect(() => {
-    const prevStatus = prevStatusRef.current;
-    prevStatusRef.current = state.status;
+  // Tick counter for triggering re-renders when clock is running
+  const [tick, forceUpdate] = useState(0);
 
-    if (prevStatus === "running" && state.status === "paused") {
-      // Pausing: store elapsed time
-      if (timing.current.moveStartTime !== null) {
-        timing.current.elapsedAtPause =
-          Date.now() - timing.current.moveStartTime;
-      }
-    } else if (prevStatus === "paused" && state.status === "running") {
-      // Resuming: reset start time based on stored elapsed
-      timing.current.moveStartTime = Date.now() - timing.current.elapsedAtPause;
-    }
-  }, [state.status]);
+  // Display times derived during render (no useMemo — state values change frequently)
+  const displayTimes: ClockTimes =
+    state.activePlayer === null
+      ? state.times
+      : {
+          ...state.times,
+          [state.activePlayer]: calculateDisplayTime(
+            state.times[state.activePlayer],
+            state.moveStartTime,
+            state.elapsedAtPause,
+            state.config.timingMethod,
+            state.config.delay,
+          ),
+        };
 
-  // Display Update Loop (100ms interval)
+  // Derive primitive for timeout detection (prevents effect running on every render)
+  const activePlayerTimedOut =
+    state.status === "running" &&
+    state.activePlayer !== null &&
+    displayTimes[state.activePlayer] <= 0;
+
+  // ============================================================================
+  // DISPLAY UPDATE LOOP (100ms interval)
+  // ============================================================================
+
   useEffect(() => {
     if (state.status !== "running" || state.activePlayer === null) {
       return;
     }
 
-    function tick() {
-      const currentTime = calculateDisplayTime(
-        state.times[state.activePlayer!],
-        timing.current.moveStartTime,
-        timing.current.elapsedAtPause,
-        false,
-        config.timingMethod,
-        config.delay,
-      );
+    const intervalId = setInterval(() => forceUpdate((c) => c + 1), 100);
 
-      const newDisplayTimes = {
-        ...state.times,
-        [state.activePlayer!]: currentTime,
-      };
-
-      setDisplayTimes(newDisplayTimes);
-      optionsRef.current.onTimeUpdate?.(newDisplayTimes);
-    }
-
-    const intervalId = setInterval(tick, 100);
     return () => clearInterval(intervalId);
-  }, [
-    state.status,
-    state.activePlayer,
-    state.times,
-    config.timingMethod,
-    config.delay,
-  ]);
+  }, [state.status, state.activePlayer]);
+
+  // Notify consumer of time updates (only on clock ticks, not on every render)
+  useEffect(() => {
+    if (state.status === "running" && state.activePlayer !== null) {
+      optionsRef.current.onTimeUpdate?.(displayTimes);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tick]);
 
   // Timeout Detection
   useEffect(() => {
-    if (
-      state.status === "running" &&
-      state.activePlayer !== null &&
-      displayTimes[state.activePlayer] <= 0
-    ) {
+    if (activePlayerTimedOut && state.activePlayer !== null) {
       dispatch({ type: "TIMEOUT", payload: { player: state.activePlayer } });
       optionsRef.current.onTimeout?.(state.activePlayer);
     }
-  }, [state.status, state.activePlayer, displayTimes]);
+  }, [activePlayerTimedOut, state.activePlayer]);
 
   // Active Player Change Callback
   const previousActivePlayerRef = useRef(state.activePlayer);
@@ -218,94 +177,94 @@ export function useChessClock(options: TimeControlConfig) {
     previousActivePlayerRef.current = state.activePlayer;
   }, [state.activePlayer]);
 
-  // Computed Info
-  const info = useMemo<ClockInfo>(
-    () => ({
-      isRunning: state.status === "running",
-      isPaused: state.status === "paused",
-      isFinished: state.status === "finished",
-      isWhiteActive: state.activePlayer === "white",
-      isBlackActive: state.activePlayer === "black",
-      hasTimeout: state.timeout !== null,
-      hasTimeOdds: state.initialTimes.white !== state.initialTimes.black,
-    }),
-    [state.status, state.activePlayer, state.timeout, state.initialTimes],
-  );
+  // ============================================================================
+  // COMPUTED INFO
+  // ============================================================================
 
-  // Methods
+  // Info object: object creation is cheaper than useMemo comparison overhead
+  const info: ClockInfo = {
+    isRunning: state.status === "running",
+    isPaused: state.status === "paused",
+    isFinished: state.status === "finished",
+    isWhiteActive: state.activePlayer === "white",
+    isBlackActive: state.activePlayer === "black",
+    hasTimeout: state.timeout !== null,
+    // Time odds is based on initial configuration, not current remaining time
+    hasTimeOdds: state.initialTimes.white !== state.initialTimes.black,
+  };
+
+  // ============================================================================
+  // METHODS
+  // ============================================================================
+
   const start = useCallback(() => {
-    if (state.status === "finished") return;
-
-    if (timing.current.moveStartTime === null) {
-      timing.current.moveStartTime = Date.now();
-    }
-
-    dispatch({ type: "START" });
-  }, [state.status]);
+    dispatch({ type: "START", payload: { now: Date.now() } });
+  }, []);
 
   const pause = useCallback(() => {
-    dispatch({ type: "PAUSE" });
+    dispatch({ type: "PAUSE", payload: { now: Date.now() } });
   }, []);
 
   const resume = useCallback(() => {
-    dispatch({ type: "RESUME" });
+    dispatch({ type: "RESUME", payload: { now: Date.now() } });
   }, []);
 
   const switchPlayer = useCallback(() => {
+    const currentState = stateRef.current;
     const now = Date.now();
 
-    // Calculate time adjustment for current player (only when not in delayed mode)
+    // Calculate time adjustment for current player (not in delayed mode)
     let newTimes: ClockTimes | undefined;
     if (
-      state.status !== "delayed" &&
-      state.activePlayer &&
-      timing.current.moveStartTime !== null
+      currentState.status !== "delayed" &&
+      currentState.activePlayer &&
+      currentState.moveStartTime !== null
     ) {
-      const timeSpent = now - timing.current.moveStartTime;
-      const currentTime = state.times[state.activePlayer];
+      const timeSpent = now - currentState.moveStartTime;
+      const currentTime = currentState.times[currentState.activePlayer];
 
-      const newTime = calculateSwitchTime(currentTime, timeSpent, config);
+      const newTime = calculateSwitchTime(
+        currentTime,
+        timeSpent,
+        currentState.config,
+      );
 
-      newTimes = { ...state.times, [state.activePlayer]: newTime };
-      optionsRef.current.onTimeUpdate?.(newTimes);
-
-      // Reset timing for next player
-      timing.current.moveStartTime = now;
-      timing.current.elapsedAtPause = 0;
+      newTimes = {
+        ...currentState.times,
+        [currentState.activePlayer]: newTime,
+      };
     }
 
-    dispatch({ type: "SWITCH", payload: { newTimes } });
-  }, [state.status, state.activePlayer, state.times, config]);
+    dispatch({ type: "SWITCH", payload: { newTimes, now } });
+  }, []);
 
-  const reset = useCallback(
-    (newTimeControl?: TimeControlInput) => {
-      const newConfig = newTimeControl
-        ? parseTimeControlConfig({ ...options, time: newTimeControl })
-        : config;
+  const reset = useCallback((newTimeControl?: TimeControlInput) => {
+    // Build the full config for the reducer
+    const currentOptions = optionsRef.current;
+    const resetConfig: TimeControlConfig = newTimeControl
+      ? { ...currentOptions, time: newTimeControl }
+      : currentOptions;
 
-      const newInitialTimes = getInitialTimes(newConfig);
-
-      // Reset timing refs
-      timing.current = createTimingRefs();
-
-      dispatch({
-        type: "RESET",
-        payload: {
-          initialTimes: newInitialTimes,
-          status: getInitialStatus(newConfig.clockStart),
-          activePlayer: getInitialActivePlayer(newConfig.clockStart),
-        },
-      });
-    },
-    [config, options],
-  );
+    // The reducer will parse the config, update state.config, and reset timing state
+    dispatch({ type: "RESET", payload: resetConfig });
+  }, []);
 
   const addTime = useCallback((player: ClockColor, milliseconds: number) => {
-    dispatch({ type: "ADD_TIME", payload: { player, milliseconds } });
+    dispatch({
+      type: "ADD_TIME",
+      payload: { player, milliseconds, now: Date.now() },
+    });
+    // Note: when adding time while clock is running, we update the base time
+    // but moveStartTime stays the same, so the display interpolates correctly
   }, []);
 
   const setTime = useCallback((player: ClockColor, milliseconds: number) => {
-    dispatch({ type: "SET_TIME", payload: { player, milliseconds } });
+    dispatch({
+      type: "SET_TIME",
+      payload: { player, milliseconds, now: Date.now() },
+    });
+    // Note: when setting time while clock is running, we update the base time
+    // but moveStartTime stays the same, so the display interpolates correctly
   }, []);
 
   // Memoize methods
@@ -322,14 +281,66 @@ export function useChessClock(options: TimeControlConfig) {
     [start, pause, resume, switchPlayer, reset, addTime, setTime],
   );
 
+  // Computed period information
+  const periodInfo = useMemo(() => {
+    if (!state.periodState) {
+      // Single period: return defaults
+      return {
+        currentPeriodIndex: { white: 0, black: 0 },
+        totalPeriods: 1,
+        currentPeriod: {
+          white: {
+            baseTime: state.config.baseTime / 1000,
+            increment: state.config.increment / 1000,
+            delay: state.config.delay / 1000,
+          },
+          black: {
+            baseTime: state.config.baseTime / 1000,
+            increment: state.config.increment / 1000,
+            delay: state.config.delay / 1000,
+          },
+        },
+        periodMoves: { white: 0, black: 0 },
+      };
+    }
+
+    // Get current period for each player (with bounds checking)
+    // Convert from internal milliseconds back to seconds for public API
+    const periods = state.periodState.periods;
+    const getCurrentPeriod = (periodIndex: number) => {
+      const period =
+        periodIndex >= 0 && periodIndex < periods.length
+          ? periods[periodIndex]
+          : periods[0];
+      return {
+        ...period,
+        baseTime: period.baseTime / 1000,
+        increment:
+          period.increment !== undefined ? period.increment / 1000 : undefined,
+        delay: period.delay !== undefined ? period.delay / 1000 : undefined,
+      };
+    };
+
+    return {
+      currentPeriodIndex: state.periodState.periodIndex,
+      totalPeriods: periods.length,
+      currentPeriod: {
+        white: getCurrentPeriod(state.periodState.periodIndex.white),
+        black: getCurrentPeriod(state.periodState.periodIndex.black),
+      },
+      periodMoves: state.periodState.periodMoves,
+    };
+  }, [state.periodState, state.config]);
+
   return {
     times: displayTimes,
     initialTimes: state.initialTimes,
     status: state.status,
     activePlayer: state.activePlayer,
     timeout: state.timeout,
-    timingMethod: config.timingMethod,
+    timingMethod: state.config.timingMethod,
     info,
+    ...periodInfo,
     methods,
   };
 }

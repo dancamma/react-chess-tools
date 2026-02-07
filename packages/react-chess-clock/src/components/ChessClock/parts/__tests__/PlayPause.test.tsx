@@ -283,34 +283,15 @@ describe("ChessClock.PlayPause", () => {
       );
     });
 
-    it("should start clock on click when delayed", () => {
-      render(
-        <ChessClock.Root timeControl={{ time: "5+0", clockStart: "delayed" }}>
-          <ChessClock.Display color="white" data-testid="clock" />
-          <ChessClock.PlayPause>Start</ChessClock.PlayPause>
-        </ChessClock.Root>,
-      );
-
-      const clock = screen.getByTestId("clock");
-
-      // Clock is delayed
-      expect(clock).toHaveAttribute("data-clock-status", "delayed");
-
-      // Click to start (skips the two-switch mechanism)
-      fireEvent.click(screen.getByRole("button"));
-
-      // Clock is running immediately
-      expect(clock).toHaveAttribute("data-clock-status", "running");
-    });
-
-    it("should not be disabled when clock is delayed", () => {
+    it("should be disabled when clock is delayed", () => {
       render(
         <ChessClock.Root timeControl={{ time: "5+0", clockStart: "delayed" }}>
           <ChessClock.PlayPause>Start</ChessClock.PlayPause>
         </ChessClock.Root>,
       );
 
-      expect(screen.getByRole("button")).not.toBeDisabled();
+      // In delayed mode, the button is disabled since clock starts via player moves
+      expect(screen.getByRole("button")).toBeDisabled();
     });
   });
 

@@ -14,6 +14,8 @@ export interface RootProps {
   theme?: PartialChessGameTheme;
   /** Optional clock configuration to enable chess clock functionality */
   timeControl?: TimeControlConfig;
+  /** Auto-switch clock on move (default: true) */
+  autoSwitchOnMove?: boolean;
 }
 
 export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
@@ -21,9 +23,15 @@ export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
   orientation,
   theme,
   timeControl,
+  autoSwitchOnMove,
   children,
 }) => {
-  const context = useChessGame({ fen, orientation, timeControl });
+  const context = useChessGame({
+    fen,
+    orientation,
+    timeControl,
+    autoSwitchOnMove,
+  });
 
   // Merge partial theme with defaults
   const mergedTheme = React.useMemo(() => mergeTheme(theme), [theme]);

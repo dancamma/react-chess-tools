@@ -3,6 +3,7 @@ import {
   normalizeTimeControl,
   parseTimeControlConfig,
   getInitialTimes,
+  parseMultiPeriodTimeControl,
 } from "../timeControl";
 
 describe("parseTimeControlString", () => {
@@ -17,7 +18,7 @@ describe("parseTimeControlString", () => {
   it("should parse time control with increment", () => {
     const result = parseTimeControlString("5+3");
     expect(result).toEqual({
-      baseTime: 300, // 5 minutes in seconds
+      baseTime: 300,
       increment: 3,
     });
   });
@@ -42,10 +43,13 @@ describe("parseTimeControlString", () => {
   });
 
   it("should throw error for invalid format", () => {
+    // @ts-expect-error - parseTimeControlString throws for invalid input
     expect(() => parseTimeControlString("invalid")).toThrow(
       "Invalid time control",
     );
+    // @ts-expect-error - parseTimeControlString throws for invalid input
     expect(() => parseTimeControlString("5-3")).toThrow("Invalid time control");
+    // @ts-expect-error - parseTimeControlString throws for invalid input
     expect(() => parseTimeControlString("")).toThrow("Invalid time control");
   });
 });
@@ -192,6 +196,219 @@ describe("getInitialTimes", () => {
     expect(result).toEqual({
       white: 300_000, // Falls back to base time
       black: 180_000,
+    });
+  });
+});
+
+describe("parseMultiPeriodTimeControl", () => {
+  describe("valid formats", () => {
+    it("should parse simple two-period time control", () => {
+      const result = parseMultiPeriodTimeControl("40/90+30,sd/30+30");
+      expect(result).toEqual([
+        { baseTime: 5400, increment: 30, moves: 40 },
+        { baseTime: 1800, increment: 30 },
+      ]);
+    });
+
+    it("should parse three-period time control", () => {
+      const result = parseMultiPeriodTimeControl("40/90+30,20/60+30,g/15+30");
+      expect(result).toEqual([
+        { baseTime: 5400, increment: 30, moves: 40 },
+        { baseTime: 3600, increment: 30, moves: 20 },
+        { baseTime: 900, increment: 30 },
+      ]);
+    });
+
+    it("should parse with SD prefix (uppercase)", () => {
+      const result = parseMultiPeriodTimeControl("40/90,SD/30");
+      expect(result).toMatchObject([
+        { baseTime: 5400, moves: 40 },
+        { baseTime: 1800 },
+      ]);
+    });
+
+    it("should parse with sd prefix (lowercase)", () => {
+      const result = parseMultiPeriodTimeControl("40/90,sd/30");
+      expect(result).toMatchObject([
+        { baseTime: 5400, moves: 40 },
+        { baseTime: 1800 },
+      ]);
+    });
+
+    it("should parse with G prefix", () => {
+      const result = parseMultiPeriodTimeControl("40/90,G/30");
+      expect(result).toMatchObject([
+        { baseTime: 5400, moves: 40 },
+        { baseTime: 1800 },
+      ]);
+    });
+
+    it("should parse with g prefix (lowercase)", () => {
+      const result = parseMultiPeriodTimeControl("40/90,g/30");
+      expect(result).toMatchObject([
+        { baseTime: 5400, moves: 40 },
+        { baseTime: 1800 },
+      ]);
+    });
+
+    it("should handle whitespace around commas", () => {
+      const result = parseMultiPeriodTimeControl("40/90+30 , sd/30+30");
+      expect(result).toEqual([
+        { baseTime: 5400, increment: 30, moves: 40 },
+        { baseTime: 1800, increment: 30 },
+      ]);
+    });
+
+    it("should parse period without increment", () => {
+      const result = parseMultiPeriodTimeControl("40/90,sd/30");
+      expect(result).toMatchObject([
+        { baseTime: 5400, moves: 40 },
+        { baseTime: 1800 },
+      ]);
+    });
+
+    it("should parse period with decimal minutes", () => {
+      const result = parseMultiPeriodTimeControl("40/90.5,sd/30");
+      expect(result).toMatchObject([
+        { baseTime: 5430, moves: 40 },
+        { baseTime: 1800 },
+      ]);
+    });
+
+    it("should parse decimal increment", () => {
+      const result = parseMultiPeriodTimeControl("40/90+2.5,sd/30");
+      expect(result).toMatchObject([
+        { baseTime: 5400, increment: 3, moves: 40 }, // Note: 2.5 gets rounded to 3
+        { baseTime: 1800 },
+      ]);
+    });
+
+    it("should parse simple sudden death format without moves prefix", () => {
+      const result = parseMultiPeriodTimeControl("sd/30+10");
+      expect(result).toEqual([{ baseTime: 1800, increment: 10 }]);
+    });
+
+    it("should parse G/ format without moves prefix", () => {
+      const result = parseMultiPeriodTimeControl("G/30+10");
+      expect(result).toEqual([{ baseTime: 1800, increment: 10 }]);
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should handle single period (sudden death only)", () => {
+      const result = parseMultiPeriodTimeControl("sd/30+10");
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({ baseTime: 1800, increment: 10 });
+    });
+
+    it("should handle single period with moves", () => {
+      const result = parseMultiPeriodTimeControl("40/90+30");
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({ baseTime: 5400, increment: 30, moves: 40 });
+    });
+
+    it("should handle very large move counts", () => {
+      const result = parseMultiPeriodTimeControl("100/120,sd/30");
+      expect(result).toEqual([
+        { baseTime: 7200, moves: 100 },
+        { baseTime: 1800 },
+      ]);
+    });
+
+    it("should handle small move counts", () => {
+      const result = parseMultiPeriodTimeControl("5/10+3,sd/5");
+      expect(result).toEqual([
+        { baseTime: 600, increment: 3, moves: 5 },
+        { baseTime: 300 },
+      ]);
+    });
+
+    it("should handle multiple consecutive sudden death markers", () => {
+      const result = parseMultiPeriodTimeControl("sd/30+10,sd/15+5");
+      expect(result).toEqual([
+        { baseTime: 1800, increment: 10 },
+        { baseTime: 900, increment: 5 },
+      ]);
+    });
+  });
+
+  describe("error handling", () => {
+    it("should throw on empty string", () => {
+      expect(() => parseMultiPeriodTimeControl("")).toThrow();
+    });
+
+    it("should throw on invalid period format", () => {
+      expect(() => parseMultiPeriodTimeControl("invalid,sd/30")).toThrow(
+        "Invalid period format",
+      );
+    });
+
+    it("should throw on period with negative time", () => {
+      expect(() => parseMultiPeriodTimeControl("40/-10,sd/30")).toThrow();
+    });
+
+    it("should throw on empty period between commas", () => {
+      expect(() => parseMultiPeriodTimeControl("40/90,,sd/30")).toThrow();
+    });
+  });
+});
+
+describe("normalizeTimeControl with multi-period", () => {
+  it("should normalize multi-period array to milliseconds", () => {
+    const input = [
+      { baseTime: 5400, increment: 30, moves: 40 },
+      { baseTime: 1800, increment: 30 },
+    ];
+
+    const result = normalizeTimeControl(input, "fischer", "delayed");
+
+    expect(result).toEqual({
+      baseTime: 5_400_000, // First period base time in ms
+      increment: 30_000, // First period increment in ms
+      delay: 0,
+      timingMethod: "fischer",
+      clockStart: "delayed",
+      periods: [
+        { baseTime: 5_400_000, increment: 30_000, moves: 40 },
+        { baseTime: 1_800_000, increment: 30_000 },
+      ],
+    });
+  });
+
+  it("should preserve periods in normalized output with ms values", () => {
+    const input = [
+      { baseTime: 5400, increment: 30, moves: 40 },
+      { baseTime: 3600, increment: 30, moves: 20 },
+      { baseTime: 900, increment: 30 },
+    ];
+
+    const result = normalizeTimeControl(input, "fischer", "delayed");
+
+    expect(result.periods).toEqual([
+      { baseTime: 5_400_000, increment: 30_000, moves: 40 },
+      { baseTime: 3_600_000, increment: 30_000, moves: 20 },
+      { baseTime: 900_000, increment: 30_000 },
+    ]);
+  });
+
+  it("should throw on empty array", () => {
+    expect(() => normalizeTimeControl([], "fischer", "delayed")).toThrow(
+      "Multi-period time control must have at least one period",
+    );
+  });
+
+  it("should handle single period array", () => {
+    const input = [{ baseTime: 300, increment: 3 }];
+
+    const result = normalizeTimeControl(input, "fischer", "delayed");
+
+    expect(result).toEqual({
+      baseTime: 300_000,
+      increment: 3_000,
+      delay: 0,
+      timingMethod: "fischer",
+      clockStart: "delayed",
+      periods: [{ baseTime: 300_000, increment: 3_000 }],
     });
   });
 });
