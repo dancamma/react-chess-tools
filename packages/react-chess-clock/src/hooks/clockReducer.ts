@@ -294,18 +294,13 @@ export function clockReducer(
           }
         : undefined;
 
-      return {
-        ...createInitialClockState(
-          initialTimes,
-          getInitialStatus(config.clockStart),
-          getInitialActivePlayer(config.clockStart),
-          config,
-          periodState,
-        ),
-        // Reset timing state
-        moveStartTime: null,
-        elapsedAtPause: 0,
-      };
+      return createInitialClockState(
+        initialTimes,
+        getInitialStatus(config.clockStart),
+        getInitialActivePlayer(config.clockStart),
+        config,
+        periodState,
+      );
     }
 
     case "ADD_TIME": {

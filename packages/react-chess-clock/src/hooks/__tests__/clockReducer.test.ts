@@ -228,6 +228,25 @@ describe("clockReducer", () => {
       expect(result.status).toBe("running");
       expect(result.activePlayer).toBe("white");
     });
+
+    it("should set moveStartTime when resetting to immediate clock start", () => {
+      const state = createState({
+        status: "finished",
+        activePlayer: "black",
+        timeout: "white",
+      });
+
+      const result = clockReducer(state, {
+        type: "RESET",
+        payload: { time: "10+0", clockStart: "immediate" },
+      });
+
+      // When clock starts immediately, moveStartTime should be set
+      // so the clock display can count down correctly
+      expect(result.moveStartTime).not.toBeNull();
+      expect(typeof result.moveStartTime).toBe("number");
+      expect(result.moveStartTime).toBeGreaterThan(0);
+    });
   });
 
   describe("ADD_TIME", () => {
