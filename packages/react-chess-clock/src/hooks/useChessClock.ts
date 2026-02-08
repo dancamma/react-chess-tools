@@ -135,9 +135,9 @@ export function useChessClock(options: TimeControlConfig): UseChessClockReturn {
   useEffect(() => {
     if (prevConfigRef.current !== configKey) {
       prevConfigRef.current = configKey;
-      dispatch({ type: "RESET", payload: options });
+      dispatch({ type: "RESET", payload: { ...options, now: Date.now() } });
     }
-  }, [configKey]);
+  }, [configKey, options]);
 
   // ============================================================================
   // DISPLAY STATE
@@ -285,7 +285,7 @@ export function useChessClock(options: TimeControlConfig): UseChessClockReturn {
       : currentOptions;
 
     // The reducer will parse the config, update state.config, and reset timing state
-    dispatch({ type: "RESET", payload: resetConfig });
+    dispatch({ type: "RESET", payload: { ...resetConfig, now: Date.now() } });
   }, []);
 
   const addTime = useCallback((player: ClockColor, milliseconds: number) => {

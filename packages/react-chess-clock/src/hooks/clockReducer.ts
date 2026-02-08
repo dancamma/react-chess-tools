@@ -56,7 +56,7 @@ export type ClockAction =
   | { type: "RESUME"; payload?: { now?: number } }
   | { type: "SWITCH"; payload: { newTimes?: ClockTimes; now?: number } }
   | { type: "TIMEOUT"; payload: { player: ClockColor } }
-  | { type: "RESET"; payload: TimeControlConfig }
+  | { type: "RESET"; payload: TimeControlConfig & { now?: number } }
   | {
       type: "ADD_TIME";
       payload: { player: ClockColor; milliseconds: number; now?: number };
@@ -284,6 +284,7 @@ export function clockReducer(
     case "RESET": {
       const config = parseTimeControlConfig(action.payload);
       const initialTimes = getInitialTimes(config);
+      const now = action.payload.now;
 
       // Compute period state for multi-period time controls
       const periodState: PeriodState | undefined = config.periods
@@ -300,6 +301,7 @@ export function clockReducer(
         getInitialActivePlayer(config.clockStart),
         config,
         periodState,
+        now,
       );
     }
 
@@ -348,6 +350,7 @@ export function createInitialClockState(
   activePlayer: ClockColor | null,
   config: NormalizedTimeControl,
   periodState?: PeriodState,
+  now?: number,
 ): ClockState {
   return {
     times: initialTimes,
@@ -359,7 +362,7 @@ export function createInitialClockState(
     periodState,
     config,
     // If starting immediately, initialize the move start time
-    moveStartTime: status === "running" ? Date.now() : null,
+    moveStartTime: status === "running" ? (now ?? Date.now()) : null,
     elapsedAtPause: 0,
   };
 }

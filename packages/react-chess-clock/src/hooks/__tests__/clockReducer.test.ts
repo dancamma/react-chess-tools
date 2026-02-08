@@ -247,6 +247,62 @@ describe("clockReducer", () => {
       expect(typeof result.moveStartTime).toBe("number");
       expect(result.moveStartTime).toBeGreaterThan(0);
     });
+
+    it("should respect explicit now parameter for purity", () => {
+      const state = createState({
+        status: "finished",
+        activePlayer: "black",
+        timeout: "white",
+      });
+
+      const now = 1234567890;
+      const result = clockReducer(state, {
+        type: "RESET",
+        payload: { time: "10+0", clockStart: "immediate", now },
+      });
+
+      expect(result.moveStartTime).toBe(now);
+    });
+
+    it("should produce deterministic output with same now parameter", () => {
+      const state = createState({
+        status: "finished",
+        activePlayer: "black",
+        timeout: "white",
+      });
+
+      const now = 1234567890;
+      const result1 = clockReducer(state, {
+        type: "RESET",
+        payload: { time: "10+0", clockStart: "immediate", now },
+      });
+      const result2 = clockReducer(state, {
+        type: "RESET",
+        payload: { time: "10+0", clockStart: "immediate", now },
+      });
+
+      // Same inputs should produce same outputs (purity)
+      expect(result1.moveStartTime).toBe(result2.moveStartTime);
+      expect(result1.moveStartTime).toBe(now);
+    });
+
+    it("should work without now parameter for backward compatibility", () => {
+      const state = createState({
+        status: "finished",
+        activePlayer: "black",
+        timeout: "white",
+      });
+
+      const result = clockReducer(state, {
+        type: "RESET",
+        payload: { time: "10+0", clockStart: "immediate" },
+      });
+
+      // Should still work when now is not provided (uses Date.now() as fallback)
+      expect(result.moveStartTime).not.toBeNull();
+      expect(typeof result.moveStartTime).toBe("number");
+      expect(result.moveStartTime).toBeGreaterThan(0);
+    });
   });
 
   describe("ADD_TIME", () => {
