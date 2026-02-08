@@ -1,3 +1,5 @@
+import storybook from "eslint-plugin-storybook";
+
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import react from "eslint-plugin-react";
@@ -5,13 +7,10 @@ import globals from "globals";
 
 export default [
   { ignores: ["**/dist/*", "**/coverage/*", "**/storybook-static/*"] },
-
   // Base JavaScript rules
   js.configs.recommended,
-
   // TypeScript recommended rules (new v8 approach)
   ...tseslint.configs.recommended,
-
   // React + TypeScript rules
   {
     plugins: {
@@ -51,7 +50,6 @@ export default [
       "@typescript-eslint/no-require-imports": "off",
     },
   },
-
   // Config files not in TypeScript project - disable type-aware linting
   {
     files: [
@@ -71,4 +69,5 @@ export default [
       },
     },
   },
+  ...storybook.configs["flat/recommended"],
 ];
