@@ -30,6 +30,21 @@ const DISABLED_CLOCK_CONFIG: TimeControlConfig = {
   time: { baseTime: 0 },
 };
 
+/**
+ * Serializes time-relevant config for change detection.
+ * Only includes properties that should trigger a clock reset.
+ * Callbacks are intentionally excluded - they use the ref pattern.
+ */
+function serializeTimeRelevantConfig(config: TimeControlConfig): string {
+  return JSON.stringify({
+    time: config.time,
+    timingMethod: config.timingMethod,
+    clockStart: config.clockStart,
+    whiteTime: config.whiteTime,
+    blackTime: config.blackTime,
+  });
+}
+
 function calculateDisplayTime(
   baseTime: number,
   moveStartTime: number | null,
@@ -64,6 +79,11 @@ function calculateDisplayTime(
  *
  * For server-authoritative clocks, use `methods.setTime()` to sync server times.
  * The clock will restart its display interpolation from the new value on each call.
+ *
+ * **Auto-reset behavior:** The clock automatically resets when time-relevant
+ * options change (`time`, `timingMethod`, `clockStart`, `whiteTime`, `blackTime`).
+ * Callbacks (`onTimeout`, `onSwitch`, `onTimeUpdate`) do not trigger a reset
+ * and can be changed without affecting clock state.
  *
  * @param options - Clock configuration options
  * @returns Clock state, info, and methods
@@ -103,6 +123,21 @@ export function useChessClock(options: TimeControlConfig): UseChessClockReturn {
   // State ref for callbacks (avoid stale closures)
   const stateRef = useRef(state);
   stateRef.current = state;
+
+  // ============================================================================
+  // AUTO-RESET ON OPTIONS CHANGE
+  // ============================================================================
+
+  // Auto-reset when time-relevant options change (not callbacks)
+  const configKey = serializeTimeRelevantConfig(options);
+  const prevConfigRef = useRef<string>(configKey);
+
+  useEffect(() => {
+    if (prevConfigRef.current !== configKey) {
+      prevConfigRef.current = configKey;
+      dispatch({ type: "RESET", payload: options });
+    }
+  }, [configKey]);
 
   // ============================================================================
   // DISPLAY STATE

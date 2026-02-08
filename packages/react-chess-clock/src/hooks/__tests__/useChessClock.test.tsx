@@ -517,6 +517,167 @@ describe("useChessClock", () => {
       expect(result.current.activePlayer).not.toBe("white");
     });
   });
+
+  describe("options changes", () => {
+    it("should auto-reset when time control changes", () => {
+      const { result, rerender } = renderHook(
+        ({ time }) => useChessClock({ time }),
+        { initialProps: { time: "5+3" as string } },
+      );
+
+      expect(result.current.times.white).toBe(300_000);
+
+      rerender({ time: "10+5" });
+
+      expect(result.current.times.white).toBe(600_000);
+      expect(result.current.times.black).toBe(600_000);
+    });
+
+    it("should auto-reset when timingMethod changes", () => {
+      const { result, rerender } = renderHook(
+        ({ timingMethod }) => useChessClock({ time: "5+3", timingMethod }),
+        { initialProps: { timingMethod: "fischer" as string } },
+      );
+
+      expect(result.current.timingMethod).toBe("fischer");
+
+      rerender({ timingMethod: "delay" });
+
+      expect(result.current.timingMethod).toBe("delay");
+    });
+
+    it("should auto-reset when clockStart changes", () => {
+      const { result, rerender } = renderHook(
+        ({ clockStart }) => useChessClock({ time: "5+0", clockStart }),
+        { initialProps: { clockStart: "delayed" as string } },
+      );
+
+      expect(result.current.status).toBe("delayed");
+
+      rerender({ clockStart: "immediate" });
+
+      expect(result.current.status).toBe("running");
+      expect(result.current.activePlayer).toBe("white");
+    });
+
+    it("should auto-reset when whiteTime/blackTime changes (time odds)", () => {
+      const { result, rerender } = renderHook(
+        ({ whiteTime, blackTime }) =>
+          useChessClock({ time: "5+0", whiteTime, blackTime }),
+        { initialProps: { whiteTime: 300, blackTime: 300 } },
+      );
+
+      expect(result.current.times.white).toBe(300_000);
+      expect(result.current.times.black).toBe(300_000);
+
+      rerender({ whiteTime: 180, blackTime: 300 });
+
+      expect(result.current.times.white).toBe(180_000);
+      expect(result.current.times.black).toBe(300_000);
+    });
+
+    it("should NOT reset when only callbacks change", () => {
+      const onTimeout1 = jest.fn();
+      const onTimeout2 = jest.fn();
+
+      const { result, rerender } = renderHook(
+        ({ onTimeout }) => useChessClock({ time: "5+3", onTimeout }),
+        { initialProps: { onTimeout: onTimeout1 } },
+      );
+
+      const initialTimes = result.current.times;
+
+      rerender({ onTimeout: onTimeout2 });
+
+      // Times should be unchanged
+      expect(result.current.times).toEqual(initialTimes);
+    });
+
+    it("should NOT reset when onSwitch callback changes", () => {
+      const onSwitch1 = jest.fn();
+      const onSwitch2 = jest.fn();
+
+      const { result, rerender } = renderHook(
+        ({ onSwitch }) =>
+          useChessClock({ time: "5+3", clockStart: "immediate", onSwitch }),
+        { initialProps: { onSwitch: onSwitch1 } },
+      );
+
+      const initialTimes = result.current.times;
+
+      rerender({ onSwitch: onSwitch2 });
+
+      // Times should be unchanged
+      expect(result.current.times).toEqual(initialTimes);
+
+      // New callback should be used
+      act(() => {
+        result.current.methods.switch();
+      });
+
+      expect(onSwitch2).toHaveBeenCalledWith("black");
+      expect(onSwitch1).not.toHaveBeenCalled();
+    });
+
+    it("should NOT reset when onTimeUpdate callback changes", () => {
+      const onTimeUpdate1 = jest.fn();
+      const onTimeUpdate2 = jest.fn();
+
+      const { result, rerender } = renderHook(
+        ({ onTimeUpdate }) => useChessClock({ time: "5+3", onTimeUpdate }),
+        { initialProps: { onTimeUpdate: onTimeUpdate1 } },
+      );
+
+      const initialTimes = result.current.times;
+
+      rerender({ onTimeUpdate: onTimeUpdate2 });
+
+      // Times should be unchanged
+      expect(result.current.times).toEqual(initialTimes);
+    });
+
+    it("should reset status when time control changes during game", () => {
+      const { result, rerender } = renderHook(
+        ({ time }) => useChessClock({ time, clockStart: "immediate" }),
+        { initialProps: { time: "5+3" as string } },
+      );
+
+      // Start the clock and make a switch
+      act(() => {
+        result.current.methods.switch();
+      });
+
+      expect(result.current.status).toBe("running");
+      expect(result.current.activePlayer).toBe("black");
+
+      // Change time control - should reset to initial state
+      rerender({ time: "10+5" });
+
+      expect(result.current.status).toBe("running"); // immediate mode
+      expect(result.current.activePlayer).toBe("white"); // reset to white
+      expect(result.current.times.white).toBe(600_000);
+    });
+
+    it("should handle multiple option changes", () => {
+      const { result, rerender } = renderHook(
+        ({ time, timingMethod }) => useChessClock({ time, timingMethod }),
+        {
+          initialProps: {
+            time: "5+3" as string,
+            timingMethod: "fischer" as string,
+          },
+        },
+      );
+
+      expect(result.current.times.white).toBe(300_000);
+      expect(result.current.timingMethod).toBe("fischer");
+
+      rerender({ time: "10+5", timingMethod: "delay" });
+
+      expect(result.current.times.white).toBe(600_000);
+      expect(result.current.timingMethod).toBe("delay");
+    });
+  });
 });
 
 describe("useOptionalChessClock", () => {
