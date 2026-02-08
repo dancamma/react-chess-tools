@@ -10,16 +10,19 @@ global.requestAnimationFrame =
 global.cancelAnimationFrame =
   mockCancelRaf as unknown as typeof cancelAnimationFrame;
 
-// Mock performance.now
-let mockTime = 0;
-global.performance.now = jest.fn(
-  () => mockTime,
-) as unknown as typeof performance.now;
+// Mock Date.now() for deterministic timing
+let mockNow = 1_000_000;
 
 describe("useChessClock", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockTime = 0;
+    jest.useFakeTimers();
+    mockNow = 1_000_000;
+    jest.spyOn(Date, "now").mockImplementation(() => mockNow);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
   });
 
   describe("initialization", () => {
@@ -225,7 +228,7 @@ describe("useChessClock", () => {
       expect(result.current.status).toBe("idle");
     });
 
-    it("should maintain correct time when paused (not jump back to move start)", async () => {
+    it("should maintain correct time when paused", () => {
       const { result } = renderHook(() =>
         useChessClock({
           time: "5+0",
@@ -236,17 +239,19 @@ describe("useChessClock", () => {
       const initialTime = result.current.times.white;
       expect(initialTime).toBe(300_000);
 
-      // Wait for time to pass (the display updates every 100ms)
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      // Advance time by 150ms
+      mockNow += 150;
+      act(() => {
+        jest.advanceTimersByTime(150);
+      });
 
       act(() => {
         result.current.methods.pause();
       });
 
       const pausedTime = result.current.times.white;
-      // Time should have decreased from initial (time elapsed)
-      expect(pausedTime).toBeLessThan(initialTime);
-      expect(pausedTime).toBeGreaterThan(200_000); // Should be around 4:50 left
+      // Time should have decreased by exactly 150ms
+      expect(pausedTime).toBe(300_000 - 150);
 
       // Resume and check time continues from paused time (not from move start)
       act(() => {
@@ -254,9 +259,8 @@ describe("useChessClock", () => {
       });
 
       const resumedTime = result.current.times.white;
-      // Time should be close to paused time (not jump back to initial)
-      expect(resumedTime).toBeLessThan(initialTime);
-      expect(resumedTime).toBeGreaterThan(pausedTime - 1000); // Within 1 second of paused time
+      // Time should be the same as paused time (no additional time passed)
+      expect(resumedTime).toBe(pausedTime);
     });
   });
 
@@ -313,7 +317,7 @@ describe("useChessClock", () => {
       expect(result.current.activePlayer).toBe("black");
     });
 
-    it("should switch from delayed to running after two switches", async () => {
+    it("should switch from delayed to running after two switches", () => {
       const { result } = renderHook(() =>
         useChessClock({
           time: "5+0",
@@ -331,8 +335,11 @@ describe("useChessClock", () => {
       expect(result.current.status).toBe("delayed");
       expect(result.current.activePlayer).toBe("black");
 
-      // Wait for React to process state updates and debounce period to pass
-      await new Promise((resolve) => setTimeout(resolve, 150));
+      // Advance time past debounce period
+      mockNow += 150;
+      act(() => {
+        jest.advanceTimersByTime(150);
+      });
 
       act(() => {
         result.current.methods.switch();
@@ -355,16 +362,15 @@ describe("useChessClock", () => {
       );
 
       const initialWhiteTime = result.current.times.white;
+      expect(initialWhiteTime).toBe(300_000);
 
       act(() => {
         result.current.methods.switch();
       });
 
-      // After switch, white should have received increment
-      expect(result.current.times.white).toBeGreaterThan(initialWhiteTime);
-      // With absolute time, allow for small timing variations (±100ms)
-      expect(result.current.times.white).toBeGreaterThanOrEqual(303_000 - 100);
-      expect(result.current.times.white).toBeLessThanOrEqual(303_000 + 100);
+      // No real time elapsed (mockNow unchanged), so white gets full increment
+      // 300_000 - 0 (time spent) + 3_000 (increment) = 303_000
+      expect(result.current.times.white).toBe(303_000);
       expect(onSwitch).toHaveBeenCalledWith("black");
     });
   });
@@ -512,8 +518,6 @@ describe("useChessClock", () => {
       expect(onSwitch).toHaveBeenCalledTimes(1);
 
       // Immediate switch should be prevented (debounce window: 100ms)
-      // Note: Date.now() is used for debounce, so we can't test the timing
-      // but we can verify the active player doesn't change from rapid switches
       expect(result.current.activePlayer).not.toBe("white");
     });
   });
@@ -607,7 +611,7 @@ describe("useChessClock", () => {
 
       rerender({ onSwitch: onSwitch2 });
 
-      // Times should be unchanged
+      // Times should be unchanged (with mocked Date.now, no real time passes)
       expect(result.current.times).toEqual(initialTimes);
 
       // New callback should be used
@@ -682,8 +686,14 @@ describe("useChessClock", () => {
 
 describe("useOptionalChessClock", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockTime = 0;
+    jest.useFakeTimers();
+    mockNow = 1_000_000;
+    jest.spyOn(Date, "now").mockImplementation(() => mockNow);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
   });
 
   it("should return null when options is undefined", () => {
@@ -720,8 +730,14 @@ describe("useOptionalChessClock", () => {
 
 describe("useChessClock - multi-period time controls", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockTime = 0;
+    jest.useFakeTimers();
+    mockNow = 1_000_000;
+    jest.spyOn(Date, "now").mockImplementation(() => mockNow);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
   });
 
   describe("initialization", () => {
@@ -1048,15 +1064,6 @@ describe("useChessClock - multi-period time controls", () => {
       );
 
       // Make moves to demonstrate independent advancement
-      // With 2 moves per period:
-      // Switch 1: W=1, B=0
-      // Switch 2: W=1, B=1
-      // Switch 3: W=2->0 (advances), B=1
-      // Switch 4: W=0, B=2->0 (advances)
-      // Switch 5: W=1, B=0
-      // Switch 6: W=1, B=1
-      // Switch 7: W=2->0 (advances), B=1
-      // Switch 8: W=0, B=2->0 (advances)
       for (let i = 0; i < 8; i++) {
         act(() => {
           result.current.methods.switch();
@@ -1064,8 +1071,6 @@ describe("useChessClock - multi-period time controls", () => {
       }
 
       // After 8 moves (4 each), both players advance twice:
-      // - Each completes 2 moves in period 0 -> advance to period 1
-      // - Each completes 2 more moves in period 1 -> advance to period 2
       expect(result.current.currentPeriodIndex.white).toBe(2);
       expect(result.current.currentPeriodIndex.black).toBe(2);
       expect(result.current.periodMoves.white).toBe(0); // Reset after second advancement
