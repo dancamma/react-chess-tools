@@ -11,7 +11,6 @@ import type {
   ClockInfo,
   ClockMethods,
   ClockTimes,
-  NormalizedTimeControl,
   PeriodState,
   TimeControlConfig,
   TimeControlInput,
@@ -70,34 +69,32 @@ function calculateDisplayTime(
  * @returns Clock state, info, and methods
  */
 export function useChessClock(options: TimeControlConfig): UseChessClockReturn {
-  // Parse and normalize time control configuration
-  // Note: Not memoized - parseTimeControlConfig is lightweight and options is
-  // typically passed inline (e.g., useChessClock({ time: "5+3" }))
-  const initialConfig: NormalizedTimeControl = parseTimeControlConfig(options);
+  // Initialize reducer with computed initial state.
+  // All parsing happens inside the initializer function to ensure it only runs once
+  // (on mount), avoiding wasteful re-computation when options is passed inline
+  // as a new object reference on every render.
+  const [state, dispatch] = useReducer(clockReducer, null, () => {
+    const initialConfig = parseTimeControlConfig(options);
+    const initialTimesValue = getInitialTimes(initialConfig);
 
-  // Get initial times
-  const initialTimesValue = getInitialTimes(initialConfig);
+    // Initialize period state for multi-period time controls
+    const initialPeriodState: PeriodState | undefined =
+      initialConfig.periods && initialConfig.periods.length > 1
+        ? {
+            periodIndex: { white: 0, black: 0 },
+            periodMoves: { white: 0, black: 0 },
+            periods: initialConfig.periods,
+          }
+        : undefined;
 
-  // Initialize period state for multi-period time controls
-  const initialPeriodState: PeriodState | undefined =
-    initialConfig.periods && initialConfig.periods.length > 1
-      ? {
-          periodIndex: { white: 0, black: 0 },
-          periodMoves: { white: 0, black: 0 },
-          periods: initialConfig.periods,
-        }
-      : undefined;
-
-  // Initialize reducer with computed initial state
-  const [state, dispatch] = useReducer(clockReducer, null, () =>
-    createInitialClockState(
+    return createInitialClockState(
       initialTimesValue,
       getInitialStatus(initialConfig.clockStart),
       getInitialActivePlayer(initialConfig.clockStart),
       initialConfig,
       initialPeriodState,
-    ),
-  );
+    );
+  });
 
   // Options ref for callbacks (avoid stale closures)
   const optionsRef = useRef(options);
