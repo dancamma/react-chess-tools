@@ -82,8 +82,12 @@ Each package follows this structure:
 - `src/components/` - React components
 - `src/hooks/` - Custom hooks (useChessGame, etc.)
 - `src/themes/` - Theme definitions and utilities
-- `src/types/` - TypeScript type definitions
+- `src/types/` - TypeScript type definitions (for domain types, not component props)
 - `src/__tests__/` - Test files
+
+### Code Style Preferences
+
+**Component Props Types**: Define component prop types inline with the component file, not in a separate types file. Only shared domain types should be in `src/types/`. This keeps component-related types co-located with their implementation.
 
 ### Build
 
