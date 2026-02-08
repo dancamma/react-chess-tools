@@ -180,17 +180,25 @@ export function useChessClock(options: TimeControlConfig): UseChessClockReturn {
   // COMPUTED INFO
   // ============================================================================
 
-  // Info object: object creation is cheaper than useMemo comparison overhead
-  const info: ClockInfo = {
-    isRunning: state.status === "running",
-    isPaused: state.status === "paused",
-    isFinished: state.status === "finished",
-    isWhiteActive: state.activePlayer === "white",
-    isBlackActive: state.activePlayer === "black",
-    hasTimeout: state.timeout !== null,
-    // Time odds is based on initial configuration, not current remaining time
-    hasTimeOdds: state.initialTimes.white !== state.initialTimes.black,
-  };
+  const info = useMemo<ClockInfo>(
+    () => ({
+      isRunning: state.status === "running",
+      isPaused: state.status === "paused",
+      isFinished: state.status === "finished",
+      isWhiteActive: state.activePlayer === "white",
+      isBlackActive: state.activePlayer === "black",
+      hasTimeout: state.timeout !== null,
+      // Time odds is based on initial configuration, not current remaining time
+      hasTimeOdds: state.initialTimes.white !== state.initialTimes.black,
+    }),
+    [
+      state.status,
+      state.activePlayer,
+      state.timeout,
+      state.initialTimes.white,
+      state.initialTimes.black,
+    ],
+  );
 
   // ============================================================================
   // METHODS
