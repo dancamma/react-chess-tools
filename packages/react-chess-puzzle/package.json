@@ -1,6 +1,6 @@
 {
   "name": "@react-chess-tools/react-chess-puzzle",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A lightweight, customizable React component library for rendering and interacting with chess puzzles.",
   "type": "module",
   "exports": {
@@ -42,7 +42,7 @@
   "license": "MIT",
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
-    "@react-chess-tools/react-chess-game": "1.0.1",
+    "@react-chess-tools/react-chess-game": "1.0.2",
     "chess.js": "^1.4.0",
     "lodash": "^4.17.21"
   },
