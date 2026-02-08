@@ -61,7 +61,7 @@ export const Switch = React.forwardRef<
         onClick={handleClick}
         className={className}
         style={style}
-        {...rest}
+        {...{ ...rest, disabled: isDisabled }}
       >
         {children}
       </Slot>

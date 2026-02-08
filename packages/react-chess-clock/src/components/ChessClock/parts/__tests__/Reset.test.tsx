@@ -137,6 +137,21 @@ describe("ChessClock.Reset", () => {
       fireEvent.click(customReset);
       expect(handleClick).toHaveBeenCalledTimes(1);
     });
+
+    it("should be disabled when clock is idle with asChild", () => {
+      render(
+        <ChessClock.Root timeControl={{ time: "5+0", clockStart: "manual" }}>
+          <ChessClock.Reset asChild>
+            <div data-testid="custom-reset" role="button" tabIndex={0}>
+              Reset
+            </div>
+          </ChessClock.Reset>
+        </ChessClock.Root>,
+      );
+
+      const customElement = screen.getByTestId("custom-reset");
+      expect(customElement).toHaveAttribute("disabled");
+    });
   });
 
   it("should have displayName", () => {

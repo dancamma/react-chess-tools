@@ -181,6 +181,21 @@ describe("ChessClock.Switch", () => {
 
       expect(whiteClock).toHaveAttribute("data-clock-active", "false");
     });
+
+    it("should be disabled when clock is idle with asChild", () => {
+      render(
+        <ChessClock.Root timeControl={{ time: "5+0", clockStart: "manual" }}>
+          <ChessClock.Switch asChild>
+            <div data-testid="custom-switch" role="button" tabIndex={0}>
+              Switch
+            </div>
+          </ChessClock.Switch>
+        </ChessClock.Root>,
+      );
+
+      const customElement = screen.getByTestId("custom-switch");
+      expect(customElement).toHaveAttribute("disabled");
+    });
   });
 
   it("should have displayName", () => {

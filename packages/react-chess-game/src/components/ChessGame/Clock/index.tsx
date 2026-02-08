@@ -50,9 +50,6 @@ export const Display = React.forwardRef<HTMLDivElement, ClockDisplayProps>(
     const { clock } = useChessGameContext();
 
     if (!clock) {
-      console.warn(
-        "ChessGame.Clock.Display used without timeControl in ChessGame.Root",
-      );
       return null;
     }
 
@@ -85,9 +82,6 @@ export const Switch = React.forwardRef<
   const { clock } = useChessGameContext();
 
   if (!clock) {
-    console.warn(
-      "ChessGame.Clock.Switch used without timeControl in ChessGame.Root",
-    );
     return null;
   }
 
@@ -125,9 +119,6 @@ export const PlayPause = React.forwardRef<
   const { clock } = useChessGameContext();
 
   if (!clock) {
-    console.warn(
-      "ChessGame.Clock.PlayPause used without timeControl in ChessGame.Root",
-    );
     return null;
   }
 
@@ -161,9 +152,6 @@ export const Reset = React.forwardRef<
   const { clock } = useChessGameContext();
 
   if (!clock) {
-    console.warn(
-      "ChessGame.Clock.Reset used without timeControl in ChessGame.Root",
-    );
     return null;
   }
 

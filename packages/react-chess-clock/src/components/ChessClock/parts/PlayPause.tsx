@@ -12,6 +12,42 @@ const DEFAULT_CONTENT = {
   finished: "Game Over",
 } as const;
 
+/**
+ * Resolves the appropriate content to display based on clock state
+ * and custom content props. Custom content takes precedence over defaults.
+ */
+const resolveContent = (
+  isFinished: boolean,
+  isDelayed: boolean,
+  shouldShowStart: boolean,
+  isPaused: boolean,
+  isRunning: boolean,
+  customContent: {
+    startContent?: ReactNode;
+    pauseContent?: ReactNode;
+    resumeContent?: ReactNode;
+    delayedContent?: ReactNode;
+    finishedContent?: ReactNode;
+  },
+): ReactNode => {
+  if (isFinished) {
+    return customContent.finishedContent ?? DEFAULT_CONTENT.finished;
+  }
+  if (isDelayed) {
+    return customContent.delayedContent ?? DEFAULT_CONTENT.delayed;
+  }
+  if (shouldShowStart) {
+    return customContent.startContent ?? DEFAULT_CONTENT.start;
+  }
+  if (isPaused) {
+    return customContent.resumeContent ?? DEFAULT_CONTENT.resume;
+  }
+  if (isRunning) {
+    return customContent.pauseContent ?? DEFAULT_CONTENT.pause;
+  }
+  return DEFAULT_CONTENT.start;
+};
+
 export interface ChessClockPlayPauseProps extends Omit<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
   "onClick"
@@ -106,51 +142,24 @@ export const PlayPause = React.forwardRef<
       [shouldShowStart, isPaused, isRunning, methods, onClick],
     );
 
-    // Determine if any custom content is provided
-    const hasCustomContent =
-      startContent !== undefined ||
-      pauseContent !== undefined ||
-      resumeContent !== undefined ||
-      delayedContent !== undefined ||
-      finishedContent !== undefined;
-
     // Determine content to render
     // Priority: children > custom+defaults > all defaults
-    let content: ReactNode;
-    if (children) {
-      // Children take precedence (backward compatibility)
-      content = children;
-    } else if (hasCustomContent) {
-      // Use custom content with defaults for unspecified states
-      if (isFinished) {
-        content = finishedContent ?? DEFAULT_CONTENT.finished;
-      } else if (isDelayed) {
-        content = delayedContent ?? DEFAULT_CONTENT.delayed;
-      } else if (shouldShowStart) {
-        content = startContent ?? DEFAULT_CONTENT.start;
-      } else if (isPaused) {
-        content = resumeContent ?? DEFAULT_CONTENT.resume;
-      } else if (isRunning) {
-        content = pauseContent ?? DEFAULT_CONTENT.pause;
-      } else {
-        content = DEFAULT_CONTENT.start;
-      }
-    } else {
-      // Use all defaults
-      if (isFinished) {
-        content = DEFAULT_CONTENT.finished;
-      } else if (isDelayed) {
-        content = DEFAULT_CONTENT.delayed;
-      } else if (shouldShowStart) {
-        content = DEFAULT_CONTENT.start;
-      } else if (isPaused) {
-        content = DEFAULT_CONTENT.resume;
-      } else if (isRunning) {
-        content = DEFAULT_CONTENT.pause;
-      } else {
-        content = DEFAULT_CONTENT.start;
-      }
-    }
+    const content =
+      children ??
+      resolveContent(
+        isFinished,
+        isDelayed,
+        shouldShowStart,
+        isPaused,
+        isRunning,
+        {
+          startContent,
+          pauseContent,
+          resumeContent,
+          delayedContent,
+          finishedContent,
+        },
+      );
 
     return asChild ? (
       <Slot
@@ -158,7 +167,7 @@ export const PlayPause = React.forwardRef<
         onClick={handleClick}
         className={className}
         style={style}
-        {...rest}
+        {...{ ...rest, disabled: isDisabled }}
       >
         {content}
       </Slot>

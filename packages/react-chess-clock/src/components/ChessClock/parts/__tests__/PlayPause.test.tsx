@@ -388,6 +388,21 @@ describe("ChessClock.PlayPause", () => {
       expect(clock).toHaveAttribute("data-clock-status", "paused");
       expect(handleClick).toHaveBeenCalled();
     });
+
+    it("should be disabled when clock is finished with asChild", () => {
+      render(
+        <ChessClock.Root timeControl={{ time: "5+0" }}>
+          <ChessClock.PlayPause asChild>
+            <div data-testid="custom-playpause" role="button" tabIndex={0}>
+              Toggle
+            </div>
+          </ChessClock.PlayPause>
+        </ChessClock.Root>,
+      );
+
+      const customElement = screen.getByTestId("custom-playpause");
+      expect(customElement).toHaveAttribute("disabled");
+    });
   });
 
   it("should have displayName", () => {
