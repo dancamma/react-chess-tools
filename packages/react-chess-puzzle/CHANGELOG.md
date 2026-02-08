@@ -1,5 +1,12 @@
 # @react-chess-tools/react-chess-puzzle
 
+## 1.0.3
+
+### Patch Changes
+
+- Updated dependencies [93e1029]
+  - @react-chess-tools/react-chess-game@1.0.2
+
 ## 1.0.2
 
 ### Patch Changes

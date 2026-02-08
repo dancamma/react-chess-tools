@@ -1,5 +1,13 @@
 # @react-chess-tools/react-chess-game
 
+## 1.0.2
+
+### Patch Changes
+
+- 93e1029: feat: add chess clock
+- Updated dependencies [93e1029]
+  - @react-chess-tools/react-chess-clock@1.0.1
+
 ## 1.0.1
 
 ### Patch Changes
