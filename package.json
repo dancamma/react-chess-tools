@@ -2,7 +2,6 @@
   "name": "react-chess-tools",
   "version": "1.0.0",
   "description": "",
-  "main": ".eslintrc.js",
   "scripts": {
     "build": "npm run build --ws",
     "test": "jest",
