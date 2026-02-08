@@ -9,8 +9,6 @@ export interface ChessClockRootProps {
   children: ReactNode;
 }
 
-export interface RootProps extends ChessClockRootProps {}
-
 /**
  * ChessClock.Root - Context provider for chess clock components
  * Manages clock state and provides it to child components
@@ -23,7 +21,7 @@ export interface RootProps extends ChessClockRootProps {}
  * </ChessClock.Root>
  * ```
  */
-export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
+export const Root: React.FC<React.PropsWithChildren<ChessClockRootProps>> = ({
   timeControl,
   children,
 }) => {
