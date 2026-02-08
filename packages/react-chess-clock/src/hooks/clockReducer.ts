@@ -184,6 +184,7 @@ export function clockReducer(
     }
 
     case "SWITCH": {
+      if (state.status === "finished") return state;
       // Track period moves for multi-period time controls
       let newPeriodState = state.periodState;
       const movedPlayer: ClockColor | null = state.activePlayer;

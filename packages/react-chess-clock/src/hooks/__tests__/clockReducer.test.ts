@@ -130,6 +130,21 @@ describe("clockReducer", () => {
 
       expect(result.times).toEqual(initialTimes);
     });
+
+    it("should not switch if already finished", () => {
+      const state = createState({
+        status: "finished",
+        activePlayer: "white",
+        timeout: "white",
+        times: { white: 0, black: 300000 },
+      });
+      const result = clockReducer(state, { type: "SWITCH", payload: {} });
+
+      expect(result).toBe(state);
+      expect(result.status).toBe("finished");
+      expect(result.activePlayer).toBe("white");
+      expect(result.switchCount).toBe(0);
+    });
   });
 
   describe("SWITCH (delayed mode)", () => {
