@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Chess, Color } from "chess.js";
 import { cloneGame, getCurrentFen, getGameInfo } from "../utils/chess";
 import { useOptionalChessClock } from "@react-chess-tools/react-chess-clock";
@@ -61,6 +61,12 @@ export const useChessGame = ({
 
   const clockState = useOptionalChessClock(timeControl);
 
+  // Keep clockState in a ref to avoid re-creating makeMove on every clock tick.
+  // The clock state object is recreated on every render (especially during active
+  // ticking), which would defeat the useCallback memoization.
+  const clockStateRef = useRef(clockState);
+  clockStateRef.current = clockState;
+
   const setPosition = React.useCallback((fen: string, orientation: Color) => {
     try {
       const newGame = new Chess();
@@ -80,8 +86,12 @@ export const useChessGame = ({
         return false;
       }
 
+      // Access clock state via ref to avoid stale closures while keeping
+      // the callback stable (not re-created on every clock tick)
+      const clock = clockStateRef.current;
+
       // Don't allow moves after clock timeout
-      if (clockState && clockState.timeout !== null) {
+      if (clock && clock.timeout !== null) {
         return false;
       }
 
@@ -92,26 +102,18 @@ export const useChessGame = ({
         setCurrentMoveIndex(copy.history().length - 1);
 
         // Auto-start clock on first move
-        if (clockState && clockState.status === "idle") {
-          clockState.methods.start();
+        if (clock && clock.status === "idle") {
+          clock.methods.start();
         }
 
         // Pause clock on game over (checked immediately after move)
-        if (
-          clockState &&
-          clockState.status === "running" &&
-          copy.isGameOver()
-        ) {
-          clockState.methods.pause();
+        if (clock && clock.status === "running" && copy.isGameOver()) {
+          clock.methods.pause();
         }
 
         // Auto-switch clock after a move is made if enabled
-        if (
-          autoSwitchOnMove &&
-          clockState &&
-          clockState.status !== "finished"
-        ) {
-          clockState.methods.switch();
+        if (autoSwitchOnMove && clock && clock.status !== "finished") {
+          clock.methods.switch();
         }
 
         return true;
@@ -119,7 +121,7 @@ export const useChessGame = ({
         return false;
       }
     },
-    [isLatestMove, game, clockState, autoSwitchOnMove],
+    [isLatestMove, game, autoSwitchOnMove],
   );
 
   const flipBoard = React.useCallback(() => {
