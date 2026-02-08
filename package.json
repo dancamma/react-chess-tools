@@ -10,7 +10,7 @@
     "test:debug": "node --inspect node_modules/.bin/jest",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "npm run build && storybook build",
-    "prepare": "husky install",
+    "prepare": "husky",
     "changeset": "changeset",
     "version": "changeset version",
     "prerelease": "npm run build",
