@@ -105,6 +105,21 @@ const s = {
     overflow: "auto",
     color: color.textSecondary,
   },
+  radioGroup: {
+    display: "flex",
+    gap: "8px",
+    flexWrap: "wrap" as const,
+    justifyContent: "center",
+  },
+  radioLabel: {
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+    fontSize: "13px",
+    fontWeight: 500,
+    color: color.text,
+    cursor: "pointer",
+  },
 };
 
 const clock = {
@@ -224,7 +239,7 @@ const meta = {
 export default meta;
 
 // ============================================================================
-// Basic Stories
+// 1. Default
 // ============================================================================
 
 export const Default = () => (
@@ -233,7 +248,7 @@ export const Default = () => (
       <div style={s.header}>
         <h3 style={s.title}>Blitz &middot; 5+3</h3>
         <p style={s.subtitle}>
-          5 minutes with 3-second increment (Lichess-style delayed start)
+          5 minutes with 3-second Fischer increment (delayed start)
         </p>
       </div>
       <ClockPair />
@@ -245,91 +260,111 @@ export const Default = () => (
   </ChessClock.Root>
 );
 
-export const Blitz5Minutes = () => (
-  <ChessClock.Root timeControl={{ time: "5" }}>
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Blitz &middot; 5+0</h3>
-        <p style={s.subtitle}>5 minutes, no increment</p>
-      </div>
-      <ClockPair />
-      <Controls />
-    </div>
-  </ChessClock.Root>
-);
-
-export const Rapid10Plus5 = () => (
-  <ChessClock.Root timeControl={{ time: "10+5" }}>
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Rapid &middot; 10+5</h3>
-        <p style={s.subtitle}>10 minutes with 5-second increment</p>
-      </div>
-      <ClockPair />
-      <Controls />
-    </div>
-  </ChessClock.Root>
-);
-
-export const Bullet1Plus0 = () => (
-  <ChessClock.Root timeControl={{ time: "1" }}>
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Bullet &middot; 1+0</h3>
-        <p style={s.subtitle}>1 minute, no increment</p>
-      </div>
-      <ClockPair />
-      <Controls />
-    </div>
-  </ChessClock.Root>
-);
-
 // ============================================================================
-// Timing Methods
+// 2. TimingMethods
 // ============================================================================
 
-export const WithDelay = () => (
-  <ChessClock.Root
-    timeControl={{
-      time: { baseTime: 300, delay: 5 },
-      timingMethod: "delay",
-    }}
-  >
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Simple Delay &middot; 5 min</h3>
-        <p style={s.subtitle}>5-second delay before countdown starts</p>
-      </div>
-      <ClockPair />
-      <div style={s.info}>Clock delays before counting down each move</div>
-      <Controls />
-    </div>
-  </ChessClock.Root>
-);
+export const TimingMethods = () => {
+  const [method, setMethod] = React.useState<"fischer" | "delay" | "bronstein">(
+    "fischer",
+  );
 
-export const BronsteinDelay = () => (
-  <ChessClock.Root
-    timeControl={{
-      time: { baseTime: 300, delay: 3 },
-      timingMethod: "bronstein",
-    }}
-  >
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Bronstein &middot; 5 min</h3>
-        <p style={s.subtitle}>3-second delay added back after each move</p>
+  const descriptions: Record<string, string> = {
+    fischer: "Adds increment to your clock after each move.",
+    delay: "Countdown waits for the delay period before decrementing.",
+    bronstein:
+      "Adds back actual time used (up to delay amount) after each move.",
+  };
+
+  return (
+    <ChessClock.Root
+      key={method}
+      timeControl={{
+        time: {
+          baseTime: 300,
+          increment: method === "fischer" ? 3 : 0,
+          delay: method !== "fischer" ? 3 : 0,
+        },
+        timingMethod: method,
+      }}
+    >
+      <div style={s.container}>
+        <div style={s.header}>
+          <h3 style={s.title}>Timing Methods</h3>
+          <p style={s.subtitle}>Compare Fischer, Delay, and Bronstein</p>
+        </div>
+        <div style={s.radioGroup}>
+          {(["fischer", "delay", "bronstein"] as const).map((m) => (
+            <label key={m} style={s.radioLabel}>
+              <input
+                type="radio"
+                name="timing"
+                checked={method === m}
+                onChange={() => setMethod(m)}
+              />
+              {m.charAt(0).toUpperCase() + m.slice(1)}
+            </label>
+          ))}
+        </div>
+        <ClockPair />
+        <div style={s.info}>{descriptions[method]}</div>
+        <Controls>
+          <ResetBtn />
+        </Controls>
       </div>
-      <ClockPair />
-      <div style={s.info}>
-        Delay is added back after each move (Bronstein method)
-      </div>
-      <Controls />
-    </div>
-  </ChessClock.Root>
-);
+    </ChessClock.Root>
+  );
+};
 
 // ============================================================================
-// Configuration
+// 3. ClockStartModes
+// ============================================================================
+
+export const ClockStartModes = () => {
+  const [mode, setMode] = React.useState<"delayed" | "immediate" | "manual">(
+    "delayed",
+  );
+
+  const descriptions: Record<string, string> = {
+    delayed:
+      "Clock starts after Black's first move (Lichess-style). White moves → Black moves → Clock starts.",
+    immediate:
+      "White's clock starts counting down immediately on first switch (Chess.com-style).",
+    manual: "Clock stays idle until you press Start.",
+  };
+
+  return (
+    <ChessClock.Root key={mode} timeControl={{ time: "5+3", clockStart: mode }}>
+      <div style={s.container}>
+        <div style={s.header}>
+          <h3 style={s.title}>Clock Start Modes</h3>
+          <p style={s.subtitle}>Controls when the clock begins counting down</p>
+        </div>
+        <div style={s.radioGroup}>
+          {(["delayed", "immediate", "manual"] as const).map((m) => (
+            <label key={m} style={s.radioLabel}>
+              <input
+                type="radio"
+                name="clockStart"
+                checked={mode === m}
+                onChange={() => setMode(m)}
+              />
+              {m.charAt(0).toUpperCase() + m.slice(1)}
+            </label>
+          ))}
+        </div>
+        <ClockPair />
+        <div style={s.info}>{descriptions[mode]}</div>
+        <Controls>
+          <ResetBtn />
+        </Controls>
+      </div>
+    </ChessClock.Root>
+  );
+};
+
+// ============================================================================
+// 4. TimeOdds
 // ============================================================================
 
 export const TimeOdds = () => (
@@ -340,58 +375,6 @@ export const TimeOdds = () => (
         <p style={s.subtitle}>White 5 min vs Black 3 min</p>
       </div>
       <ClockPair />
-      <Controls />
-    </div>
-  </ChessClock.Root>
-);
-
-export const ImmediateStart = () => (
-  <ChessClock.Root timeControl={{ time: "5+3", clockStart: "immediate" }}>
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Immediate Start &middot; 5+3</h3>
-        <p style={s.subtitle}>White&apos;s clock starts on first switch</p>
-      </div>
-      <ClockPair />
-      <div style={s.info}>
-        White&apos;s clock begins counting down immediately
-      </div>
-      <Controls />
-    </div>
-  </ChessClock.Root>
-);
-
-export const DelayedStart = () => (
-  <ChessClock.Root timeControl={{ time: "5+3", clockStart: "delayed" }}>
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Delayed Start &middot; 5+3</h3>
-        <p style={s.subtitle}>
-          Clock starts after Black&apos;s first move (Lichess-style)
-        </p>
-      </div>
-      <ClockPair />
-      <div style={s.info}>
-        Both clocks are paused until after Black&apos;s first move.
-        <br />
-        <span style={{ fontFamily: font.mono, fontSize: "11px" }}>
-          White moves → Black moves → Clock starts for White
-        </span>
-      </div>
-      <Controls />
-    </div>
-  </ChessClock.Root>
-);
-
-export const ManualStart = () => (
-  <ChessClock.Root timeControl={{ time: "5+3", clockStart: "manual" }}>
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Manual Start &middot; 5+3</h3>
-        <p style={s.subtitle}>Clock starts when you press the button</p>
-      </div>
-      <ClockPair />
-      <div style={s.info}>Clock is idle until you press Start</div>
       <Controls>
         <ResetBtn />
       </Controls>
@@ -400,7 +383,7 @@ export const ManualStart = () => (
 );
 
 // ============================================================================
-// Display Formats
+// 5. DisplayFormats
 // ============================================================================
 
 const fmt = {
@@ -430,12 +413,20 @@ const fmt = {
   },
 };
 
-export const CustomTimeFormat = () => (
-  <ChessClock.Root timeControl={{ time: "5+3" }}>
+export const DisplayFormats = () => (
+  <ChessClock.Root
+    timeControl={{
+      time: { baseTime: 20, increment: 0 },
+      clockStart: "immediate",
+    }}
+  >
     <div style={s.container}>
       <div style={s.header}>
-        <h3 style={s.title}>Time Formats</h3>
-        <p style={s.subtitle}>Different display format options</p>
+        <h3 style={s.title}>Display Formats</h3>
+        <p style={s.subtitle}>
+          All built-in formats + custom formatTime (20s base to show auto
+          decimals)
+        </p>
       </div>
       <div
         style={{
@@ -466,6 +457,10 @@ export const CustomTimeFormat = () => (
           />
         </div>
         <div style={fmt.row}>
+          <span style={fmt.label}>format=&quot;ss.d&quot;</span>
+          <ChessClock.Display color="white" format="ss.d" style={fmt.display} />
+        </div>
+        <div style={fmt.row}>
           <span style={fmt.label}>Custom fn</span>
           <ChessClock.Display
             color="white"
@@ -474,15 +469,18 @@ export const CustomTimeFormat = () => (
           />
         </div>
       </div>
+      <Controls>
+        <ResetBtn />
+      </Controls>
     </div>
   </ChessClock.Root>
 );
 
 // ============================================================================
-// Callbacks & Events
+// 6. Callbacks
 // ============================================================================
 
-export const WithCallbacks = () => {
+export const Callbacks = () => {
   const [logs, setLogs] = React.useState<string[]>([]);
   const addLog = (msg: string) => setLogs((prev) => [...prev.slice(-4), msg]);
 
@@ -500,7 +498,9 @@ export const WithCallbacks = () => {
       <div style={s.container}>
         <div style={s.header}>
           <h3 style={s.title}>Callbacks &middot; 1+5</h3>
-          <p style={s.subtitle}>Event logging demo</p>
+          <p style={s.subtitle}>
+            onTimeout, onSwitch, onTimeUpdate event logging
+          </p>
         </div>
         <ClockPair format="ss.d" />
         <Controls>
@@ -521,15 +521,17 @@ export const WithCallbacks = () => {
 };
 
 // ============================================================================
-// Reset with New Time Control
+// 7. DynamicReset
 // ============================================================================
 
-export const ResetWithNewTimeControl = () => (
+export const DynamicReset = () => (
   <ChessClock.Root timeControl={{ time: "5+3" }}>
     <div style={s.container}>
       <div style={s.header}>
         <h3 style={s.title}>Dynamic Reset</h3>
-        <p style={s.subtitle}>Switch time controls on reset</p>
+        <p style={s.subtitle}>
+          Reset with a different time control using the timeControl prop
+        </p>
       </div>
       <ClockPair />
       <Controls />
@@ -552,95 +554,56 @@ export const ResetWithNewTimeControl = () => (
   </ChessClock.Root>
 );
 
-export const LowTimeDisplay = () => (
-  <ChessClock.Root
-    timeControl={{
-      time: { baseTime: 10, increment: 0 },
-      clockStart: "immediate",
-    }}
-  >
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Low Time Display</h3>
-        <p style={s.subtitle}>Shows decimals under 20 seconds</p>
-      </div>
-      <ClockPair />
-      <Controls>
-        <ResetBtn />
-      </Controls>
-    </div>
-  </ChessClock.Root>
-);
-
 // ============================================================================
-// Preset Time Controls
+// 8. MultiPeriod
 // ============================================================================
 
-export const PresetBlitz5Plus3 = () => (
-  <ChessClock.Root timeControl={{ time: "5+3" }}>
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Preset: Blitz 5+3</h3>
-        <p style={s.subtitle}>Popular blitz format</p>
-      </div>
-      <ClockPair />
-      <Controls>
-        <ResetBtn />
-      </Controls>
+function PeriodInfo() {
+  const { currentPeriodIndex, totalPeriods, periodMoves, currentPeriod } =
+    useChessClockContext();
+
+  const periodLabel = (playerColor: "white" | "black") => {
+    const idx = currentPeriodIndex[playerColor];
+    const moves = periodMoves[playerColor];
+    const period = currentPeriod[playerColor];
+    const required = period.moves;
+    return required
+      ? `Period ${idx + 1}/${totalPeriods} — ${moves}/${required} moves`
+      : `Period ${idx + 1}/${totalPeriods} — Sudden death`;
+  };
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        gap: "4px",
+      }}
+    >
+      {(["white", "black"] as const).map((c) => (
+        <div
+          key={c}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            padding: "6px 10px",
+            backgroundColor: c === "white" ? color.bg : color.dark,
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontFamily: font.mono,
+            color: c === "white" ? color.text : "#f0f0ec",
+          }}
+        >
+          <span style={{ textTransform: "capitalize" }}>{c}</span>
+          <span>{periodLabel(c)}</span>
+        </div>
+      ))}
     </div>
-  </ChessClock.Root>
-);
+  );
+}
 
-export const PresetBullet1Plus1 = () => (
-  <ChessClock.Root timeControl={{ time: "1+1" }}>
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Preset: Bullet 1+1</h3>
-        <p style={s.subtitle}>Bullet with 1-second increment</p>
-      </div>
-      <ClockPair format="ss.d" />
-      <Controls>
-        <ResetBtn />
-      </Controls>
-    </div>
-  </ChessClock.Root>
-);
-
-export const PresetClassical90Plus30 = () => (
-  <ChessClock.Root timeControl={{ time: "90+30" }}>
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Preset: Classical 90+30</h3>
-        <p style={s.subtitle}>Standard tournament format</p>
-      </div>
-      <ClockPair />
-      <Controls>
-        <ResetBtn />
-      </Controls>
-    </div>
-  </ChessClock.Root>
-);
-
-export const PresetRapid15Plus10 = () => (
-  <ChessClock.Root timeControl={{ time: "15+10" }}>
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Preset: Rapid 15+10</h3>
-        <p style={s.subtitle}>Popular rapid format</p>
-      </div>
-      <ClockPair />
-      <Controls>
-        <ResetBtn />
-      </Controls>
-    </div>
-  </ChessClock.Root>
-);
-
-// ============================================================================
-// Multi-Period Tournament Controls
-// ============================================================================
-
-export const MultiPeriodFideClassical = () => (
+export const MultiPeriod = () => (
   <ChessClock.Root
     timeControl={{
       time: [
@@ -654,61 +617,13 @@ export const MultiPeriodFideClassical = () => (
     <div style={s.container}>
       <div style={s.header}>
         <h3 style={s.title}>FIDE Classical</h3>
-        <p style={s.subtitle}>90min/40 + 30min/20 + 15min</p>
+        <p style={s.subtitle}>90min/40 + 30min/20 + 15min SD</p>
       </div>
       <ClockPair />
-      <Controls>
-        <ResetBtn />
-      </Controls>
+      <PeriodInfo />
       <div style={s.info}>
-        Each player advances independently:
-        <br />
-        <span style={{ fontFamily: font.mono, fontSize: "11px" }}>
-          Period 1: 40 moves &rarr; Period 2: 20 moves &rarr; Period 3: Sudden
-          death
-        </span>
+        Each player advances independently through 3 periods
       </div>
-    </div>
-  </ChessClock.Root>
-);
-
-export const MultiPeriodSimple = () => (
-  <ChessClock.Root
-    timeControl={{
-      time: [
-        { baseTime: 300, increment: 3, moves: 10 },
-        { baseTime: 180, increment: 2 },
-      ],
-      clockStart: "manual",
-    }}
-  >
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Multi-Period &middot; 5+3 &rarr; 3+2</h3>
-        <p style={s.subtitle}>5 min / 10 moves then 3 min sudden death</p>
-      </div>
-      <ClockPair />
-      <Controls>
-        <ResetBtn />
-      </Controls>
-      <div style={s.info}>Each player advances to Period 2 after 10 moves</div>
-    </div>
-  </ChessClock.Root>
-);
-
-export const MultiPeriodSuddenDeath = () => (
-  <ChessClock.Root
-    timeControl={{
-      time: [{ baseTime: 120, moves: 5 }, { baseTime: 60 }],
-      clockStart: "manual",
-    }}
-  >
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Multi-Period &middot; 2 min &rarr; 1 min</h3>
-        <p style={s.subtitle}>5 moves then sudden death</p>
-      </div>
-      <ClockPair format="mm:ss" />
       <Controls>
         <ResetBtn />
       </Controls>
@@ -717,7 +632,7 @@ export const MultiPeriodSuddenDeath = () => (
 );
 
 // ============================================================================
-// Server Sync via setTime
+// 9. ServerSync
 // ============================================================================
 
 function ServerTimeSyncHelper({
@@ -741,7 +656,7 @@ function ServerTimeSyncHelper({
   return null;
 }
 
-export const ServerSyncWithSetTime = () => {
+export const ServerSync = () => {
   const [serverTimes, setServerTimes] = React.useState({
     white: 300000,
     black: 300000,
@@ -786,6 +701,80 @@ export const ServerSyncWithSetTime = () => {
             Server: W={Math.ceil(serverTimes.white / 1000)}s B=
             {Math.ceil(serverTimes.black / 1000)}s
           </span>
+        </div>
+      </div>
+    </ChessClock.Root>
+  );
+};
+
+// ============================================================================
+// 10. AsChild
+// ============================================================================
+
+function AsChildStatus() {
+  const { status } = useChessClockContext();
+  return (
+    <div
+      style={{
+        fontSize: "12px",
+        fontFamily: font.mono,
+        color: color.textSecondary,
+      }}
+    >
+      Status: {status}
+    </div>
+  );
+}
+
+export const AsChild = () => {
+  const customBtn: React.CSSProperties = {
+    ...s.btn,
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    userSelect: "none",
+  };
+
+  return (
+    <ChessClock.Root timeControl={{ time: "5+3", clockStart: "manual" }}>
+      <div style={s.container}>
+        <div style={s.header}>
+          <h3 style={s.title}>asChild Pattern</h3>
+          <p style={s.subtitle}>
+            All controls rendered as custom elements via asChild
+          </p>
+        </div>
+        <ClockPair />
+        <div style={s.controls}>
+          <ChessClock.PlayPause
+            asChild
+            startContent="Start"
+            pauseContent="Pause"
+            resumeContent="Resume"
+            finishedContent="Game Over"
+          >
+            <div style={{ ...customBtn, ...s.btnPrimary }}>
+              <span>placeholder</span>
+            </div>
+          </ChessClock.PlayPause>
+
+          <ChessClock.Switch asChild>
+            <div style={customBtn}>
+              <span>Switch</span>
+            </div>
+          </ChessClock.Switch>
+
+          <ChessClock.Reset asChild>
+            <div style={customBtn}>
+              <span>Reset</span>
+            </div>
+          </ChessClock.Reset>
+        </div>
+        <AsChildStatus />
+        <div style={s.info}>
+          All 3 buttons use asChild with custom &lt;div&gt; elements.
+          <br />
+          Disabled state propagates automatically (try when idle or finished).
         </div>
       </div>
     </ChessClock.Root>

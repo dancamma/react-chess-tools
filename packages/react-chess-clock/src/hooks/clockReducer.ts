@@ -312,11 +312,16 @@ export function clockReducer(
         ...state.times,
         [player]: state.times[player] + milliseconds,
       };
-      // Reset timing so display interpolation restarts from the new base time
+      // Reset timing so display interpolation restarts from the new base time.
+      // When paused and modifying the active player's time, reset elapsedAtPause
+      // so RESUME doesn't use a stale offset that ignores the time change.
+      const resetElapsed =
+        state.status === "paused" && player === state.activePlayer;
       return {
         ...state,
         times: newTimes,
         moveStartTime: state.status === "running" ? now : null,
+        ...(resetElapsed && { elapsedAtPause: 0 }),
       };
     }
 
@@ -327,11 +332,16 @@ export function clockReducer(
         ...state.times,
         [player]: Math.max(0, milliseconds),
       };
-      // Reset timing so display interpolation restarts from the new base time
+      // Reset timing so display interpolation restarts from the new base time.
+      // When paused and modifying the active player's time, reset elapsedAtPause
+      // so RESUME doesn't use a stale offset that ignores the time change.
+      const resetElapsed =
+        state.status === "paused" && player === state.activePlayer;
       return {
         ...state,
         times: newTimes,
         moveStartTime: state.status === "running" ? now : null,
+        ...(resetElapsed && { elapsedAtPause: 0 }),
       };
     }
 

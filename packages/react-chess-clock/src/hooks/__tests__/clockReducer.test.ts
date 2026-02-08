@@ -326,6 +326,69 @@ describe("clockReducer", () => {
 
       expect(result.times.black).toBe(250000);
     });
+
+    it("should reset elapsedAtPause when adding time to active player while paused", () => {
+      const state = createState({
+        status: "paused",
+        activePlayer: "white",
+        elapsedAtPause: 2000,
+      });
+      const result = clockReducer(state, {
+        type: "ADD_TIME",
+        payload: { player: "white", milliseconds: 5000 },
+      });
+
+      expect(result.times.white).toBe(305000);
+      expect(result.elapsedAtPause).toBe(0);
+    });
+
+    it("should not reset elapsedAtPause when adding time to non-active player while paused", () => {
+      const state = createState({
+        status: "paused",
+        activePlayer: "white",
+        elapsedAtPause: 2000,
+      });
+      const result = clockReducer(state, {
+        type: "ADD_TIME",
+        payload: { player: "black", milliseconds: 5000 },
+      });
+
+      expect(result.times.black).toBe(305000);
+      expect(result.elapsedAtPause).toBe(2000);
+    });
+
+    it("should account for added time on resume after pause", () => {
+      // Simulate: running -> pause after 2s -> add 5s to active player -> resume
+      const startTime = 1000000;
+      let state = createState({
+        status: "running",
+        activePlayer: "white",
+        moveStartTime: startTime,
+      });
+
+      // Pause after 2 seconds
+      const pauseTime = startTime + 2000;
+      state = clockReducer(state, {
+        type: "PAUSE",
+        payload: { now: pauseTime },
+      });
+      expect(state.elapsedAtPause).toBe(2000);
+
+      // Add 5 seconds while paused
+      state = clockReducer(state, {
+        type: "ADD_TIME",
+        payload: { player: "white", milliseconds: 5000 },
+      });
+      expect(state.elapsedAtPause).toBe(0);
+
+      // Resume - moveStartTime should equal now (no stale offset)
+      const resumeTime = pauseTime + 1000;
+      state = clockReducer(state, {
+        type: "RESUME",
+        payload: { now: resumeTime },
+      });
+      expect(state.moveStartTime).toBe(resumeTime);
+    });
   });
 
   describe("SET_TIME", () => {
@@ -348,6 +411,36 @@ describe("clockReducer", () => {
       });
 
       expect(result.times.white).toBe(0);
+    });
+
+    it("should reset elapsedAtPause when setting time for active player while paused", () => {
+      const state = createState({
+        status: "paused",
+        activePlayer: "white",
+        elapsedAtPause: 2000,
+      });
+      const result = clockReducer(state, {
+        type: "SET_TIME",
+        payload: { player: "white", milliseconds: 120000 },
+      });
+
+      expect(result.times.white).toBe(120000);
+      expect(result.elapsedAtPause).toBe(0);
+    });
+
+    it("should not reset elapsedAtPause when setting time for non-active player while paused", () => {
+      const state = createState({
+        status: "paused",
+        activePlayer: "white",
+        elapsedAtPause: 2000,
+      });
+      const result = clockReducer(state, {
+        type: "SET_TIME",
+        payload: { player: "black", milliseconds: 120000 },
+      });
+
+      expect(result.times.black).toBe(120000);
+      expect(result.elapsedAtPause).toBe(2000);
     });
   });
 
