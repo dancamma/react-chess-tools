@@ -3,7 +3,6 @@ import {
   applySimpleDelay,
   applyBronsteinDelay,
   calculateSwitchAdjustment,
-  calculateTickDecrement,
   getInitialActivePlayer,
   getInitialStatus,
 } from "../timingMethods";
@@ -138,68 +137,6 @@ describe("calculateSwitchAdjustment", () => {
         delay: 5_000,
       });
       expect(result).toBe(295_000); // 290000 + 5000
-    });
-  });
-});
-
-describe("calculateTickDecrement", () => {
-  const baseConfig = {
-    baseTime: 300_000,
-    increment: 3_000,
-    delay: 5_000,
-    timingMethod: "fischer" as const,
-    clockStart: "delayed" as const,
-  };
-
-  describe("Fischer timing method", () => {
-    it("should decrement full elapsed time", () => {
-      const result = calculateTickDecrement(
-        "fischer",
-        1_000, // elapsed
-        3_000, // timeSpentInMove
-        0, // delayRemaining
-        baseConfig,
-      );
-      expect(result.decrement).toBe(1_000);
-    });
-  });
-
-  describe("Delay timing method", () => {
-    it("should not decrement within delay period", () => {
-      const result = calculateTickDecrement(
-        "delay",
-        1_000, // elapsed
-        3_000, // timeSpentInMove (within 5 second delay)
-        2_000, // delayRemaining
-        { ...baseConfig, timingMethod: "delay", delay: 5_000 },
-      );
-      expect(result.decrement).toBe(0);
-      expect(result.newDelayRemaining).toBe(2_000);
-    });
-
-    it("should decrement after delay period", () => {
-      const result = calculateTickDecrement(
-        "delay",
-        1_000, // elapsed
-        6_000, // timeSpentInMove (over 5 second delay)
-        0, // delayRemaining
-        { ...baseConfig, timingMethod: "delay", delay: 5_000 },
-      );
-      expect(result.decrement).toBe(1_000);
-      expect(result.newDelayRemaining).toBe(0);
-    });
-  });
-
-  describe("Bronstein timing method", () => {
-    it("should decrement full elapsed time", () => {
-      const result = calculateTickDecrement(
-        "bronstein",
-        1_000,
-        3_000,
-        0,
-        baseConfig,
-      );
-      expect(result.decrement).toBe(1_000);
     });
   });
 });

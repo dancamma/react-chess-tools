@@ -77,47 +77,6 @@ export function calculateSwitchAdjustment(
 }
 
 /**
- * Calculate the time decrement for a single tick
- * @param timingMethod - The timing method to use
- * @param elapsed - Elapsed time since last tick in milliseconds
- * @param timeSpentInMove - Total time spent in current move
- * @param delayRemaining - Remaining delay time (for delay method)
- * @param config - Normalized time control config
- * @returns Object with new time and remaining delay
- */
-export function calculateTickDecrement(
-  timingMethod: TimingMethod,
-  elapsed: number,
-  timeSpentInMove: number,
-  delayRemaining: number,
-  config: NormalizedTimeControl,
-): { decrement: number; newDelayRemaining: number } {
-  switch (timingMethod) {
-    case "fischer":
-      // Fischer: decrement full elapsed time
-      return { decrement: elapsed, newDelayRemaining: 0 };
-
-    case "delay": {
-      // Delay: don't decrement until delay period is over
-      const newDelayRemaining = Math.max(0, config.delay - timeSpentInMove);
-      if (timeSpentInMove < config.delay) {
-        // Still in delay period
-        return { decrement: 0, newDelayRemaining };
-      }
-      // Delay period over, decrement the elapsed time
-      return { decrement: elapsed, newDelayRemaining: 0 };
-    }
-
-    case "bronstein":
-      // Bronstein: decrement full elapsed time (adjustment happens on switch)
-      return { decrement: elapsed, newDelayRemaining: 0 };
-
-    default:
-      return { decrement: elapsed, newDelayRemaining: 0 };
-  }
-}
-
-/**
  * Calculate initial active player based on clock start mode
  * @param clockStart - Clock start mode
  * @returns Initial active player or null
