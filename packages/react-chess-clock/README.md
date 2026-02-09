@@ -261,15 +261,11 @@ Supports **ref forwarding**, **asChild pattern**, and all standard **HTML button
 #### Example
 
 ```tsx
-{
-  /* Reset with same time control */
-}
-<ChessClock.Reset>Reset</ChessClock.Reset>;
+// Reset with same time control
+<ChessClock.Reset>Reset</ChessClock.Reset>
 
-{
-  /* Reset with new time control */
-}
-<ChessClock.Reset timeControl="10+5">Change to 10+5</ChessClock.Reset>;
+// Reset with new time control
+<ChessClock.Reset timeControl="10+5">Change to 10+5</ChessClock.Reset>
 ```
 
 #### Using asChild Pattern

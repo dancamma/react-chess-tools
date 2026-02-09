@@ -19,6 +19,7 @@
 | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [@react-chess-tools/react-chess-game](packages/react-chess-game/README.md)     | A chess game component with sounds, move highlighting, and keyboard controls | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-game.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-game)     |
 | [@react-chess-tools/react-chess-puzzle](packages/react-chess-puzzle/README.md) | A chess puzzle component for creating interactive puzzle experiences         | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-puzzle.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-puzzle) |
+| [@react-chess-tools/react-chess-clock](packages/react-chess-clock/README.md)   | A standalone chess clock component with multiple timing methods              | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-clock.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-clock)   |
 
 ## Features
 
@@ -75,6 +76,27 @@ function App() {
       <ChessPuzzle.Reset>Restart</ChessPuzzle.Reset>
       <ChessPuzzle.Hint>Get Hint</ChessPuzzle.Hint>
     </ChessPuzzle.Root>
+  );
+}
+```
+
+### Chess Clock
+
+```bash
+npm install @react-chess-tools/react-chess-clock
+```
+
+```tsx
+import { ChessClock } from "@react-chess-tools/react-chess-clock";
+
+function App() {
+  return (
+    <ChessClock.Root timeControl={{ time: "5+3" }}>
+      <ChessClock.Display color="white" />
+      <ChessClock.Display color="black" />
+      <ChessClock.PlayPause />
+      <ChessClock.Reset>Reset</ChessClock.Reset>
+    </ChessClock.Root>
   );
 }
 ```
