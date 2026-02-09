@@ -1,6 +1,6 @@
 {
   "name": "@react-chess-tools/react-chess-clock",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A standalone chess clock component for React with support for multiple timing methods (Fischer, delay, Bronstein) and seamless integration with react-chess-game.",
   "type": "module",
   "exports": {
