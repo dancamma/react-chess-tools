@@ -1,5 +1,13 @@
+import { createRequire } from "node:module";
 import { dirname, join } from "path";
-import type { StorybookConfig } from "@storybook/react-webpack5";
+import { fileURLToPath } from "url";
+import type { StorybookConfig } from "@storybook/react-vite";
+import { mergeConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const require = createRequire(import.meta.url);
+
 const config: StorybookConfig = {
   stories: [
     "../packages/**/*.mdx",
@@ -8,14 +16,12 @@ const config: StorybookConfig = {
 
   addons: [
     getAbsolutePath("@storybook/addon-links"),
-    getAbsolutePath("@storybook/addon-essentials"),
     getAbsolutePath("@storybook/addon-onboarding"),
-    getAbsolutePath("@storybook/addon-interactions"),
-    "@storybook/addon-webpack5-compiler-swc",
+    getAbsolutePath("@storybook/addon-docs"),
   ],
 
   framework: {
-    name: getAbsolutePath("@storybook/react-webpack5"),
+    name: getAbsolutePath("@storybook/react-vite"),
     options: {},
   },
 
@@ -24,7 +30,14 @@ const config: StorybookConfig = {
   typescript: {
     reactDocgen: "react-docgen-typescript",
   },
+
+  vite: async (config) => {
+    return mergeConfig(config, {
+      plugins: [react()],
+    });
+  },
 };
+
 export default config;
 
 function getAbsolutePath(value: string): string {
