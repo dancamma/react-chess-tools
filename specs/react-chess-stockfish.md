@@ -603,6 +603,15 @@ export type {} from /* same types */ "./types";
 
 The implementation is organized into **7 stories** with **15 tasks** total. Tasks should be completed in dependency order.
 
+### Important: Test-First, Document-First Approach
+
+**Each task must be fully tested and documented before being marked complete.** Tests and documentation are NOT separate phases at the end — they are integral parts of each task:
+
+1. **Write tests first** (or alongside implementation) — TDD approach preferred
+2. **Document as you code** — JSDoc comments, TypeScript types, and inline documentation
+3. **Storybook stories** — Created immediately after component implementation
+4. **Task complete only when**: implementation passes all tests AND has complete documentation
+
 ### Task Dependencies
 
 ```
@@ -626,14 +635,6 @@ Story 4: UI Components (8-9)
 
 Story 5: Public API (11)
   └── Task 11: index.ts & utils-entry.ts
-
-Story 6: Testing (12-14)
-  ├── Task 12: Utility tests
-  ├── Task 13: Engine tests
-  └── Task 14: Component tests
-
-Story 7: Documentation (15)
-  └── Task 15: Storybook stories
 ```
 
 ---
@@ -734,6 +735,7 @@ export interface WorkerOptions {
 - [x] All types exported from `src/types/index.ts`
 - [x] Types compile without errors
 - [x] DEFAULT_WORKER_PATH constant defined
+- [ ] **Code fully tested and documented before marking task complete**
 
 ---
 
@@ -851,6 +853,7 @@ export {
 - [ ] `validateFen` uses chess.js for validation
 - [ ] `uciToSan` converts UCI to SAN using chess.js
 - [ ] All utilities exported from `src/utils/index.ts`
+- [ ] **Code fully tested and documented before marking task complete**
 
 ---
 
@@ -933,6 +936,7 @@ export class StockfishEngine {
 - [ ] `subscribe`/`getSnapshot` work with `useSyncExternalStore`
 - [ ] `destroy` terminates worker and clears listeners
 - [ ] Error states handled (init failure, timeout, worker crash)
+- [ ] **Code fully tested and documented before marking task complete**
 
 ---
 
@@ -1008,6 +1012,7 @@ export function useStockfishAnalysis({
 - [ ] Auto-starts analysis when fen/config changes
 - [ ] Methods are stable references (useMemo)
 - [ ] Hook not exported (internal only)
+- [ ] **Code fully tested and documented before marking task complete**
 
 ---
 
@@ -1057,6 +1062,7 @@ export function useStockfish(): StockfishContextValue {
 - [ ] Context defined with proper typing
 - [ ] `useStockfish` throws outside provider
 - [ ] Context value includes fen, info, methods
+- [ ] **Code fully tested and documented before marking task complete**
 
 ---
 
@@ -1112,6 +1118,7 @@ export interface RootProps {
 - [ ] Provides context to children
 - [ ] displayName set for DevTools
 - [ ] FEN validated (errors set in context, recoverable)
+- [ ] **Code fully tested and documented before marking task complete**
 
 ---
 
@@ -1190,6 +1197,7 @@ EvaluationBar.displayName = "ChessStockfish.EvaluationBar";
 - [ ] Supports `asChild` via Radix Slot
 - [ ] Memoized with `React.memo`
 - [ ] `forwardRef` support
+- [ ] **Code fully tested and documented before marking task complete**
 
 ---
 
@@ -1273,6 +1281,7 @@ EngineLines.displayName = "ChessStockfish.EngineLines";
 - [ ] Supports `asChild` via Radix Slot
 - [ ] Memoized with `React.memo`
 - [ ] `forwardRef` support
+- [ ] **Code fully tested and documented before marking task complete**
 
 ---
 
@@ -1298,6 +1307,7 @@ export const ChessStockfish = {
 
 - [ ] Exports compound component object
 - [ ] All parts exported
+- [ ] **Code fully tested and documented before marking task complete**
 
 ---
 
@@ -1354,12 +1364,128 @@ export { InvalidFenError } from "./utils/uci";
 - [ ] All components, hooks, utilities, types exported
 - [ ] `./utils` subpath export works
 - [ ] Build produces correct ESM/CJS files
+- [ ] **Code fully tested and documented before marking task complete**
 
 ---
 
-### Story 6: Testing
+## Testing Requirements
 
-#### Task 12: Write unit tests for utilities
+Tests are written **concurrently with implementation**, not as a separate phase. Each task's acceptance criteria includes full test coverage.
+
+### Test Files (created during implementation)
+
+- `src/utils/__tests__/evaluation.test.ts`
+- `src/utils/__tests__/workerPath.test.ts`
+- `src/utils/__tests__/uci.test.ts`
+- `src/engine/__tests__/stockfishEngine.test.ts`
+- `src/components/ChessStockfish/parts/__tests__/Root.test.tsx`
+- `src/components/ChessStockfish/parts/__tests__/EvaluationBar.test.tsx`
+- `src/components/ChessStockfish/parts/__tests__/EngineLines.test.tsx`
+- `src/hooks/__tests__/useStockfish.test.tsx`
+
+### Test Coverage Standards
+
+- Unit tests for all utility functions
+- Mocked Web Worker tests for StockfishEngine
+- Component tests using React Testing Library
+- Edge cases and error states covered
+- Security validations tested
+
+## Documentation Requirements
+
+Documentation is written **concurrently with implementation**. Each task includes:
+
+1. **JSDoc comments** on all exported functions and classes
+2. **TypeScript types** with descriptive comments
+3. **Inline comments** for complex logic (throttling, generation counter, UCI protocol)
+4. **Storybook stories** created immediately after component implementation
+
+### Storybook Stories (created during implementation)
+
+File: `src/components/ChessStockfish/ChessStockfish.stories.tsx`
+
+Stories to implement:
+
+```typescript
+import type { Meta, StoryObj } from "@storybook/react";
+import { ChessStockfish } from "./index";
+import { DEFAULT_WORKER_PATH } from "../../utils/workerPath";
+
+const meta: Meta<typeof ChessStockfish.Root> = {
+  title: "ChessStockfish",
+  component: ChessStockfish.Root,
+};
+
+export default meta;
+
+const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+export const Basic: StoryObj = {
+  render: () => (
+    <ChessStockfish.Root
+      fen={START_FEN}
+      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+    >
+      <ChessStockfish.EvaluationBar showEvaluation />
+      <ChessStockfish.EngineLines />
+    </ChessStockfish.Root>
+  ),
+};
+
+export const MultiPV: StoryObj = {
+  render: () => (
+    <ChessStockfish.Root
+      fen={START_FEN}
+      config={{ multiPV: 3 }}
+      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+    >
+      <ChessStockfish.EngineLines maxLines={3} />
+    </ChessStockfish.Root>
+  ),
+};
+
+export const HorizontalBar: StoryObj = {
+  render: () => (
+    <ChessStockfish.Root
+      fen={START_FEN}
+      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+    >
+      <ChessStockfish.EvaluationBar orientation="horizontal" showEvaluation />
+    </ChessStockfish.Root>
+  ),
+};
+
+export const CustomConfig: StoryObj = {
+  render: () => (
+    <ChessStockfish.Root
+      fen={START_FEN}
+      config={{ skillLevel: 10, depth: 15 }}
+      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+    >
+      <ChessStockfish.EvaluationBar showEvaluation />
+    </ChessStockfish.Root>
+  ),
+};
+
+export const ErrorState: StoryObj = {
+  render: () => (
+    <ChessStockfish.Root
+      fen="invalid-fen"
+      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+    >
+      <div>Invalid FEN - check context for error</div>
+    </ChessStockfish.Root>
+  ),
+};
+```
+
+---
+
+## Example Test Implementations
+
+These examples show the expected test coverage for each module.
+
+### Utility Tests (Task 3)
 
 **Files:**
 
@@ -1487,15 +1613,7 @@ describe("uciToSan", () => {
 });
 ```
 
-**Acceptance Criteria:**
-
-- [ ] All utility functions tested
-- [ ] Edge cases covered (null, mate, large values)
-- [ ] Security validation tested
-
----
-
-#### Task 13: Write unit tests for StockfishEngine
+### Engine Tests (Task 4)
 
 **File:** `src/engine/__tests__/stockfishEngine.test.ts`
 
@@ -1542,7 +1660,7 @@ describe("StockfishEngine", () => {
 });
 ```
 
-**Acceptance Criteria:**
+**Acceptance Criteria (for engine tests):**
 
 - [ ] UCI protocol initialization tested
 - [ ] Info message parsing tested
@@ -1551,9 +1669,7 @@ describe("StockfishEngine", () => {
 - [ ] Error states covered
 - [ ] Cleanup verified
 
----
-
-#### Task 14: Write component tests
+### Component Tests (Tasks 7, 8, 9)
 
 **Files:**
 
@@ -1604,7 +1720,7 @@ describe("useStockfish", () => {
 });
 ```
 
-**Acceptance Criteria:**
+**Acceptance Criteria (for component tests):**
 
 - [ ] All components tested
 - [ ] Data attributes verified
@@ -1613,9 +1729,7 @@ describe("useStockfish", () => {
 
 ---
 
-### Story 7: Documentation
-
-#### Task 15: Create Storybook stories
+## Storybook Stories (created during Tasks 8-9)
 
 **File:** `src/components/ChessStockfish/ChessStockfish.stories.tsx`
 
@@ -1692,7 +1806,7 @@ export const ErrorState: StoryObj = {
 };
 ```
 
-**Acceptance Criteria:**
+**Acceptance Criteria (for Storybook stories):**
 
 - [ ] Basic usage story works
 - [ ] Multi-PV story shows multiple lines
