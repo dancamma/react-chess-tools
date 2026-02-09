@@ -731,9 +731,9 @@ export interface WorkerOptions {
 
 **Acceptance Criteria:**
 
-- [ ] All types exported from `src/types/index.ts`
-- [ ] Types compile without errors
-- [ ] DEFAULT_WORKER_PATH constant defined
+- [x] All types exported from `src/types/index.ts`
+- [x] Types compile without errors
+- [x] DEFAULT_WORKER_PATH constant defined
 
 ---
 
