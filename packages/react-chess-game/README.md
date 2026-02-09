@@ -313,14 +313,13 @@ A button to start, pause, and resume the clock.
 A button that resets the clock.
 
 ```tsx
-<ChessGame.Clock.Reset>Reset</ChessGame.Clock.Reset>;
+// Reset with same time control
+<ChessGame.Clock.Reset>Reset</ChessGame.Clock.Reset>
 
-{
-  /* Reset with new time control */
-}
+// Reset with new time control
 <ChessGame.Clock.Reset timeControl="10+5">
   Change to 10+5
-</ChessGame.Clock.Reset>;
+</ChessGame.Clock.Reset>
 ```
 
 **Props:**
