@@ -662,10 +662,10 @@ Create config files:
 
 **Acceptance Criteria:**
 
-- [ ] Package directory created under `packages/`
-- [ ] `package.json` has correct name, dependencies, exports
-- [ ] `tsup.config.ts` outputs dual ESM/CJS with types
-- [ ] `npm run build` succeeds (produces empty dist)
+- [x] Package directory created under `packages/`
+- [x] `package.json` has correct name, dependencies, exports
+- [x] `tsup.config.ts` outputs dual ESM/CJS with types
+- [x] `npm run build` succeeds (produces empty dist)
 
 ---
 
