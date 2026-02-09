@@ -1,5 +1,14 @@
 # @react-chess-tools/react-chess-puzzle
 
+## 1.0.4
+
+### Patch Changes
+
+- e678d58: chore: update dependencies
+- Updated dependencies [1c4f876]
+- Updated dependencies [e678d58]
+  - @react-chess-tools/react-chess-game@1.0.3
+
 ## 1.0.3
 
 ### Patch Changes

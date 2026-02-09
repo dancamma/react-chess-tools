@@ -1,5 +1,15 @@
 # @react-chess-tools/react-chess-game
 
+## 1.0.3
+
+### Patch Changes
+
+- 1c4f876: docs: update README files
+- e678d58: chore: update dependencies
+- Updated dependencies [1c4f876]
+- Updated dependencies [e678d58]
+  - @react-chess-tools/react-chess-clock@1.0.2
+
 ## 1.0.2
 
 ### Patch Changes
