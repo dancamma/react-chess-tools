@@ -1060,10 +1060,10 @@ export function useStockfish(): StockfishContextValue {
 
 **Acceptance Criteria:**
 
-- [ ] Context defined with proper typing
-- [ ] `useStockfish` throws outside provider
-- [ ] Context value includes fen, info, methods
-- [ ] **Code fully tested and documented before marking task complete**
+- [x] Context defined with proper typing
+- [x] `useStockfish` throws outside provider
+- [x] Context value includes fen, info, methods
+- [x] **Code fully tested and documented before marking task complete**
 
 ---
 
