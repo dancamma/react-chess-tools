@@ -1,5 +1,10 @@
 import { renderHook, act } from "@testing-library/react";
 import { useChessClock, useOptionalChessClock } from "../useChessClock";
+import type {
+  TimeControlInput,
+  TimingMethod,
+  ClockStartMode,
+} from "../../types";
 
 // Mock requestAnimationFrame
 const mockRaf = jest.fn();
@@ -525,8 +530,8 @@ describe("useChessClock", () => {
   describe("options changes", () => {
     it("should auto-reset when time control changes", () => {
       const { result, rerender } = renderHook(
-        ({ time }) => useChessClock({ time }),
-        { initialProps: { time: "5+3" as string } },
+        ({ time }: { time: TimeControlInput }) => useChessClock({ time }),
+        { initialProps: { time: "5+3" as TimeControlInput } },
       );
 
       expect(result.current.times.white).toBe(300_000);
@@ -539,8 +544,9 @@ describe("useChessClock", () => {
 
     it("should auto-reset when timingMethod changes", () => {
       const { result, rerender } = renderHook(
-        ({ timingMethod }) => useChessClock({ time: "5+3", timingMethod }),
-        { initialProps: { timingMethod: "fischer" as string } },
+        ({ timingMethod }: { timingMethod: TimingMethod }) =>
+          useChessClock({ time: "5+3", timingMethod }),
+        { initialProps: { timingMethod: "fischer" as TimingMethod } },
       );
 
       expect(result.current.timingMethod).toBe("fischer");
@@ -552,8 +558,9 @@ describe("useChessClock", () => {
 
     it("should auto-reset when clockStart changes", () => {
       const { result, rerender } = renderHook(
-        ({ clockStart }) => useChessClock({ time: "5+0", clockStart }),
-        { initialProps: { clockStart: "delayed" as string } },
+        ({ clockStart }: { clockStart: ClockStartMode }) =>
+          useChessClock({ time: "5+0", clockStart }),
+        { initialProps: { clockStart: "delayed" as ClockStartMode } },
       );
 
       expect(result.current.status).toBe("delayed");
@@ -642,8 +649,9 @@ describe("useChessClock", () => {
 
     it("should reset status when time control changes during game", () => {
       const { result, rerender } = renderHook(
-        ({ time }) => useChessClock({ time, clockStart: "immediate" }),
-        { initialProps: { time: "5+3" as string } },
+        ({ time }: { time: TimeControlInput }) =>
+          useChessClock({ time, clockStart: "immediate" }),
+        { initialProps: { time: "5+3" as TimeControlInput } },
       );
 
       // Start the clock and make a switch
@@ -664,11 +672,17 @@ describe("useChessClock", () => {
 
     it("should handle multiple option changes", () => {
       const { result, rerender } = renderHook(
-        ({ time, timingMethod }) => useChessClock({ time, timingMethod }),
+        ({
+          time,
+          timingMethod,
+        }: {
+          time: TimeControlInput;
+          timingMethod: TimingMethod;
+        }) => useChessClock({ time, timingMethod }),
         {
           initialProps: {
-            time: "5+3" as string,
-            timingMethod: "fischer" as string,
+            time: "5+3" as TimeControlInput,
+            timingMethod: "fischer" as TimingMethod,
           },
         },
       );
