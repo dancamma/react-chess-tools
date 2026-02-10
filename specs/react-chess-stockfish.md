@@ -1115,11 +1115,11 @@ export interface RootProps {
 
 **Acceptance Criteria:**
 
-- [ ] Uses `useStockfishAnalysis` internally
-- [ ] Provides context to children
-- [ ] displayName set for DevTools
-- [ ] FEN validated (errors set in context, recoverable)
-- [ ] **Code fully tested and documented before marking task complete**
+- [x] Uses `useStockfishAnalysis` internally
+- [x] Provides context to children
+- [x] displayName set for DevTools
+- [x] FEN validated (errors set in context, recoverable)
+- [x] **Code fully tested and documented before marking task complete**
 
 ---
 
