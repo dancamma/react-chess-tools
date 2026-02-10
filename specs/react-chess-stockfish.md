@@ -1007,13 +1007,13 @@ export function useStockfishAnalysis({
 
 **Acceptance Criteria:**
 
-- [ ] Engine created once on mount
-- [ ] Engine destroyed on unmount
-- [ ] State read via `useSyncExternalStore`
-- [ ] Auto-starts analysis when fen/config changes
-- [ ] Methods are stable references (useMemo)
-- [ ] Hook not exported (internal only)
-- [ ] **Code fully tested and documented before marking task complete**
+- [x] Engine created once on mount
+- [x] Engine destroyed on unmount
+- [x] State read via `useSyncExternalStore`
+- [x] Auto-starts analysis when fen/config changes
+- [x] Methods are stable references (useMemo)
+- [x] Hook not exported (internal only)
+- [x] **Code fully tested and documented before marking task complete**
 
 ---
 
