@@ -1,4 +1,10 @@
-import { validateFen, uciToSan, uciToPvMoves } from "../uci";
+import {
+  validateFen,
+  uciToSan,
+  uciToPvMoves,
+  parseUciInfoLine,
+  buildUciGoCommand,
+} from "../uci";
 import { InvalidFenError } from "../evaluation";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -149,5 +155,104 @@ describe("uciToPvMoves", () => {
   it("handles empty array", () => {
     const result = uciToPvMoves([], START_FEN);
     expect(result).toEqual([]);
+  });
+});
+
+describe("parseUciInfoLine", () => {
+  it("parses centipawn score", () => {
+    const info = parseUciInfoLine(
+      "info depth 20 score cp 123 nodes 1000000 nps 500000 time 2000 pv e2e4 e7e5",
+    );
+
+    expect(info).not.toBeNull();
+    expect(info!.depth).toBe(20);
+    expect(info!.score).toEqual({ type: "cp", value: 123 });
+    expect(info!.nodes).toBe(1000000);
+    expect(info!.nps).toBe(500000);
+    expect(info!.time).toBe(2000);
+    expect(info!.pv).toEqual(["e2e4", "e7e5"]);
+  });
+
+  it("parses mate score", () => {
+    const info = parseUciInfoLine(
+      "info depth 15 score mate 3 pv e2e4 e7e5 g1f3",
+    );
+
+    expect(info!.score).toEqual({ type: "mate", value: 3 });
+    expect(info!.pv).toEqual(["e2e4", "e7e5", "g1f3"]);
+  });
+
+  it("parses negative mate score", () => {
+    const info = parseUciInfoLine("info depth 10 score mate -2 pv e7e5");
+
+    expect(info!.score).toEqual({ type: "mate", value: -2 });
+  });
+
+  it("parses multipv", () => {
+    const info = parseUciInfoLine(
+      "info multipv 2 depth 20 score cp 50 pv d2d4",
+    );
+
+    expect(info!.multipv).toBe(2);
+    expect(info!.depth).toBe(20);
+    expect(info!.score).toEqual({ type: "cp", value: 50 });
+  });
+
+  it("parses tbhits", () => {
+    const info = parseUciInfoLine("info depth 30 tbhits 42 score cp 0 pv e2e4");
+
+    expect(info!.tbHits).toBe(42);
+  });
+
+  it("handles partial info lines (no pv)", () => {
+    const info = parseUciInfoLine("info depth 5 score cp -30");
+
+    expect(info!.depth).toBe(5);
+    expect(info!.score).toEqual({ type: "cp", value: -30 });
+    expect(info!.pv).toBeUndefined();
+  });
+
+  it("skips unknown tokens gracefully", () => {
+    const info = parseUciInfoLine(
+      "info depth 10 seldepth 15 score cp 100 pv e2e4",
+    );
+
+    expect(info!.depth).toBe(10);
+    expect(info!.score).toEqual({ type: "cp", value: 100 });
+    expect(info!.pv).toEqual(["e2e4"]);
+  });
+
+  it("returns an empty object for info-only line", () => {
+    const info = parseUciInfoLine("info string some debug message");
+
+    expect(info).not.toBeNull();
+    // No structured fields parsed, just unknown tokens skipped
+    expect(info!.depth).toBeUndefined();
+    expect(info!.score).toBeUndefined();
+  });
+});
+
+describe("buildUciGoCommand", () => {
+  it("returns depth command when depth is specified", () => {
+    expect(buildUciGoCommand({ depth: 20 })).toBe("depth 20");
+  });
+
+  it("returns infinite when depth is not specified", () => {
+    expect(buildUciGoCommand({})).toBe("infinite");
+  });
+
+  it("returns infinite when depth is zero", () => {
+    expect(buildUciGoCommand({ depth: 0 })).toBe("infinite");
+  });
+
+  it("returns infinite when depth is undefined", () => {
+    expect(buildUciGoCommand({ depth: undefined })).toBe("infinite");
+  });
+
+  it("ignores non-depth config fields", () => {
+    expect(buildUciGoCommand({ skillLevel: 10, multiPV: 3 })).toBe("infinite");
+    expect(buildUciGoCommand({ skillLevel: 10, multiPV: 3, depth: 15 })).toBe(
+      "depth 15",
+    );
   });
 });

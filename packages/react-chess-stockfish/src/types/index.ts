@@ -35,6 +35,24 @@ export interface AnalysisInfo {
   error: Error | null;
 }
 
+/**
+ * Internal state of the Stockfish engine.
+ * This is the same type returned by getSnapshot() for useSyncExternalStore.
+ */
+export interface AnalysisState {
+  fen: string;
+  config: StockfishConfig;
+  evaluation: Evaluation | null;
+  normalizedEvaluation: number;
+  bestLine: PrincipalVariation | null;
+  principalVariations: PrincipalVariation[];
+  depth: number;
+  status: EngineStatus;
+  isEngineThinking: boolean;
+  hasResults: boolean;
+  error: Error | null;
+}
+
 export interface AnalysisMethods {
   startAnalysis: () => void;
   stopAnalysis: () => void;

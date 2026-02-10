@@ -1,6 +1,20 @@
 import { Chess, validateFen as chessValidateFen } from "chess.js";
-import type { PVMove } from "../types";
+import type { Evaluation, PVMove, StockfishConfig } from "../types";
 import { InvalidFenError } from "./evaluation";
+
+/**
+ * Parsed info from a Stockfish info line.
+ */
+export interface ParsedInfo {
+  multipv?: number;
+  depth?: number;
+  score?: Evaluation;
+  pv?: string[];
+  nodes?: number;
+  nps?: number;
+  tbHits?: number;
+  time?: number;
+}
 
 /**
  * Validate a FEN string using chess.js.
@@ -108,4 +122,104 @@ export function uciToPvMoves(uciMoves: string[], fen: string): PVMove[] {
   }
 
   return result;
+}
+
+/**
+ * Parse a Stockfish UCI info line into structured data.
+ *
+ * Example lines:
+ * "info depth 20 seldepth 35 score cp 123 nodes 1000000 nps 1000000 tbhits 0 time 1000 pv e2e4 e7e5"
+ * "info depth 15 score mate 3 nodes 500000 nps 500000 tbhits 0 time 500 pv e2e4 e7e5 g1f3"
+ * "info multipv 1 depth 20 score cp 123 pv e2e4 e7e5"
+ *
+ * @param line - The raw info line from Stockfish
+ * @returns Parsed info object, or null if the line cannot be parsed
+ */
+export function parseUciInfoLine(line: string): ParsedInfo | null {
+  const info: ParsedInfo = {};
+
+  // Split into tokens
+  const tokens = line.split(" ");
+  const nextInt = (index: number, fallback = 0): number =>
+    tokens[index] ? parseInt(tokens[index], 10) : fallback;
+
+  let i = 1; // Skip "info"
+  while (i < tokens.length) {
+    const token = tokens[i];
+
+    switch (token) {
+      case "multipv":
+        info.multipv = nextInt(i + 1, 1);
+        i += 2;
+        break;
+      case "depth":
+        info.depth = nextInt(i + 1);
+        i += 2;
+        break;
+      case "score": {
+        const scoreType = tokens[i + 1];
+        const scoreValue = tokens[i + 2];
+
+        if (scoreType && scoreValue) {
+          const value = parseInt(scoreValue, 10);
+
+          if (scoreType === "mate") {
+            info.score = { type: "mate", value };
+          } else if (scoreType === "cp") {
+            info.score = { type: "cp", value };
+          }
+          // "lowerbound"/"upperbound" are ignored for now
+
+          i += 3;
+        } else {
+          i += 2;
+        }
+        break;
+      }
+      case "nodes":
+        info.nodes = nextInt(i + 1);
+        i += 2;
+        break;
+      case "nps":
+        info.nps = nextInt(i + 1);
+        i += 2;
+        break;
+      case "tbhits":
+        info.tbHits = nextInt(i + 1);
+        i += 2;
+        break;
+      case "time":
+        info.time = nextInt(i + 1);
+        i += 2;
+        break;
+      case "pv":
+        // Collect all remaining tokens as the PV
+        info.pv = tokens.slice(i + 1);
+        i = tokens.length;
+        break;
+      default:
+        // Skip unknown tokens
+        i += 1;
+        break;
+    }
+  }
+
+  return info;
+}
+
+/**
+ * Build the UCI "go" command parameters from a StockfishConfig.
+ *
+ * @param config - The Stockfish configuration
+ * @returns The go command parameter string (e.g., "depth 20" or "infinite")
+ */
+export function buildUciGoCommand(config: StockfishConfig): string {
+  const { depth } = config;
+
+  // If depth is specified, use it instead of infinite
+  if (depth !== undefined && depth > 0) {
+    return `depth ${depth}`;
+  }
+
+  return "infinite";
 }

@@ -928,16 +928,16 @@ export class StockfishEngine {
 
 **Acceptance Criteria:**
 
-- [ ] Worker initializes with UCI handshake
-- [ ] `startAnalysis` validates FEN, sends position commands
-- [ ] Info messages parsed (cp, mate, multiPV, depth, pv)
-- [ ] Evaluations normalized to white perspective
-- [ ] Updates throttled to ~10/sec with trailing edge
-- [ ] Generation counter prevents stale analysis
-- [ ] `subscribe`/`getSnapshot` work with `useSyncExternalStore`
-- [ ] `destroy` terminates worker and clears listeners
-- [ ] Error states handled (init failure, timeout, worker crash)
-- [ ] **Code fully tested and documented before marking task complete**
+- [x] Worker initializes with UCI handshake
+- [x] `startAnalysis` validates FEN, sends position commands
+- [x] Info messages parsed (cp, mate, multiPV, depth, pv)
+- [x] Evaluations normalized to white perspective
+- [x] Updates throttled to ~10/sec with trailing edge
+- [x] Generation counter prevents stale analysis
+- [x] `subscribe`/`getSnapshot` work with `useSyncExternalStore`
+- [x] `destroy` terminates worker and clears listeners
+- [x] Error states handled (init failure, timeout, worker crash)
+- [x] **Code fully tested and documented before marking task complete**
 
 ---
 
