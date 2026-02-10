@@ -25,3 +25,6 @@ jobs:
 
       - name: Run linting
         run: npm run lint
+
+      - name: Type check
+        run: npm run test-types

@@ -26,6 +26,9 @@ npx jest path/to/test.test.tsx
 # Lint
 npm run lint
 
+# Type check
+npm run test-types
+
 # Run Storybook for development
 npm run storybook
 
@@ -41,6 +44,7 @@ This is an **npm workspaces monorepo** for building React components that help d
 
 - `packages/react-chess-game` - Chess game component with sounds, move highlighting, keyboard controls
 - `packages/react-chess-puzzle` - Chess puzzle component (depends on react-chess-game)
+- `packages/react-chess-clock` - Standalone chess clock with Fischer/Delay/Bronstein timing and multi-period support
 
 New packages can be added under `packages/` following the same patterns.
 
@@ -66,22 +70,30 @@ New packages can be added under `packages/` following the same patterns.
 - `useChessGame` - Creates game state (used in ChessGame.Root)
 - `useChessGameContext` - Accesses game state from child components
 - `useChessPuzzleContext` - Accesses puzzle state from child components
+- `useChessClockContext` - Accesses clock state from child components
 
-**Theme System**: Nested theme objects with deep merge utilities:
+Context hooks throw descriptive errors when used outside their provider.
+
+**Theme System**: Nested theme objects with deep merge utilities (lodash `merge`):
 
 - `defaultGameTheme`, `lichessTheme`, `chessComTheme`
 - `mergeTheme()` / `mergePuzzleTheme()` for partial overrides
+- Themes use `DeepPartial<T>` for type-safe partial overrides
 
 **AsChild Pattern**: Components support `asChild` prop via Radix Slot to render as custom elements.
+
+**Ref Pattern for Callbacks**: Hooks like `useChessClock` and `useChessGame` store callbacks in refs to avoid triggering resets or recreating functions on every render. This prevents stale closure issues with timer intervals.
+
+**Clock Integration**: `react-chess-game` optionally integrates `react-chess-clock` — the clock auto-starts on first move, pauses on game over, and switches after each move (configurable via `autoSwitchOnMove`).
 
 ### File Organization
 
 Each package follows this structure:
 
 - `src/index.ts` - Public exports
-- `src/components/` - React components
+- `src/components/` - React components (compound component parts in `parts/` subdirectory)
 - `src/hooks/` - Custom hooks (useChessGame, etc.)
-- `src/themes/` - Theme definitions and utilities
+- `src/theme/` - Theme definitions, context, presets, and merge utilities (only in packages that render the chessboard)
 - `src/types/` - TypeScript type definitions (for domain types, not component props)
 - `src/__tests__/` - Test files
 
@@ -91,7 +103,7 @@ Each package follows this structure:
 
 ### Build
 
-Uses **tsup** to bundle TypeScript. Each package outputs ESM and CJS formats with type definitions.
+Uses **tsup** to bundle TypeScript. Each package outputs ESM and CJS formats with type definitions. React and React DOM are externalized as peer dependencies.
 
 ## Testing
 
@@ -99,3 +111,4 @@ Uses **tsup** to bundle TypeScript. Each package outputs ESM and CJS formats wit
 - Tests in `__tests__` directories adjacent to components
 - Prefer using real chess.js instead of mocking it
 - Test environment: jsdom
+- Module name mapper resolves `@react-chess-tools/*` to source for cross-package imports in tests
