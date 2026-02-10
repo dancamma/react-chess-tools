@@ -735,7 +735,7 @@ export interface WorkerOptions {
 - [x] All types exported from `src/types/index.ts`
 - [x] Types compile without errors
 - [x] DEFAULT_WORKER_PATH constant defined
-- [ ] **Code fully tested and documented before marking task complete**
+- [x] **Code fully tested and documented before marking task complete**
 
 ---
 
@@ -847,13 +847,14 @@ export {
 
 **Acceptance Criteria:**
 
-- [ ] `formatEvaluation` handles cp, mate, null cases
-- [ ] `normalizeEvaluation` returns -1 to 1 range
-- [ ] `validateWorkerPath` rejects data:, javascript:, blob:, file:
-- [ ] `validateFen` uses chess.js for validation
-- [ ] `uciToSan` converts UCI to SAN using chess.js
-- [ ] All utilities exported from `src/utils/index.ts`
-- [ ] **Code fully tested and documented before marking task complete**
+- [x] `formatEvaluation` handles cp, mate, null cases
+- [x] `normalizeEvaluation` returns -1 to 1 range
+- [x] `validateWorkerPath` rejects data:, javascript:, blob:, file:
+- [x] `validateFen` uses chess.js for validation
+- [x] `uciToSan` converts UCI to SAN using chess.js
+- [x] `uciToPvMoves` converts arrays of UCI moves to PVMove objects
+- [x] All utilities exported from `src/utils/index.ts`
+- [x] **Code fully tested and documented before marking task complete**
 
 ---
 
