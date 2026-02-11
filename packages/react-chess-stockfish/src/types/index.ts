@@ -60,9 +60,6 @@ export interface AnalysisMethods {
   setConfig: (config: Partial<StockfishConfig>) => void;
 }
 
-export const DEFAULT_WORKER_PATH =
-  "https://unpkg.com/stockfish@17.1.0/src/stockfish-17.1-lite-single-03e3232.js";
-
 export interface WorkerOptions {
   workerPath: string;
   throttleMs?: number;

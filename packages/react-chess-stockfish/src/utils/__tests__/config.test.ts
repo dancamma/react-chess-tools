@@ -6,8 +6,8 @@ import {
 } from "../config";
 
 describe("DEFAULT_THROTTLE_MS", () => {
-  it("is 100ms", () => {
-    expect(DEFAULT_THROTTLE_MS).toBe(100);
+  it("is 50ms", () => {
+    expect(DEFAULT_THROTTLE_MS).toBe(50);
   });
 });
 

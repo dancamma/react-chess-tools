@@ -16,5 +16,13 @@
  * ```
  */
 
-export { Root } from "./parts/index";
+import { Root } from "./parts/index";
+import { EvaluationBar } from "./parts/index";
+
+export const ChessStockfish = {
+  Root,
+  EvaluationBar,
+};
+
 export type { RootProps } from "./parts/Root";
+export type { EvaluationBarProps } from "./parts/EvaluationBar";

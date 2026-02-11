@@ -1,4 +1,5 @@
 import {
+  cpToWinningChances,
   formatEvaluation,
   normalizeEvaluation,
   InvalidFenError,
@@ -6,31 +7,31 @@ import {
 
 describe("formatEvaluation", () => {
   it("formats positive centipawn evaluations", () => {
-    expect(formatEvaluation({ type: "cp", value: 123 })).toBe("+1.23");
-    expect(formatEvaluation({ type: "cp", value: 50 })).toBe("+0.50");
-    expect(formatEvaluation({ type: "cp", value: 1 })).toBe("+0.01");
+    expect(formatEvaluation({ type: "cp", value: 123 })).toBe("+1.2");
+    expect(formatEvaluation({ type: "cp", value: 50 })).toBe("+0.5");
+    expect(formatEvaluation({ type: "cp", value: 1 })).toBe("0.0");
   });
 
   it("formats negative centipawn evaluations", () => {
-    expect(formatEvaluation({ type: "cp", value: -123 })).toBe("-1.23");
-    expect(formatEvaluation({ type: "cp", value: -50 })).toBe("-0.50");
-    expect(formatEvaluation({ type: "cp", value: -1 })).toBe("-0.01");
+    expect(formatEvaluation({ type: "cp", value: -123 })).toBe("-1.2");
+    expect(formatEvaluation({ type: "cp", value: -50 })).toBe("-0.5");
+    expect(formatEvaluation({ type: "cp", value: -1 })).toBe("0.0");
   });
 
   it("formats zero centipawn evaluation", () => {
-    expect(formatEvaluation({ type: "cp", value: 0 })).toBe("0.00");
+    expect(formatEvaluation({ type: "cp", value: 0 })).toBe("0.0");
   });
 
   it("formats positive mate evaluations", () => {
-    expect(formatEvaluation({ type: "mate", value: 1 })).toBe("M1");
-    expect(formatEvaluation({ type: "mate", value: 3 })).toBe("M3");
-    expect(formatEvaluation({ type: "mate", value: 10 })).toBe("M10");
+    expect(formatEvaluation({ type: "mate", value: 1 })).toBe("#1");
+    expect(formatEvaluation({ type: "mate", value: 3 })).toBe("#3");
+    expect(formatEvaluation({ type: "mate", value: 10 })).toBe("#10");
   });
 
   it("formats negative mate evaluations", () => {
-    expect(formatEvaluation({ type: "mate", value: -1 })).toBe("-M1");
-    expect(formatEvaluation({ type: "mate", value: -5 })).toBe("-M5");
-    expect(formatEvaluation({ type: "mate", value: -10 })).toBe("-M10");
+    expect(formatEvaluation({ type: "mate", value: -1 })).toBe("#-1");
+    expect(formatEvaluation({ type: "mate", value: -5 })).toBe("#-5");
+    expect(formatEvaluation({ type: "mate", value: -10 })).toBe("#-10");
   });
 
   it("formats null as dash", () => {
@@ -51,26 +52,20 @@ describe("normalizeEvaluation", () => {
     const result500 = normalizeEvaluation({ type: "cp", value: 500 });
     expect(result500).toBeGreaterThan(0);
     expect(result500).toBeLessThan(1);
+    expect(result500).toBeCloseTo(0.726, 3);
 
     const result1000 = normalizeEvaluation({ type: "cp", value: 1000 });
-    expect(result1000).toBeCloseTo(0.76, 1);
+    expect(result1000).toBeCloseTo(0.951, 3);
   });
 
   it("normalizes negative centipawn evaluations", () => {
     const result500 = normalizeEvaluation({ type: "cp", value: -500 });
     expect(result500).toBeLessThan(0);
     expect(result500).toBeGreaterThan(-1);
+    expect(result500).toBeCloseTo(-0.726, 3);
 
     const result1000 = normalizeEvaluation({ type: "cp", value: -1000 });
-    expect(result1000).toBeCloseTo(-0.76, 1);
-  });
-
-  it("clamps at range", () => {
-    const defaultRange = normalizeEvaluation({ type: "cp", value: 2000 });
-    const customRange = normalizeEvaluation({ type: "cp", value: 2000 }, 1000);
-
-    // Both should be the same since 2000 is clamped to 1000
-    expect(defaultRange).toBeCloseTo(customRange, 5);
+    expect(result1000).toBeCloseTo(-0.951, 3);
   });
 
   it("returns 1 for positive mate", () => {
@@ -87,6 +82,16 @@ describe("normalizeEvaluation", () => {
     const pos = normalizeEvaluation({ type: "cp", value: 500 });
     const neg = normalizeEvaluation({ type: "cp", value: -500 });
     expect(pos).toBeCloseTo(-neg, 5);
+  });
+});
+
+describe("cpToWinningChances", () => {
+  it("returns 0 at 0cp", () => {
+    expect(cpToWinningChances(0)).toBe(0);
+  });
+
+  it("increases with larger cp values", () => {
+    expect(cpToWinningChances(300)).toBeGreaterThan(cpToWinningChances(100));
   });
 });
 

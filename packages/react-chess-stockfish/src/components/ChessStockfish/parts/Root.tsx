@@ -25,7 +25,11 @@ import { useMemo } from "react";
 import React from "react";
 import { StockfishContext } from "../../../hooks/useStockfishContext";
 import { useStockfishAnalysis } from "../../../hooks/useStockfishAnalysis";
-import type { StockfishConfig, WorkerOptions } from "../../../types";
+import type {
+  Evaluation,
+  StockfishConfig,
+  WorkerOptions,
+} from "../../../types";
 
 /**
  * Props for the ChessStockfish.Root provider component.
@@ -33,6 +37,9 @@ import type { StockfishConfig, WorkerOptions } from "../../../types";
  * @property fen - Valid FEN string to analyze. Invalid FENs set error in context (recoverable).
  * @property config - Optional engine configuration (skillLevel, depth, multiPV). Hoist or memoize to avoid unnecessary restarts.
  * @property workerOptions - Worker options including path to Stockfish worker JS file.
+ * @property onEvaluationChange - Callback called when the engine evaluation changes.
+ * @property onDepthChange - Callback called when the analysis depth changes.
+ * @property onError - Callback called when an error occurs.
  * @property children - React components that consume Stockfish context.
  */
 interface RootProps {
@@ -42,6 +49,12 @@ interface RootProps {
   config?: StockfishConfig;
   /** Worker options including path to Stockfish worker and optional callbacks. */
   workerOptions: WorkerOptions;
+  /** Called when the engine produces a new evaluation. */
+  onEvaluationChange?: (evaluation: Evaluation | null) => void;
+  /** Called when the analysis depth changes. */
+  onDepthChange?: (depth: number) => void;
+  /** Called when an error occurs. */
+  onError?: (error: Error) => void;
   /** React components that consume Stockfish context. */
   children: ReactNode;
 }
@@ -55,18 +68,27 @@ interface RootProps {
  * @param fen - Valid FEN string to analyze. Invalid FENs set error in context (recoverable).
  * @param config - Optional engine configuration (skillLevel, depth, multiPV). Hoist or memoize to avoid unnecessary restarts.
  * @param workerOptions - Worker options including path to Stockfish worker JS file.
+ * @param onEvaluationChange - Callback called when the engine evaluation changes.
+ * @param onDepthChange - Callback called when the analysis depth changes.
+ * @param onError - Callback called when an error occurs.
  * @param children - React components that consume Stockfish context.
  */
 export function Root({
   fen,
   config,
   workerOptions,
+  onEvaluationChange,
+  onDepthChange,
+  onError,
   children,
 }: RootProps): ReactNode {
   const { info, methods } = useStockfishAnalysis({
     fen,
     config,
     workerOptions,
+    onEvaluationChange,
+    onDepthChange,
+    onError,
   });
 
   // Memoize context value to prevent unnecessary re-renders in children

@@ -1,9 +1,9 @@
 import type { AnalysisState, StockfishConfig } from "../types";
 
 /**
- * Default throttle delay in milliseconds (~10 updates per second).
+ * Default throttle delay in milliseconds (~20 updates per second).
  */
-export const DEFAULT_THROTTLE_MS = 100;
+export const DEFAULT_THROTTLE_MS = 50;
 
 /**
  * Default initialization timeout in milliseconds.

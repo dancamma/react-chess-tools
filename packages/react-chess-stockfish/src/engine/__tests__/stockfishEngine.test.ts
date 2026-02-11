@@ -127,14 +127,6 @@ describe("StockfishEngine", () => {
       expect(snapshot.isEngineThinking).toBe(false);
     });
 
-    it("rejects invalid worker paths", async () => {
-      engine = new StockfishEngine({
-        workerPath: "javascript:alert('xss')",
-      });
-
-      await expect(engine.init()).rejects.toThrow();
-    });
-
     it("times out after timeout ms", async () => {
       jest.useFakeTimers();
 
@@ -152,6 +144,15 @@ describe("StockfishEngine", () => {
 
       jest.useRealTimers();
     });
+
+    it("fails initialization on invalid workerPath", async () => {
+      engine = new StockfishEngine({
+        workerPath: "javascript:alert('xss')",
+      });
+
+      await expect(engine.init()).rejects.toThrow("workerPath");
+      expect(engine.getSnapshot().status).toBe("error");
+    });
   });
 
   describe("startAnalysis", () => {
@@ -165,7 +166,7 @@ describe("StockfishEngine", () => {
       jest.clearAllMocks();
     });
 
-    it("sends position and go infinite commands", () => {
+    it("sends position and waits for readyok before go", () => {
       const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
       engine.startAnalysis(fen);
@@ -173,10 +174,14 @@ describe("StockfishEngine", () => {
       expect(mockWorker.postMessage).toHaveBeenCalledWith(
         `position fen ${fen}`,
       );
+      expect(mockWorker.postMessage).toHaveBeenCalledWith("isready");
+      expect(mockWorker.postMessage).not.toHaveBeenCalledWith("go infinite");
+
+      mockWorker.simulateMessage("readyok");
       expect(mockWorker.postMessage).toHaveBeenCalledWith("go infinite");
     });
 
-    it("sends go depth N when depth is specified", () => {
+    it("sends go depth N only after readyok", () => {
       const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
       engine.startAnalysis(fen, { depth: 15 });
@@ -184,6 +189,10 @@ describe("StockfishEngine", () => {
       expect(mockWorker.postMessage).toHaveBeenCalledWith(
         `position fen ${fen}`,
       );
+      expect(mockWorker.postMessage).toHaveBeenCalledWith("isready");
+      expect(mockWorker.postMessage).not.toHaveBeenCalledWith("go depth 15");
+
+      mockWorker.simulateMessage("readyok");
       expect(mockWorker.postMessage).toHaveBeenCalledWith("go depth 15");
     });
 
@@ -231,6 +240,15 @@ describe("StockfishEngine", () => {
       expect(engine.getSnapshot().error).toBeNull();
       expect(engine.getSnapshot().status).toBe("analyzing");
     });
+
+    it("does not emit go before readyok", () => {
+      const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+      engine.startAnalysis(fen);
+
+      expect(mockWorker.postMessage).toHaveBeenCalledWith("isready");
+      expect(mockWorker.postMessage).not.toHaveBeenCalledWith("go infinite");
+    });
   });
 
   describe("info parsing", () => {
@@ -277,8 +295,13 @@ describe("StockfishEngine", () => {
       const listener = jest.fn();
       engine.subscribe(listener);
 
-      // Set multiPV config
+      // Set multiPV config before starting analysis to avoid restart
+      // (setConfig during analysis triggers restart, which would block info lines)
+      engine.stopAnalysis();
       engine.setConfig({ multiPV: 2 });
+      engine.startAnalysis(
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      );
 
       mockWorker.simulateMessage(
         "info multipv 1 depth 20 score cp 123 pv e2e4",
@@ -321,7 +344,39 @@ describe("StockfishEngine", () => {
 
       setTimeout(() => {
         const snapshot = engine.getSnapshot();
-        expect(snapshot.normalizedEvaluation).toBeCloseTo(0.76, 1);
+        expect(snapshot.normalizedEvaluation).toBeCloseTo(0.95, 2);
+        done();
+      }, 150);
+    });
+
+    it("normalizes scores to white perspective when black is to move", (done) => {
+      engine.stopAnalysis();
+      engine.startAnalysis(
+        "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
+      );
+
+      mockWorker.simulateMessage("info depth 20 score cp 100 pv e7e5");
+
+      setTimeout(() => {
+        const snapshot = engine.getSnapshot();
+        expect(snapshot.evaluation).toEqual({ type: "cp", value: -100 });
+        expect(snapshot.normalizedEvaluation).toBeLessThan(0);
+        done();
+      }, 150);
+    });
+
+    it("normalizes mate scores to white perspective when black is to move", (done) => {
+      engine.stopAnalysis();
+      engine.startAnalysis(
+        "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
+      );
+
+      mockWorker.simulateMessage("info depth 20 score mate 3 pv e7e5");
+
+      setTimeout(() => {
+        const snapshot = engine.getSnapshot();
+        expect(snapshot.evaluation).toEqual({ type: "mate", value: -3 });
+        expect(snapshot.normalizedEvaluation).toBe(-1);
         done();
       }, 150);
     });
@@ -411,6 +466,40 @@ describe("StockfishEngine", () => {
       // Verify the snapshot reflects the latest data
       const snapshot = engine.getSnapshot();
       expect(snapshot.depth).toBe(21);
+    });
+
+    it("resets lastUpdate when FEN changes", () => {
+      const fen1 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+      const fen2 =
+        "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
+
+      const listener = jest.fn();
+      engine.subscribe(listener);
+
+      // Start first analysis
+      engine.startAnalysis(fen1);
+      listener.mockClear();
+
+      // Advance PAST throttle window
+      jest.advanceTimersByTime(100);
+
+      // Trigger an info update (sets lastUpdate to now)
+      mockWorker.simulateMessage("info depth 20 score cp 100 pv e2e4");
+      expect(listener).toHaveBeenCalledTimes(1);
+      listener.mockClear();
+
+      // Stop and immediately start new analysis
+      // Both stopAnalysis and startAnalysis call emitUpdate, resetting lastUpdate
+      engine.stopAnalysis();
+      engine.startAnalysis(fen2);
+      listener.mockClear();
+
+      // Advance PAST throttle window from the last emitUpdate
+      jest.advanceTimersByTime(100);
+
+      // Now send info - should emit immediately (leading edge)
+      mockWorker.simulateMessage("info depth 1 score cp 50 pv d2d4");
+      expect(listener).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -507,6 +596,7 @@ describe("StockfishEngine", () => {
       engine.startAnalysis(
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
       );
+      mockWorker.simulateMessage("readyok");
 
       jest.clearAllMocks();
 
@@ -524,6 +614,8 @@ describe("StockfishEngine", () => {
       engine.startAnalysis(
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
       );
+      // Wait for readyok so that go is actually sent
+      mockWorker.simulateMessage("readyok");
       jest.clearAllMocks();
     });
 
@@ -559,6 +651,18 @@ describe("StockfishEngine", () => {
       // Should NOT send any position/go commands
       expect(mockWorker.postMessage).not.toHaveBeenCalled();
       expect(engine.getSnapshot().status).toBe("ready");
+    });
+
+    it("ignores info lines after stop without crashing", () => {
+      engine.stopAnalysis();
+
+      expect(() => {
+        mockWorker.simulateMessage("info depth 15 score cp 45 pv e2e4 e7e5");
+      }).not.toThrow();
+
+      const snapshot = engine.getSnapshot();
+      expect(snapshot.status).toBe("ready");
+      expect(snapshot.isEngineThinking).toBe(false);
     });
   });
 
@@ -707,6 +811,22 @@ describe("StockfishEngine", () => {
       );
 
       expect(mockWorker.postMessage).not.toHaveBeenCalledWith("go");
+      expect(engine.getSnapshot().status).toBe("error");
+    });
+
+    it("rejects init() when called again after entering error state", async () => {
+      engine = new StockfishEngine(defaultWorkerOptions);
+      engine.init().catch(() => {
+        // expected during simulated crash
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      mockWorker.simulateError("Worker crashed");
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      await expect(engine.init()).rejects.toThrow(
+        "Cannot recover an engine in error state",
+      );
     });
   });
 
@@ -798,6 +918,7 @@ describe("StockfishEngine", () => {
       engine.startAnalysis(
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
       );
+      mockWorker.simulateMessage("readyok");
       jest.clearAllMocks();
     });
 
@@ -837,7 +958,8 @@ describe("StockfishEngine", () => {
 
         // Start analysis with first FEN
         engine.startAnalysis(fen1);
-        expect(mockWorker.postMessage).toHaveBeenCalledWith("go infinite");
+        mockWorker.simulateMessage("readyok");
+        expect(mockWorker.postMessage).toHaveBeenCalledWith("isready");
 
         // Stop analysis
         jest.clearAllMocks();
@@ -847,7 +969,7 @@ describe("StockfishEngine", () => {
         // Start analysis with new FEN before bestmove arrives
         mockWorker.postMessage.mockClear();
         engine.startAnalysis(fen2);
-        expect(mockWorker.postMessage).toHaveBeenCalledWith("go infinite");
+        expect(mockWorker.postMessage).toHaveBeenCalledWith("isready");
 
         // Now bestmove from first analysis arrives (should NOT trigger restart)
         mockWorker.postMessage.mockClear();
@@ -869,7 +991,8 @@ describe("StockfishEngine", () => {
 
         // Start analysis with first FEN
         engine.startAnalysis(fen1);
-        expect(mockWorker.postMessage).toHaveBeenCalledWith("go infinite");
+        mockWorker.simulateMessage("readyok");
+        expect(mockWorker.postMessage).toHaveBeenCalledWith("isready");
 
         // Start analysis with new FEN while still analyzing (sends stop)
         jest.clearAllMocks();
@@ -883,6 +1006,10 @@ describe("StockfishEngine", () => {
         expect(mockWorker.postMessage).toHaveBeenCalledWith(
           `position fen ${fen2}`,
         );
+        expect(mockWorker.postMessage).toHaveBeenCalledWith("isready");
+        expect(mockWorker.postMessage).not.toHaveBeenCalledWith("go infinite");
+
+        mockWorker.simulateMessage("readyok");
         expect(mockWorker.postMessage).toHaveBeenCalledWith("go infinite");
 
         jest.useRealTimers();
@@ -897,6 +1024,7 @@ describe("StockfishEngine", () => {
 
         // Start analysis with first FEN
         engine.startAnalysis(fen1);
+        mockWorker.simulateMessage("readyok");
         expect(engine.getSnapshot().status).toBe("analyzing");
 
         // Stop analysis - sets isAnalyzing = false immediately, but bestmove hasn't arrived yet
@@ -1221,10 +1349,17 @@ describe("StockfishEngine", () => {
         // Send readyok
         testMockWorker.simulateMessage("readyok");
 
-        // Now should send position/go
+        // Now should send position/isready for analysis phase
         expect(testMockWorker.postMessage).toHaveBeenCalledWith(
           `position fen rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1`,
         );
+        expect(testMockWorker.postMessage).toHaveBeenCalledWith("isready");
+        expect(testMockWorker.postMessage).not.toHaveBeenCalledWith(
+          "go infinite",
+        );
+
+        // Analysis readyok should trigger go
+        testMockWorker.simulateMessage("readyok");
         expect(testMockWorker.postMessage).toHaveBeenCalledWith("go infinite");
 
         engine2.destroy();
@@ -1345,6 +1480,47 @@ describe("StockfishEngine", () => {
         expect(snapshot2.depth).toBe(0); // Should be cleared immediately
         expect(snapshot2.evaluation).toBeNull(); // Should be cleared immediately
         expect(snapshot2.principalVariations.length).toBe(0); // Should be cleared immediately
+
+        jest.useRealTimers();
+      });
+
+      it("discards stale info lines after FEN change", () => {
+        jest.useFakeTimers();
+
+        const fen1 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        const fen2 =
+          "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
+
+        // Start analysis with first FEN
+        engine.startAnalysis(fen1);
+        mockWorker.simulateMessage("readyok");
+
+        // Simulate info line for FEN1
+        mockWorker.simulateMessage("info depth 20 score cp 123 pv e2e4");
+        jest.advanceTimersByTime(150);
+
+        let snapshot = engine.getSnapshot();
+        expect(snapshot.depth).toBe(20);
+        expect(snapshot.evaluation).toEqual({ type: "cp", value: 123 });
+
+        // Start new analysis while still analyzing (triggers stop)
+        engine.startAnalysis(fen2);
+
+        // State should be cleared
+        snapshot = engine.getSnapshot();
+        expect(snapshot.depth).toBe(0);
+        expect(snapshot.evaluation).toBeNull();
+
+        // Simulate a late info line from the OLD analysis (FEN1)
+        // This should be discarded, not applied
+        mockWorker.simulateMessage("info depth 22 score cp 456 pv e2e5 e7e6");
+        jest.advanceTimersByTime(150);
+
+        // State should remain cleared - old info line was discarded
+        snapshot = engine.getSnapshot();
+        expect(snapshot.depth).toBe(0);
+        expect(snapshot.evaluation).toBeNull();
+        expect(snapshot.principalVariations.length).toBe(0);
 
         jest.useRealTimers();
       });

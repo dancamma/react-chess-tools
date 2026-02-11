@@ -158,14 +158,14 @@ export interface AnalysisMethods {
  *
  * For production, consumers should self-host these files for reliability.
  */
-export const DEFAULT_WORKER_PATH =
+export const WORKER_PATH =
   "https://unpkg.com/stockfish@17.1.0/src/stockfish-17.1-lite-single-03e3232.js";
 
 export interface WorkerOptions {
   /**
    * URL path to the Stockfish JS worker file.
    *
-   * For development/Storybook, use `DEFAULT_WORKER_PATH` from this package.
+   * For development/Storybook, use `WORKER_PATH` from this package.
    * For production, provide a self-hosted path (see Browser & Deployment section).
    *
    * JS and WASM files must be served from the same directory.
@@ -405,11 +405,11 @@ Once a worker crashes or fails to initialize, the `StockfishEngine` cannot recov
 Use the default CDN path provided by this package:
 
 ```typescript
-import { DEFAULT_WORKER_PATH } from "@react-chess-tools/react-chess-stockfish";
+import { WORKER_PATH } from "@react-chess-tools/react-chess-stockfish";
 
 <ChessStockfish.Root
   fen={fen}
-  workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+  workerOptions={{ workerPath: WORKER_PATH }}
 >
 ```
 
@@ -578,7 +578,7 @@ export default defineConfig({
 export { ChessStockfish } from "./components/ChessStockfish";
 export { useStockfish } from "./hooks/useStockfish";
 export { formatEvaluation, normalizeEvaluation } from "./utils/evaluation";
-export { DEFAULT_WORKER_PATH } from "./utils/workerPath";
+export { WORKER_PATH } from "./utils/workerPath";
 export type {
   Evaluation,
   PVMove,
@@ -593,7 +593,7 @@ export { InvalidFenError } from "./utils/uci";
 
 // src/utils-entry.ts
 export { formatEvaluation, normalizeEvaluation } from "./utils/evaluation";
-export { DEFAULT_WORKER_PATH } from "./utils/workerPath";
+export { WORKER_PATH } from "./utils/workerPath";
 export type {} from /* same types */ "./types";
 ```
 
@@ -719,7 +719,7 @@ export interface AnalysisMethods {
   setConfig: (config: Partial<StockfishConfig>) => void;
 }
 
-export const DEFAULT_WORKER_PATH =
+export const WORKER_PATH =
   "https://unpkg.com/stockfish@17.1.0/src/stockfish-17.1-lite-single-03e3232.js";
 
 export interface WorkerOptions {
@@ -734,7 +734,7 @@ export interface WorkerOptions {
 
 - [x] All types exported from `src/types/index.ts`
 - [x] Types compile without errors
-- [x] DEFAULT_WORKER_PATH constant defined
+- [x] WORKER_PATH constant defined
 - [x] **Code fully tested and documented before marking task complete**
 
 ---
@@ -788,7 +788,7 @@ export function normalizeEvaluation(
 **`src/utils/workerPath.ts`:**
 
 ```typescript
-import { DEFAULT_WORKER_PATH } from "../types";
+import { WORKER_PATH } from "../types";
 
 export function validateWorkerPath(workerPath: string): void {
   const trimmed = workerPath.trim();
@@ -812,7 +812,7 @@ export function validateWorkerPath(workerPath: string): void {
   }
 }
 
-export { DEFAULT_WORKER_PATH };
+export { WORKER_PATH };
 ```
 
 **`src/utils/uci.ts`:**
@@ -1193,12 +1193,12 @@ EvaluationBar.displayName = "ChessStockfish.EvaluationBar";
 
 **Acceptance Criteria:**
 
-- [ ] Renders with data attributes
-- [ ] Fill grows from bottom (vertical) or left (horizontal)
-- [ ] Supports `asChild` via Radix Slot
-- [ ] Memoized with `React.memo`
-- [ ] `forwardRef` support
-- [ ] **Code fully tested and documented before marking task complete**
+- [x] Renders with data attributes
+- [x] Fill grows from bottom (vertical) or left (horizontal)
+- [x] Supports `asChild` via Radix Slot
+- [x] Memoized with `React.memo`
+- [x] `forwardRef` support
+- [x] **Code fully tested and documented before marking task complete**
 
 ---
 
@@ -1327,7 +1327,7 @@ export const ChessStockfish = {
 export { ChessStockfish } from "./components/ChessStockfish";
 export { useStockfish } from "./hooks/useStockfish";
 export { formatEvaluation, normalizeEvaluation } from "./utils/evaluation";
-export { DEFAULT_WORKER_PATH } from "./utils/workerPath";
+export { WORKER_PATH } from "./utils/workerPath";
 export type {
   Evaluation,
   PVMove,
@@ -1345,7 +1345,7 @@ export { InvalidFenError } from "./utils/uci";
 
 ```typescript
 export { formatEvaluation, normalizeEvaluation } from "./utils/evaluation";
-export { DEFAULT_WORKER_PATH } from "./utils/workerPath";
+export { WORKER_PATH } from "./utils/workerPath";
 export type {
   Evaluation,
   PVMove,
@@ -1410,7 +1410,7 @@ Stories to implement:
 ```typescript
 import type { Meta, StoryObj } from "@storybook/react";
 import { ChessStockfish } from "./index";
-import { DEFAULT_WORKER_PATH } from "../../utils/workerPath";
+import { WORKER_PATH } from "../../utils/workerPath";
 
 const meta: Meta<typeof ChessStockfish.Root> = {
   title: "ChessStockfish",
@@ -1425,7 +1425,7 @@ export const Basic: StoryObj = {
   render: () => (
     <ChessStockfish.Root
       fen={START_FEN}
-      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+      workerOptions={{ workerPath: WORKER_PATH }}
     >
       <ChessStockfish.EvaluationBar showEvaluation />
       <ChessStockfish.EngineLines />
@@ -1438,7 +1438,7 @@ export const MultiPV: StoryObj = {
     <ChessStockfish.Root
       fen={START_FEN}
       config={{ multiPV: 3 }}
-      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+      workerOptions={{ workerPath: WORKER_PATH }}
     >
       <ChessStockfish.EngineLines maxLines={3} />
     </ChessStockfish.Root>
@@ -1449,7 +1449,7 @@ export const HorizontalBar: StoryObj = {
   render: () => (
     <ChessStockfish.Root
       fen={START_FEN}
-      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+      workerOptions={{ workerPath: WORKER_PATH }}
     >
       <ChessStockfish.EvaluationBar orientation="horizontal" showEvaluation />
     </ChessStockfish.Root>
@@ -1461,7 +1461,7 @@ export const CustomConfig: StoryObj = {
     <ChessStockfish.Root
       fen={START_FEN}
       config={{ skillLevel: 10, depth: 15 }}
-      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+      workerOptions={{ workerPath: WORKER_PATH }}
     >
       <ChessStockfish.EvaluationBar showEvaluation />
     </ChessStockfish.Root>
@@ -1472,7 +1472,7 @@ export const ErrorState: StoryObj = {
   render: () => (
     <ChessStockfish.Root
       fen="invalid-fen"
-      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+      workerOptions={{ workerPath: WORKER_PATH }}
     >
       <div>Invalid FEN - check context for error</div>
     </ChessStockfish.Root>
@@ -1682,7 +1682,7 @@ describe("StockfishEngine", () => {
 ```typescript
 import { render, screen } from "@testing-library/react";
 import { ChessStockfish } from "../index";
-import { DEFAULT_WORKER_PATH } from "../../../../utils/workerPath";
+import { WORKER_PATH } from "../../../../utils/workerPath";
 
 describe("ChessStockfish.Root", () => {
   it("provides context to children", () => {
@@ -1737,7 +1737,7 @@ describe("useStockfish", () => {
 ```typescript
 import type { Meta, StoryObj } from "@storybook/react";
 import { ChessStockfish } from "./index";
-import { DEFAULT_WORKER_PATH } from "../../utils/workerPath";
+import { WORKER_PATH } from "../../utils/workerPath";
 
 const meta: Meta<typeof ChessStockfish.Root> = {
   title: "ChessStockfish",
@@ -1752,7 +1752,7 @@ export const Basic: StoryObj = {
   render: () => (
     <ChessStockfish.Root
       fen={START_FEN}
-      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+      workerOptions={{ workerPath: WORKER_PATH }}
     >
       <ChessStockfish.EvaluationBar showEvaluation />
       <ChessStockfish.EngineLines />
@@ -1765,7 +1765,7 @@ export const MultiPV: StoryObj = {
     <ChessStockfish.Root
       fen={START_FEN}
       config={{ multiPV: 3 }}
-      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+      workerOptions={{ workerPath: WORKER_PATH }}
     >
       <ChessStockfish.EngineLines maxLines={3} />
     </ChessStockfish.Root>
@@ -1776,7 +1776,7 @@ export const HorizontalBar: StoryObj = {
   render: () => (
     <ChessStockfish.Root
       fen={START_FEN}
-      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+      workerOptions={{ workerPath: WORKER_PATH }}
     >
       <ChessStockfish.EvaluationBar orientation="horizontal" showEvaluation />
     </ChessStockfish.Root>
@@ -1788,7 +1788,7 @@ export const CustomConfig: StoryObj = {
     <ChessStockfish.Root
       fen={START_FEN}
       config={{ skillLevel: 10, depth: 15 }}
-      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+      workerOptions={{ workerPath: WORKER_PATH }}
     >
       <ChessStockfish.EvaluationBar showEvaluation />
     </ChessStockfish.Root>
@@ -1799,7 +1799,7 @@ export const ErrorState: StoryObj = {
   render: () => (
     <ChessStockfish.Root
       fen="invalid-fen"
-      workerOptions={{ workerPath: DEFAULT_WORKER_PATH }}
+      workerOptions={{ workerPath: WORKER_PATH }}
     >
       <div>Invalid FEN - check context for error</div>
     </ChessStockfish.Root>
@@ -1814,4 +1814,4 @@ export const ErrorState: StoryObj = {
 - [ ] Horizontal orientation story works
 - [ ] Custom config story demonstrates skillLevel/depth
 - [ ] Error state shows InvalidFenError handling
-- [ ] All stories use DEFAULT_WORKER_PATH
+- [ ] All stories use WORKER_PATH

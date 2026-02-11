@@ -19,6 +19,7 @@ import type {
   AnalysisInfo,
   AnalysisMethods,
   AnalysisState,
+  Evaluation,
   PVMove,
   StockfishConfig,
   WorkerOptions,
@@ -29,6 +30,9 @@ interface UseStockfishAnalysisProps {
   fen: string;
   config?: StockfishConfig;
   workerOptions: WorkerOptions;
+  onEvaluationChange?: (evaluation: Evaluation | null) => void;
+  onDepthChange?: (depth: number) => void;
+  onError?: (error: Error) => void;
 }
 
 interface UseStockfishAnalysisReturn {
@@ -58,13 +62,30 @@ export function useStockfishAnalysis({
   fen,
   config = {},
   workerOptions,
+  onEvaluationChange,
+  onDepthChange,
+  onError,
 }: UseStockfishAnalysisProps): UseStockfishAnalysisReturn {
   const engineRef = useRef<StockfishEngine | null>(null);
+
+  // Store callbacks in refs to avoid triggering effects when they change
+  const onEvaluationChangeRef = useRef(onEvaluationChange);
+  const onDepthChangeRef = useRef(onDepthChange);
+  const onErrorRef = useRef(onError);
+
+  onEvaluationChangeRef.current = onEvaluationChange;
+  onDepthChangeRef.current = onDepthChange;
+  onErrorRef.current = onError;
 
   // Store workerOptions in a ref to use in the subscribe/getSnapshot callbacks
   // without causing re-subscriptions. The engine is created once on mount.
   const workerOptionsRef = useRef(workerOptions);
   workerOptionsRef.current = workerOptions;
+
+  // Track previous values for callback invocation
+  const prevEvaluationRef = useRef<Evaluation | null>(null);
+  const prevDepthRef = useRef<number>(0);
+  const prevErrorRef = useRef<Error | null>(null);
 
   // Initialize engine on mount, destroy on unmount
   useEffect(() => {
@@ -105,6 +126,34 @@ export function useStockfishAnalysis({
   }, []);
 
   const snapshot = useSyncExternalStore(subscribe, getSnapshot);
+
+  // Invoke callbacks when values change
+  useEffect(() => {
+    const { evaluation, depth, error } = snapshot;
+
+    // Check if evaluation changed (using deep comparison for object equality)
+    const evaluationChanged =
+      prevEvaluationRef.current?.type !== evaluation?.type ||
+      prevEvaluationRef.current?.value !== evaluation?.value;
+
+    if (evaluationChanged && onEvaluationChangeRef.current) {
+      onEvaluationChangeRef.current(evaluation);
+    }
+    prevEvaluationRef.current = evaluation;
+
+    // Check if depth changed
+    if (prevDepthRef.current !== depth && onDepthChangeRef.current) {
+      onDepthChangeRef.current(depth);
+    }
+    prevDepthRef.current = depth;
+
+    // Check if error changed (identity comparison preserves repeated same-message errors)
+    const errorChanged = prevErrorRef.current !== error;
+    if (errorChanged && error && onErrorRef.current) {
+      onErrorRef.current(error);
+    }
+    prevErrorRef.current = error;
+  }, [snapshot]);
 
   // Auto-start analysis on FEN/config change
   const configRef = useRef(config);

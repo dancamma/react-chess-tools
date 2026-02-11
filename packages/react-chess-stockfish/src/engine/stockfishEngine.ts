@@ -118,6 +118,13 @@ export class StockfishEngine {
   private pendingConfig: StockfishConfig = {};
   /** Number of incoming bestmove responses to skip (due to stop commands). */
   private skipBestMoveCount = 0;
+  /**
+   * True when we've sent `position`/`isready` and are waiting for `readyok`
+   * before issuing `go`.
+   */
+  private waitingForAnalysisReadyOk = false;
+  /** Generation associated with the pending analysis-ready handshake. */
+  private pendingReadyOkGeneration: number | null = null;
   /** Timeout ID for initialization timeout. */
   private initTimeoutId: ReturnType<typeof setTimeout> | null = null;
   /**
@@ -213,6 +220,11 @@ export class StockfishEngine {
     if (this.engineState.type === "destroyed") {
       throw new Error("Cannot initialize destroyed engine");
     }
+    if (this.engineState.type === "error") {
+      throw new Error(
+        "Cannot recover an engine in error state. Remount the provider to retry.",
+      );
+    }
 
     // Guard against double initialization (React strict mode)
     // If already ready, resolve immediately
@@ -225,12 +237,11 @@ export class StockfishEngine {
       return this.initPromise;
     }
 
-    // Validate worker path for security
-    validateWorkerPath(this.workerOptions.workerPath);
-
     // Create and store the initialization promise
     this.initPromise = new Promise((resolve, reject) => {
       try {
+        validateWorkerPath(this.workerOptions.workerPath);
+
         // Create Web Worker
         this.worker = new Worker(this.workerOptions.workerPath, {
           type: "classic",
@@ -281,6 +292,7 @@ export class StockfishEngine {
    */
   startAnalysis(fen: string, config: StockfishConfig = {}): void {
     if (this.engineState.type === "destroyed") return;
+    if (this.engineState.type === "error") return;
 
     // Deduplicate: skip if FEN and config are the same
     if (
@@ -326,11 +338,20 @@ export class StockfishEngine {
 
     // Emit update so subscribers see the cleared state immediately
     this.emitUpdate();
+    this.lastUpdate = Date.now(); // Reset throttle timer on FEN change
 
     // Handle based on current state
     const currentState = this.engineState;
 
     if (currentState.type === "analyzing") {
+      if (this.waitingForAnalysisReadyOk) {
+        // We haven't started `go` yet; replace the pending start immediately.
+        this.waitingForAnalysisReadyOk = false;
+        this.pendingReadyOkGeneration = null;
+        this.sendPositionAndGo(currentGeneration);
+        return;
+      }
+
       // Already analyzing - stop and restart
       this.postMessage("stop");
       // Transition to stopping with pending analysis
@@ -381,10 +402,15 @@ export class StockfishEngine {
       (currentState.type === "stopping" && currentState.pendingAnalysis)
     ) {
       if (currentState.type === "analyzing") {
-        this.postMessage("stop");
-        // Skip the next bestmove since it will be from the stopped analysis
-        this.skipBestMoveCount++;
+        if (!this.waitingForAnalysisReadyOk) {
+          this.postMessage("stop");
+          // Skip the next bestmove since it will be from the stopped analysis
+          this.skipBestMoveCount++;
+        }
+        // If waitingForAnalysisReadyOk, we haven't sent go yet, so no need to send stop.
       }
+      this.waitingForAnalysisReadyOk = false;
+      this.pendingReadyOkGeneration = null;
 
       // Clear current FEN and transition to ready immediately
       // This matches the original behavior where isAnalyzing is set to false right away
@@ -414,6 +440,7 @@ export class StockfishEngine {
    */
   setConfig(config: Partial<StockfishConfig>): void {
     if (this.engineState.type === "destroyed") return;
+    if (this.engineState.type === "error") return;
 
     this.pendingConfig = { ...this.pendingConfig, ...config };
 
@@ -496,6 +523,18 @@ export class StockfishEngine {
   }
 
   /**
+   * Normalize engine score to white's perspective.
+   * Stockfish scores are from the side-to-move perspective.
+   */
+  private normalizeScoreToWhitePerspective(score: Evaluation): Evaluation {
+    const sideToMove = this.currentFen.split(" ")[1];
+    if (sideToMove === "b") {
+      return { type: score.type, value: -score.value };
+    }
+    return score;
+  }
+
+  /**
    * Destroy the engine and clean up resources.
    *
    * Sends `quit` command to Stockfish, terminates the worker,
@@ -516,6 +555,8 @@ export class StockfishEngine {
 
     // Clear the stored init promise
     this.initPromise = null;
+    this.waitingForAnalysisReadyOk = false;
+    this.pendingReadyOkGeneration = null;
 
     // Clear trailing timeout
     if (this.trailingTimeout) {
@@ -597,7 +638,21 @@ export class StockfishEngine {
    * Handle the readyok response.
    */
   private handleReady(): void {
-    if (this.engineState.type !== "initializing") return;
+    if (this.engineState.type !== "initializing") {
+      if (!this.waitingForAnalysisReadyOk) return;
+
+      const generation = this.pendingReadyOkGeneration;
+      this.waitingForAnalysisReadyOk = false;
+      this.pendingReadyOkGeneration = null;
+
+      // Stale readyok for an outdated generation: ignore.
+      if (generation === null || generation !== this.generation) {
+        return;
+      }
+
+      this.postMessage(`go ${buildUciGoCommand(this.pendingConfig)}`);
+      return;
+    }
 
     // Clear init timeout
     if (this.initTimeoutId) {
@@ -644,8 +699,26 @@ export class StockfishEngine {
    */
   private handleInfoLine(line: string): void {
     if (this.engineState.type === "destroyed") return;
+    if (
+      this.engineState.type !== "analyzing" &&
+      this.engineState.type !== "stopping"
+    ) {
+      return;
+    }
 
-    const info = parseUciInfoLine(line);
+    // Discard info lines from a previous generation (stale analysis after FEN change)
+    if (this.engineState.generation !== this.generation) {
+      return;
+    }
+
+    let info;
+    try {
+      info = parseUciInfoLine(line);
+    } catch (error) {
+      // Log malformed UCI info line and continue - don't crash the engine
+      console.warn("Failed to parse UCI info line:", line, error);
+      return;
+    }
     if (!info) return;
 
     // Update depth
@@ -653,11 +726,15 @@ export class StockfishEngine {
       this.mutableState.depth = info.depth;
     }
 
+    const whiteScore = info.score
+      ? this.normalizeScoreToWhitePerspective(info.score)
+      : undefined;
+
     // Update evaluation
-    if (info.score) {
-      this.mutableState.evaluation = info.score;
+    if (whiteScore) {
+      this.mutableState.evaluation = whiteScore;
       // Normalize using the utility function which handles mate scores correctly
-      this.mutableState.normalizedEvaluation = normalizeEvaluation(info.score);
+      this.mutableState.normalizedEvaluation = normalizeEvaluation(whiteScore);
       this.mutableState.hasResults = true;
     }
 
@@ -668,7 +745,7 @@ export class StockfishEngine {
       const rank = info.multipv ?? 1;
       const pv: PrincipalVariation = {
         rank,
-        evaluation: info.score ?? null,
+        evaluation: whiteScore ?? null,
         moves: pvMoves,
       };
 
@@ -754,7 +831,7 @@ export class StockfishEngine {
   }
 
   /**
-   * Send position and go commands to start analysis.
+   * Send position/config updates and request readyok before issuing `go`.
    */
   private sendPositionAndGo(generation: number): void {
     if (this.engineState.type === "destroyed") return;
@@ -768,8 +845,10 @@ export class StockfishEngine {
     // Send position command
     this.postMessage(`position fen ${this.currentFen}`);
 
-    // Send go command
-    this.postMessage(`go ${buildUciGoCommand(this.pendingConfig)}`);
+    // Wait for readyok before sending go so config/position updates are applied.
+    this.waitingForAnalysisReadyOk = true;
+    this.pendingReadyOkGeneration = generation;
+    this.postMessage("isready");
 
     // Transition to analyzing state
     this.transition({
@@ -875,6 +954,8 @@ export class StockfishEngine {
       clearTimeout(this.trailingTimeout);
       this.trailingTimeout = null;
     }
+    this.waitingForAnalysisReadyOk = false;
+    this.pendingReadyOkGeneration = null;
 
     this.mutableState.status = "error";
     this.mutableState.error = error;
