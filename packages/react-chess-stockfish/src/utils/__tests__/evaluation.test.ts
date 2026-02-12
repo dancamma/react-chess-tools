@@ -23,15 +23,15 @@ describe("formatEvaluation", () => {
   });
 
   it("formats positive mate evaluations", () => {
-    expect(formatEvaluation({ type: "mate", value: 1 })).toBe("#1");
-    expect(formatEvaluation({ type: "mate", value: 3 })).toBe("#3");
-    expect(formatEvaluation({ type: "mate", value: 10 })).toBe("#10");
+    expect(formatEvaluation({ type: "mate", value: 1 })).toBe("M1");
+    expect(formatEvaluation({ type: "mate", value: 3 })).toBe("M3");
+    expect(formatEvaluation({ type: "mate", value: 10 })).toBe("M10");
   });
 
   it("formats negative mate evaluations", () => {
-    expect(formatEvaluation({ type: "mate", value: -1 })).toBe("#-1");
-    expect(formatEvaluation({ type: "mate", value: -5 })).toBe("#-5");
-    expect(formatEvaluation({ type: "mate", value: -10 })).toBe("#-10");
+    expect(formatEvaluation({ type: "mate", value: -1 })).toBe("M1");
+    expect(formatEvaluation({ type: "mate", value: -5 })).toBe("M5");
+    expect(formatEvaluation({ type: "mate", value: -10 })).toBe("M10");
   });
 
   it("formats null as dash", () => {
