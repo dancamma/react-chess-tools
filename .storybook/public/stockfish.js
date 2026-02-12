@@ -1,5 +1,5 @@
 /*!
- * Stockfish.js 17.1 (c) 2025, Chess.com, LLC
+ * Stockfish.js 18 (c) 2026, Chess.com, LLC
  * https://github.com/nmrugg/stockfish.js
  * License: GPLv3
  *
@@ -286,7 +286,7 @@
         (w = "stockfish.wasm"),
         oe() || ((o = w), (w = l.locateFile ? l.locateFile(o, p) : p + o)));
       var ae = {
-        6672168: function () {
+        6678104: function () {
           try {
             l.onDoneSearching();
           } catch (e) {}

@@ -66,14 +66,18 @@ This package does not bundle Stockfish. You need to provide your own worker file
 ### Host Your Own Copy
 
 1. Download Stockfish.js from [the stockfish.js repository](https://github.com/nmrugg/stockfish.js)
-2. Place the `.js` and `.wasm` files in your project's `public/` directory
+   - **Single-threaded (recommended):** [stockfish-18-single.js](https://github.com/nmrugg/stockfish.js/releases/download/v18.0.0/stockfish-18-single.js) + [stockfish-18-single.wasm](https://github.com/nmrugg/stockfish.js/releases/download/v18.0.0/stockfish-18-single.wasm) — Works without special server configuration
+   - **Multi-threaded (stronger, requires CORS):** [stockfish-18.js](https://github.com/nmrugg/stockfish.js/releases/download/v18.0.0/stockfish-18.js) + [stockfish-18.wasm](https://github.com/nmrugg/stockfish.js/releases/download/v18.0.0/stockfish-18.wasm) — Requires [COOP/COEP headers](https://web.dev/articles/cross-origin-isolation-guide) for SharedArrayBuffer
+   - **Lite single-threaded (mobile):** [stockfish-18-lite-single.js](https://github.com/nmrugg/stockfish.js/releases/download/v18.0.0/stockfish-18-lite-single.js) + [stockfish-18-lite-single.wasm](https://github.com/nmrugg/stockfish.js/releases/download/v18.0.0/stockfish-18-lite-single.wasm) — Smaller download, no CORS required
+   - **Lite multi-threaded (mobile, requires CORS):** [stockfish-18-lite.js](https://github.com/nmrugg/stockfish.js/releases/download/v18.0.0/stockfish-18-lite.js) + [stockfish-18-lite.wasm](https://github.com/nmrugg/stockfish.js/releases/download/v18.0.0/stockfish-18-lite.wasm)
+2. Place the `.js` and `.wasm` files in your project's `public/` directory (rename them to `stockfish.js` and `stockfish.wasm` for simplicity)
 3. Reference the JS file with a relative path:
 
 ```tsx
 const workerPath = "/stockfish.js";
 ```
 
-**Note:** Web Workers require same-origin access, so the worker file must be hosted from your domain. CDN URLs will not work due to browser security restrictions.
+**Note:** Multi-threaded engines use `SharedArrayBuffer` which requires your server to send `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` headers. If you see `SharedArrayBuffer is not defined` errors, use the single-threaded version instead.
 
 ## Quick Start
 

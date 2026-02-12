@@ -16,9 +16,6 @@ const styles = {
     maxWidth: "100%",
     fontFamily: "'Inter', -apple-system, sans-serif",
   },
-  containerNarrow: {
-    width: "320px",
-  },
   header: {
     textAlign: "center",
   },
@@ -34,35 +31,26 @@ const styles = {
     margin: 0,
     lineHeight: 1.4,
   },
-  hint: {
-    fontSize: "12px",
-    color: "#a5a59c",
-    margin: 0,
-    lineHeight: 1.5,
-  },
   mono: {
     fontFamily: "'JetBrains Mono', monospace",
     fontSize: "11px",
     color: "#7a7a72",
+  },
+  fen: {
+    fontFamily: "'JetBrains Mono', monospace",
+    fontSize: "10px",
+    color: "#a5a59c",
+    background: "#f9f9f9",
+    padding: "6px 8px",
+    borderRadius: "4px",
+    wordBreak: "break-all",
+    lineHeight: 1.4,
   },
   rootCombined: {
     display: "grid",
     gridTemplateColumns: "30px minmax(0, 1fr)",
     gap: "12px",
     alignItems: "start",
-    width: "100%",
-  },
-  stack: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    width: "100%",
-  },
-  selectedLine: {
-    background: "#fff",
-    border: "1px solid #e2e0db",
-    borderRadius: "6px",
-    padding: "8px 10px",
     width: "100%",
   },
 } satisfies Record<string, React.CSSProperties>;
@@ -77,17 +65,10 @@ const barBase: React.CSSProperties = {
 
 const barStyles = {
   vertical: { ...barBase, width: "30px", height: "220px" },
-  horizontal: { ...barBase, width: "100%", height: "30px", maxWidth: "320px" },
-} satisfies Record<"vertical" | "horizontal", React.CSSProperties>;
+} satisfies Record<"vertical", React.CSSProperties>;
 
 const FEN = {
   start: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  italian:
-    "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
-  whiteWinning: "3rkb1r/p2nqppp/5n2/1B2p1B1/4P3/1Q6/PPP2PPP/2KR3R w k - 0 1",
-  blackWinning:
-    "rnbqkbnr/1ppp1ppp/p5Q1/4p3/4P3/8/PPPP1PPP/RNB1KBNR b KQkq - 0 1",
-  mateIn2: "r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1",
 };
 
 const EVAL_BAR_CSS = `
@@ -220,11 +201,20 @@ function AnalysisRoot(props: RootProps) {
   );
 }
 
-function StoryHeader({ title, subtitle }: { title: string; subtitle: string }) {
+function StoryHeader({
+  title,
+  subtitle,
+  fen,
+}: {
+  title: string;
+  subtitle: string;
+  fen?: string;
+}) {
   return (
     <div style={styles.header}>
       <h3 style={styles.title}>{title}</h3>
       <p style={styles.subtitle}>{subtitle}</p>
+      {fen && <div style={styles.fen}>{fen}</div>}
     </div>
   );
 }
@@ -236,17 +226,6 @@ const VerticalBar = (
   >,
 ) => (
   <ChessStockfish.EvaluationBar orientation="vertical" {...props}>
-    <style>{EVAL_BAR_CSS}</style>
-  </ChessStockfish.EvaluationBar>
-);
-
-const HorizontalBar = (
-  props: Omit<
-    React.ComponentProps<typeof ChessStockfish.EvaluationBar>,
-    "orientation"
-  >,
-) => (
-  <ChessStockfish.EvaluationBar orientation="horizontal" {...props}>
     <style>{EVAL_BAR_CSS}</style>
   </ChessStockfish.EvaluationBar>
 );
@@ -294,7 +273,7 @@ function EngineStatus() {
 }
 
 const meta = {
-  title: "react-chess-stockfish/Components/ChessStockfish",
+  title: "React-Chess-Stockfish/Components/ChessStockfish",
   component: ChessStockfish.Root,
   tags: ["components", "stockfish", "analysis"],
   parameters: { layout: "centered" },
@@ -308,396 +287,20 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Root stories (bar + lines)
-export const RootDefault: Story = {
-  name: "Root/Default (Bar + Lines)",
+export const FullLayout: Story = {
   render: () => (
     <AnalysisRoot fen={FEN.start} config={{ multiPV: 3 }}>
       <div style={styles.container}>
         <StoryHeader
-          title="Root composition"
-          subtitle="Default position with evaluation bar and lines"
+          title="Full layout"
+          subtitle="Evaluation bar and engine lines combined"
+          fen={FEN.start}
         />
         <div style={styles.rootCombined}>
           <VerticalBar showEvaluation style={barStyles.vertical} />
           <StyledEngineLines maxLines={3} />
         </div>
         <EngineStatus />
-      </div>
-    </AnalysisRoot>
-  ),
-};
-
-export const RootItalianMultiPV: Story = {
-  name: "Root/Italian MultiPV (Bar + Lines)",
-  render: () => (
-    <AnalysisRoot fen={FEN.italian} config={{ multiPV: 4 }}>
-      <div style={styles.container}>
-        <StoryHeader
-          title="Root with multiPV"
-          subtitle="Italian opening with four principal variations"
-        />
-        <div style={styles.rootCombined}>
-          <VerticalBar showEvaluation style={barStyles.vertical} />
-          <StyledEngineLines maxLines={4} />
-        </div>
-        <EngineStatus />
-        <p style={styles.hint}>PV1 drives the evaluation bar value.</p>
-      </div>
-    </AnalysisRoot>
-  ),
-};
-
-export const RootBlackToMove: Story = {
-  name: "Root/Black To Move (Bar + Lines)",
-  render: () => (
-    <AnalysisRoot fen={FEN.blackWinning} config={{ multiPV: 2 }}>
-      <div style={styles.container}>
-        <StoryHeader
-          title="Root black-to-move view"
-          subtitle="Horizontal bar plus lines with black starting move"
-        />
-        <div style={styles.stack}>
-          <HorizontalBar showEvaluation style={barStyles.horizontal} />
-          <StyledEngineLines maxLines={2} />
-        </div>
-        <EngineStatus />
-      </div>
-    </AnalysisRoot>
-  ),
-};
-
-// EvaluationBar stories
-export const EvaluationBarVertical: Story = {
-  name: "EvaluationBar/Vertical",
-  render: () => (
-    <AnalysisRoot fen={FEN.start}>
-      <div style={{ ...styles.container, ...styles.containerNarrow }}>
-        <StoryHeader
-          title="Vertical evaluation bar"
-          subtitle="White fills from bottom, black fills from top"
-        />
-        <VerticalBar showEvaluation style={barStyles.vertical} />
-        <EngineStatus />
-      </div>
-    </AnalysisRoot>
-  ),
-};
-
-export const EvaluationBarHorizontal: Story = {
-  name: "EvaluationBar/Horizontal",
-  render: () => (
-    <AnalysisRoot fen={FEN.whiteWinning}>
-      <div style={styles.container}>
-        <StoryHeader
-          title="Horizontal evaluation bar"
-          subtitle="Same evaluation data in horizontal orientation"
-        />
-        <HorizontalBar showEvaluation style={barStyles.horizontal} />
-        <EngineStatus />
-      </div>
-    </AnalysisRoot>
-  ),
-};
-
-export const EvaluationBarPerspective: Story = {
-  name: "EvaluationBar/Perspective",
-  render: () => (
-    <AnalysisRoot fen={FEN.italian}>
-      <div style={styles.container}>
-        <StoryHeader
-          title="Perspective switch"
-          subtitle="Same eval value rendered from white and black perspectives"
-        />
-        <div style={{ display: "flex", gap: "28px", alignItems: "center" }}>
-          {(["w", "b"] as const).map((perspective) => (
-            <div
-              key={perspective}
-              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-            >
-              <span style={{ ...styles.mono }}>
-                {perspective === "w" ? "white" : "black"} perspective
-              </span>
-              <VerticalBar
-                perspective={perspective}
-                showEvaluation
-                style={barStyles.vertical}
-              />
-            </div>
-          ))}
-        </div>
-        <EngineStatus />
-      </div>
-    </AnalysisRoot>
-  ),
-};
-
-export const EvaluationBarNoText: Story = {
-  name: "EvaluationBar/No Text",
-  render: () => (
-    <AnalysisRoot fen={FEN.start}>
-      <div style={{ ...styles.container, ...styles.containerNarrow }}>
-        <StoryHeader
-          title="Bar only"
-          subtitle="Fill animation without score label"
-        />
-        <VerticalBar showEvaluation={false} style={barStyles.vertical} />
-        <EngineStatus />
-      </div>
-    </AnalysisRoot>
-  ),
-};
-
-export const EvaluationBarAsChild: Story = {
-  name: "EvaluationBar/asChild",
-  render: () => (
-    <AnalysisRoot fen={FEN.start}>
-      <div style={{ ...styles.container, ...styles.containerNarrow }}>
-        <StoryHeader
-          title="asChild pattern"
-          subtitle="Render the bar into a custom section element"
-        />
-        <ChessStockfish.EvaluationBar asChild showEvaluation>
-          <section
-            style={{ ...barStyles.vertical, border: "1px solid #e2e0db" }}
-          >
-            <style>{EVAL_BAR_CSS}</style>
-          </section>
-        </ChessStockfish.EvaluationBar>
-        <EngineStatus />
-      </div>
-    </AnalysisRoot>
-  ),
-};
-
-// Lines stories
-export const LinesBasic: Story = {
-  name: "Lines/Basic",
-  render: () => (
-    <AnalysisRoot fen={FEN.italian} config={{ multiPV: 3 }}>
-      <div style={styles.container}>
-        <StoryHeader
-          title="Engine lines"
-          subtitle="Default composed rows with evaluation and move list"
-        />
-        <StyledEngineLines maxLines={3} />
-        <EngineStatus />
-      </div>
-    </AnalysisRoot>
-  ),
-};
-
-export const LinesBlackToMove: Story = {
-  name: "Lines/Black To Move",
-  render: () => (
-    <AnalysisRoot fen={FEN.blackWinning} config={{ multiPV: 2 }}>
-      <div style={styles.container}>
-        <StoryHeader
-          title="Black-to-move lines"
-          subtitle="First SAN token starts with the 1... prefix"
-        />
-        <StyledEngineLines maxLines={2} />
-        <EngineStatus />
-      </div>
-    </AnalysisRoot>
-  ),
-};
-
-export const LinesClickable: Story = {
-  name: "Lines/Clickable",
-  render: () => {
-    const [selected, setSelected] = React.useState("Click a line");
-
-    return (
-      <AnalysisRoot fen={FEN.italian} config={{ multiPV: 3 }}>
-        <div style={styles.container}>
-          <StoryHeader
-            title="Clickable lines"
-            subtitle="Inspect a variation with onLineClick"
-          />
-          <StyledEngineLines
-            maxLines={3}
-            onLineClick={(rank, pv) =>
-              setSelected(
-                `PV ${rank}: ${pv.moves
-                  .slice(0, 4)
-                  .map((move) => move.san)
-                  .join(" ")}`,
-              )
-            }
-          />
-          <div style={{ ...styles.mono, ...styles.selectedLine }}>
-            selected: <span style={{ color: "#2d2d2d" }}>{selected}</span>
-          </div>
-        </div>
-      </AnalysisRoot>
-    );
-  },
-};
-
-export const LinesAsChild: Story = {
-  name: "Lines/asChild",
-  render: () => (
-    <AnalysisRoot fen={FEN.italian} config={{ multiPV: 2 }}>
-      <div style={styles.container}>
-        <StoryHeader
-          title="asChild pattern"
-          subtitle="Render lines into a custom list element"
-        />
-        <ChessStockfish.EngineLines asChild maxLines={2}>
-          <ul
-            style={{
-              listStyle: "none",
-              margin: 0,
-              padding: 0,
-              border: "1px solid #e2e0db",
-              borderRadius: "6px",
-              overflow: "hidden",
-            }}
-          >
-            <style>{ENGINE_LINES_CSS}</style>
-          </ul>
-        </ChessStockfish.EngineLines>
-        <EngineStatus />
-      </div>
-    </AnalysisRoot>
-  ),
-};
-
-export const LinesMaxLinesOverflow: Story = {
-  name: "Lines/MaxLines Overflow",
-  render: () => (
-    <AnalysisRoot fen={FEN.start} config={{ multiPV: 2 }}>
-      <div style={styles.container}>
-        <StoryHeader
-          title="maxLines vs available PV"
-          subtitle="maxLines=5 but only 2 PVs available (multiPV=2)"
-        />
-        <StyledEngineLines maxLines={5} />
-        <p style={styles.hint}>
-          Engine returns 2 lines, maxLines=5 gracefully shows what&apos;s
-          available.
-        </p>
-        <EngineStatus />
-      </div>
-    </AnalysisRoot>
-  ),
-};
-
-export const RootCallbacks: Story = {
-  name: "Root/Callbacks",
-  render: () => {
-    const [evalLog, setEvalLog] = React.useState<string[]>([]);
-    const [depthLog, setDepthLog] = React.useState<number[]>([]);
-
-    return (
-      <AnalysisRoot
-        fen={FEN.italian}
-        config={{ multiPV: 2 }}
-        onEvaluationChange={(eval_) => {
-          if (eval_) {
-            const text =
-              eval_.type === "mate"
-                ? `#${eval_.value}`
-                : `${(eval_.value / 100).toFixed(2)}`;
-            setEvalLog((prev) => [...prev.slice(-4), text]);
-          }
-        }}
-        onDepthChange={(depth) =>
-          setDepthLog((prev) => [...prev.slice(-4), depth])
-        }
-      >
-        <div style={styles.container}>
-          <StoryHeader
-            title="Root callbacks"
-            subtitle="onEvaluationChange and onDepthChange fire as engine analyzes"
-          />
-          <div style={{ ...styles.stack, gap: "6px" }}>
-            <span style={styles.mono}>depths: [{depthLog.join(", ")}]</span>
-            <span style={styles.mono}>evals: [{evalLog.join(", ")}]</span>
-          </div>
-          <StyledEngineLines maxLines={2} />
-          <EngineStatus />
-        </div>
-      </AnalysisRoot>
-    );
-  },
-};
-
-export const RootConfigLimits: Story = {
-  name: "Root/Config Limits",
-  render: () => (
-    <AnalysisRoot
-      fen={FEN.start}
-      config={{ multiPV: 2, depth: 15, skillLevel: 10 }}
-    >
-      <div style={styles.container}>
-        <StoryHeader
-          title="Engine config limits"
-          subtitle="depth=15, skillLevel=10 (weaker/faster analysis)"
-        />
-        <StyledEngineLines maxLines={2} />
-        <p style={styles.hint}>
-          Lower skillLevel reduces engine strength; depth caps search depth.
-        </p>
-        <EngineStatus />
-      </div>
-    </AnalysisRoot>
-  ),
-};
-
-export const RootError: Story = {
-  name: "Root/Error Handling",
-  render: () => {
-    const [error, setError] = React.useState<string | null>(null);
-
-    return (
-      <AnalysisRoot
-        fen="invalid-fen-string"
-        onError={(err) => setError(err.message)}
-      >
-        <div style={styles.container}>
-          <StoryHeader
-            title="Error handling"
-            subtitle="onError callback catches invalid FEN"
-          />
-          {error ? (
-            <div
-              style={{
-                ...styles.mono,
-                color: "#dc2626",
-                background: "#fef2f2",
-                padding: "12px",
-                borderRadius: "6px",
-                border: "1px solid #fecaca",
-              }}
-            >
-              {error}
-            </div>
-          ) : (
-            <span style={styles.mono}>No error yet...</span>
-          )}
-        </div>
-      </AnalysisRoot>
-    );
-  },
-};
-
-export const EvaluationBarMate: Story = {
-  name: "EvaluationBar/Mate Score",
-  render: () => (
-    <AnalysisRoot fen={FEN.mateIn2}>
-      <div style={{ ...styles.container, ...styles.containerNarrow }}>
-        <StoryHeader
-          title="Mate score display"
-          subtitle="Forced mate position shows #N notation"
-        />
-        <VerticalBar showEvaluation style={barStyles.vertical} />
-        <EngineStatus />
-        <p style={styles.hint}>
-          Mate scores display as #N (positive = white mates, negative = black
-          mates).
-        </p>
       </div>
     </AnalysisRoot>
   ),
