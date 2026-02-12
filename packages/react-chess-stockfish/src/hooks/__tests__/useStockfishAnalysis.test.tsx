@@ -6,7 +6,6 @@
  * and stable method references.
  */
 
-import React from "react";
 import { renderHook, act } from "@testing-library/react";
 import { useStockfishAnalysis } from "../useStockfishAnalysis";
 import { StockfishEngine } from "../../engine/stockfishEngine";
@@ -189,7 +188,7 @@ describe("useStockfishAnalysis", () => {
   });
 
   it("provides stable method references", () => {
-    const { result, rerender } = renderHook(
+    const { result } = renderHook(
       ({ fen }) =>
         useStockfishAnalysis({
           fen,

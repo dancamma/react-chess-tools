@@ -90,15 +90,6 @@ describe("uciToSan", () => {
     expect(uciToSan("e7e8n", promoPos)).toBe("e8=N+");
   });
 
-  it("handles disambiguation when needed", () => {
-    // Position where both knights can move to d2
-    // After some moves to create disambiguation scenario
-    const disambiguationFen =
-      "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3";
-    // In this position, black knights on b8 and c6 could theoretically move to certain squares
-    // This is a simplified test showing the function handles chess.js disambiguation
-  });
-
   it("returns UCI string if move is invalid in the position", () => {
     // e4e5 is trying to move from empty square (no piece at e4 from start)
     expect(uciToSan("e4e5", START_FEN)).toBe("e4e5");
