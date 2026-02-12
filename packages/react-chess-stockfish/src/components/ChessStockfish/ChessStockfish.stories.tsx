@@ -87,6 +87,7 @@ const FEN = {
   whiteWinning: "3rkb1r/p2nqppp/5n2/1B2p1B1/4P3/1Q6/PPP2PPP/2KR3R w k - 0 1",
   blackWinning:
     "rnbqkbnr/1ppp1ppp/p5Q1/4p3/4P3/8/PPPP1PPP/RNB1KBNR b KQkq - 0 1",
+  mateIn2: "r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1",
 };
 
 const EVAL_BAR_CSS = `
@@ -532,4 +533,172 @@ export const LinesClickable: Story = {
       </AnalysisRoot>
     );
   },
+};
+
+export const LinesAsChild: Story = {
+  name: "Lines/asChild",
+  render: () => (
+    <AnalysisRoot fen={FEN.italian} config={{ multiPV: 2 }}>
+      <div style={styles.container}>
+        <StoryHeader
+          title="asChild pattern"
+          subtitle="Render lines into a custom list element"
+        />
+        <ChessStockfish.EngineLines asChild maxLines={2}>
+          <ul
+            style={{
+              listStyle: "none",
+              margin: 0,
+              padding: 0,
+              border: "1px solid #e2e0db",
+              borderRadius: "6px",
+              overflow: "hidden",
+            }}
+          >
+            <style>{ENGINE_LINES_CSS}</style>
+          </ul>
+        </ChessStockfish.EngineLines>
+        <EngineStatus />
+      </div>
+    </AnalysisRoot>
+  ),
+};
+
+export const LinesMaxLinesOverflow: Story = {
+  name: "Lines/MaxLines Overflow",
+  render: () => (
+    <AnalysisRoot fen={FEN.start} config={{ multiPV: 2 }}>
+      <div style={styles.container}>
+        <StoryHeader
+          title="maxLines vs available PV"
+          subtitle="maxLines=5 but only 2 PVs available (multiPV=2)"
+        />
+        <StyledEngineLines maxLines={5} />
+        <p style={styles.hint}>
+          Engine returns 2 lines, maxLines=5 gracefully shows what&apos;s
+          available.
+        </p>
+        <EngineStatus />
+      </div>
+    </AnalysisRoot>
+  ),
+};
+
+export const RootCallbacks: Story = {
+  name: "Root/Callbacks",
+  render: () => {
+    const [evalLog, setEvalLog] = React.useState<string[]>([]);
+    const [depthLog, setDepthLog] = React.useState<number[]>([]);
+
+    return (
+      <AnalysisRoot
+        fen={FEN.italian}
+        config={{ multiPV: 2 }}
+        onEvaluationChange={(eval_) => {
+          if (eval_) {
+            const text =
+              eval_.type === "mate"
+                ? `#${eval_.value}`
+                : `${(eval_.value / 100).toFixed(2)}`;
+            setEvalLog((prev) => [...prev.slice(-4), text]);
+          }
+        }}
+        onDepthChange={(depth) =>
+          setDepthLog((prev) => [...prev.slice(-4), depth])
+        }
+      >
+        <div style={styles.container}>
+          <StoryHeader
+            title="Root callbacks"
+            subtitle="onEvaluationChange and onDepthChange fire as engine analyzes"
+          />
+          <div style={{ ...styles.stack, gap: "6px" }}>
+            <span style={styles.mono}>depths: [{depthLog.join(", ")}]</span>
+            <span style={styles.mono}>evals: [{evalLog.join(", ")}]</span>
+          </div>
+          <StyledEngineLines maxLines={2} />
+          <EngineStatus />
+        </div>
+      </AnalysisRoot>
+    );
+  },
+};
+
+export const RootConfigLimits: Story = {
+  name: "Root/Config Limits",
+  render: () => (
+    <AnalysisRoot
+      fen={FEN.start}
+      config={{ multiPV: 2, depth: 15, skillLevel: 10 }}
+    >
+      <div style={styles.container}>
+        <StoryHeader
+          title="Engine config limits"
+          subtitle="depth=15, skillLevel=10 (weaker/faster analysis)"
+        />
+        <StyledEngineLines maxLines={2} />
+        <p style={styles.hint}>
+          Lower skillLevel reduces engine strength; depth caps search depth.
+        </p>
+        <EngineStatus />
+      </div>
+    </AnalysisRoot>
+  ),
+};
+
+export const RootError: Story = {
+  name: "Root/Error Handling",
+  render: () => {
+    const [error, setError] = React.useState<string | null>(null);
+
+    return (
+      <AnalysisRoot
+        fen="invalid-fen-string"
+        onError={(err) => setError(err.message)}
+      >
+        <div style={styles.container}>
+          <StoryHeader
+            title="Error handling"
+            subtitle="onError callback catches invalid FEN"
+          />
+          {error ? (
+            <div
+              style={{
+                ...styles.mono,
+                color: "#dc2626",
+                background: "#fef2f2",
+                padding: "12px",
+                borderRadius: "6px",
+                border: "1px solid #fecaca",
+              }}
+            >
+              {error}
+            </div>
+          ) : (
+            <span style={styles.mono}>No error yet...</span>
+          )}
+        </div>
+      </AnalysisRoot>
+    );
+  },
+};
+
+export const EvaluationBarMate: Story = {
+  name: "EvaluationBar/Mate Score",
+  render: () => (
+    <AnalysisRoot fen={FEN.mateIn2}>
+      <div style={{ ...styles.container, ...styles.containerNarrow }}>
+        <StoryHeader
+          title="Mate score display"
+          subtitle="Forced mate position shows #N notation"
+        />
+        <VerticalBar showEvaluation style={barStyles.vertical} />
+        <EngineStatus />
+        <p style={styles.hint}>
+          Mate scores display as #N (positive = white mates, negative = black
+          mates).
+        </p>
+      </div>
+    </AnalysisRoot>
+  ),
 };

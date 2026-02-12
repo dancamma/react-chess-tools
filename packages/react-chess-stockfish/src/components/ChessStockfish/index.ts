@@ -16,9 +16,7 @@
  * ```
  */
 
-import { Root } from "./parts/index";
-import { EvaluationBar } from "./parts/index";
-import { EngineLines } from "./parts/index";
+import { Root, EvaluationBar, EngineLines } from "./parts/index";
 
 export const ChessStockfish = {
   Root,

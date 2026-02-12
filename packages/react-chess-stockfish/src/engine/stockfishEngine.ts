@@ -212,9 +212,13 @@ export class StockfishEngine {
    * 5. Wait for `readyok` response
    * 6. Status becomes "ready"
    *
+   * This method is idempotent - calling it multiple times (e.g., due to React
+   * strict mode) is safe. If already ready, it returns immediately. If currently
+   * initializing, it returns the existing promise.
+   *
    * @throws {Error} If workerPath is invalid or worker fails to initialize
    * @throws {Error} If initialization times out after `timeout` ms
-   * @throws {Error} If init() is called while already initializing or ready
+   * @throws {Error} If called on a destroyed engine or one in error state
    */
   async init(): Promise<void> {
     if (this.engineState.type === "destroyed") {

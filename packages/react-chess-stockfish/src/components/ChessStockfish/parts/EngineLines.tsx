@@ -1,6 +1,11 @@
 import { Slot, Slottable } from "@radix-ui/react-slot";
 import type { Color } from "chess.js";
-import React, { forwardRef, type HTMLAttributes, type ReactNode } from "react";
+import React, {
+  forwardRef,
+  memo,
+  type HTMLAttributes,
+  type ReactNode,
+} from "react";
 import { useStockfish } from "../../../hooks/useStockfish";
 import type { PrincipalVariation } from "../../../types";
 import { formatEvaluation } from "../../../utils/evaluation";
@@ -37,7 +42,7 @@ export interface EngineLinesProps extends Omit<
   children?: ReactNode;
 }
 
-export const EngineLines = forwardRef<HTMLDivElement, EngineLinesProps>(
+const EngineLinesImpl = forwardRef<HTMLDivElement, EngineLinesProps>(
   (
     { maxLines, onLineClick, asChild = false, className, children, ...rest },
     ref,
@@ -100,5 +105,7 @@ export const EngineLines = forwardRef<HTMLDivElement, EngineLinesProps>(
     );
   },
 );
+
+export const EngineLines = memo(EngineLinesImpl);
 
 EngineLines.displayName = "ChessStockfish.EngineLines";

@@ -5,6 +5,8 @@ export type {
   EngineLinesProps,
 } from "./components/ChessStockfish";
 
+export { useStockfish } from "./hooks/useStockfish";
+
 export {
   InvalidFenError,
   cpToWinningChances,

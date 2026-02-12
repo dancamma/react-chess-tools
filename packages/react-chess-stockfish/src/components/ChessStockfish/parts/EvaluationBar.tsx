@@ -30,10 +30,7 @@ import React, {
   type ReactNode,
 } from "react";
 import { useStockfish } from "../../../hooks/useStockfish";
-import {
-  formatEvaluation,
-  normalizeEvaluation,
-} from "../../../utils/evaluation";
+import { formatEvaluation } from "../../../utils/evaluation";
 
 /**
  * Props for the EvaluationBar component.
@@ -79,10 +76,10 @@ const EvaluationBarImpl: ForwardRefRenderFunction<
 ) => {
   const { info } = useStockfish();
 
-  // Normalize evaluation to -1..1 range, then convert to 0-100% fill.
+  // Use the pre-normalized evaluation from the engine (-1..1 range).
   // Semantics are always white-centric:
   // -1 (black winning) -> 0%, 0 (equal) -> 50%, 1 (white winning) -> 100%.
-  const normalized = normalizeEvaluation(info.evaluation);
+  const normalized = info.normalizedEvaluation;
   const safeNormalized = Number.isFinite(normalized) ? normalized : 0;
   const fillPercentage = Math.max(
     0,
