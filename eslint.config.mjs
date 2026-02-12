@@ -6,7 +6,14 @@ import react from "eslint-plugin-react";
 import globals from "globals";
 
 export default [
-  { ignores: ["**/dist/*", "**/coverage/*", "**/storybook-static/*"] },
+  {
+    ignores: [
+      "**/dist/*",
+      "**/coverage/*",
+      "**/storybook-static/*",
+      ".storybook/public/stockfish.js",
+    ],
+  },
   // Base JavaScript rules
   js.configs.recommended,
   // TypeScript recommended rules (new v8 approach)
