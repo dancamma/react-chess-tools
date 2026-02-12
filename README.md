@@ -15,11 +15,12 @@
 
 ## Packages
 
-| Package                                                                        | Description                                                                  | Version                                                                                                                                               |
-| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [@react-chess-tools/react-chess-game](packages/react-chess-game/README.md)     | A chess game component with sounds, move highlighting, and keyboard controls | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-game.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-game)     |
-| [@react-chess-tools/react-chess-puzzle](packages/react-chess-puzzle/README.md) | A chess puzzle component for creating interactive puzzle experiences         | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-puzzle.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-puzzle) |
-| [@react-chess-tools/react-chess-clock](packages/react-chess-clock/README.md)   | A standalone chess clock component with multiple timing methods              | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-clock.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-clock)   |
+| Package                                                                              | Description                                                                  | Version                                                                                                                                                     |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@react-chess-tools/react-chess-game](packages/react-chess-game/README.md)           | A chess game component with sounds, move highlighting, and keyboard controls | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-game.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-game)           |
+| [@react-chess-tools/react-chess-puzzle](packages/react-chess-puzzle/README.md)       | A chess puzzle component for creating interactive puzzle experiences         | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-puzzle.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-puzzle)       |
+| [@react-chess-tools/react-chess-clock](packages/react-chess-clock/README.md)         | A standalone chess clock component with multiple timing methods              | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-clock.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-clock)         |
+| [@react-chess-tools/react-chess-stockfish](packages/react-chess-stockfish/README.md) | Stockfish engine integration with evaluation bar and PV lines                | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-stockfish.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-stockfish) |
 
 ## Features
 
@@ -97,6 +98,28 @@ function App() {
       <ChessClock.PlayPause />
       <ChessClock.Reset>Reset</ChessClock.Reset>
     </ChessClock.Root>
+  );
+}
+```
+
+### Chess Stockfish
+
+```bash
+npm install @react-chess-tools/react-chess-stockfish
+```
+
+```tsx
+import { ChessStockfish } from "@react-chess-tools/react-chess-stockfish";
+
+function App() {
+  return (
+    <ChessStockfish.Root
+      fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+      workerOptions={{ workerPath: "/stockfish.js" }}
+    >
+      <ChessStockfish.EvaluationBar showEvaluation />
+      <ChessStockfish.EngineLines maxLines={3} />
+    </ChessStockfish.Root>
   );
 }
 ```
