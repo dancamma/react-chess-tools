@@ -46,8 +46,8 @@ describe("EvaluationBar", () => {
     // Check orientation data attribute
     expect(bar).toHaveAttribute("data-stockfish-orientation", "vertical");
 
-    // Check perspective data attribute (default is "white")
-    expect(bar).toHaveAttribute("data-stockfish-perspective", "white");
+    // Check perspective data attribute (default is "w")
+    expect(bar).toHaveAttribute("data-stockfish-perspective", "w");
 
     // Check evaluation data attributes
     expect(bar).toHaveAttribute("data-stockfish-eval-type");
@@ -206,15 +206,12 @@ describe("EvaluationBar", () => {
         fen={START_FEN}
         workerOptions={{ workerPath: MOCK_WORKER_PATH }}
       >
-        <ChessStockfish.EvaluationBar
-          perspective="black"
-          data-testid="eval-bar"
-        />
+        <ChessStockfish.EvaluationBar perspective="b" data-testid="eval-bar" />
       </ChessStockfish.Root>,
     );
 
     const bar = screen.getByTestId("eval-bar");
-    expect(bar).toHaveAttribute("data-stockfish-perspective", "black");
+    expect(bar).toHaveAttribute("data-stockfish-perspective", "b");
     expect(bar).toHaveAttribute("data-stockfish-fill-origin", "top");
   });
 
@@ -225,11 +222,11 @@ describe("EvaluationBar", () => {
         workerOptions={{ workerPath: MOCK_WORKER_PATH }}
       >
         <ChessStockfish.EvaluationBar
-          perspective="white"
+          perspective="w"
           data-testid="eval-bar-white"
         />
         <ChessStockfish.EvaluationBar
-          perspective="black"
+          perspective="b"
           data-testid="eval-bar-black"
         />
       </ChessStockfish.Root>,
@@ -258,11 +255,11 @@ describe("EvaluationBar", () => {
         workerOptions={{ workerPath: MOCK_WORKER_PATH }}
       >
         <ChessStockfish.EvaluationBar
-          perspective="white"
+          perspective="w"
           data-testid="eval-bar-white"
         />
         <ChessStockfish.EvaluationBar
-          perspective="black"
+          perspective="b"
           data-testid="eval-bar-black"
         />
       </ChessStockfish.Root>,
@@ -295,12 +292,12 @@ describe("EvaluationBar", () => {
       >
         <ChessStockfish.EvaluationBar
           orientation="horizontal"
-          perspective="white"
+          perspective="w"
           data-testid="eval-bar-white"
         />
         <ChessStockfish.EvaluationBar
           orientation="horizontal"
-          perspective="black"
+          perspective="b"
           data-testid="eval-bar-black"
         />
       </ChessStockfish.Root>,

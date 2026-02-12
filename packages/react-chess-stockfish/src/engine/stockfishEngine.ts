@@ -729,9 +729,10 @@ export class StockfishEngine {
     const whiteScore = info.score
       ? this.normalizeScoreToWhitePerspective(info.score)
       : undefined;
+    const pvRank = info.multipv ?? 1;
 
-    // Update evaluation
-    if (whiteScore) {
+    // Keep top-level evaluation aligned with PV1 (best line).
+    if (whiteScore && pvRank === 1) {
       this.mutableState.evaluation = whiteScore;
       // Normalize using the utility function which handles mate scores correctly
       this.mutableState.normalizedEvaluation = normalizeEvaluation(whiteScore);
@@ -742,16 +743,15 @@ export class StockfishEngine {
     if (info.pv && info.pv.length > 0) {
       const pvMoves = uciToPvMoves(info.pv, this.currentFen);
 
-      const rank = info.multipv ?? 1;
       const pv: PrincipalVariation = {
-        rank,
+        rank: pvRank,
         evaluation: whiteScore ?? null,
         moves: pvMoves,
       };
 
       // Update or add PV
       const existingIndex = this.mutableState.principalVariations.findIndex(
-        (p) => p.rank === rank,
+        (p) => p.rank === pvRank,
       );
 
       if (existingIndex >= 0) {

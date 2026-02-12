@@ -1,25 +1,27 @@
-import type { Meta } from "@storybook/react-vite";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import React from "react";
 import { ChessStockfish } from "./index";
+import { EngineLines } from "./parts/EngineLines";
 import { useStockfish } from "../../hooks/useStockfish";
 
 const WORKER_PATH = "/stockfish.js";
 
-// ============================================================================
-// Styles (simplified)
-// ============================================================================
 const styles = {
   container: {
     display: "flex",
     flexDirection: "column",
-    alignItems: "center",
     gap: "16px",
     padding: "24px",
+    width: "420px",
+    maxWidth: "100%",
     fontFamily: "'Inter', -apple-system, sans-serif",
-    maxWidth: "420px",
-    margin: "0 auto",
   },
-  header: { textAlign: "center" },
+  containerNarrow: {
+    width: "320px",
+  },
+  header: {
+    textAlign: "center",
+  },
   title: {
     fontSize: "15px",
     fontWeight: 600,
@@ -35,18 +37,36 @@ const styles = {
   hint: {
     fontSize: "12px",
     color: "#a5a59c",
-    textAlign: "center",
     margin: 0,
     lineHeight: 1.5,
   },
-  monoText: {
+  mono: {
     fontFamily: "'JetBrains Mono', monospace",
     fontSize: "11px",
     color: "#7a7a72",
   },
+  rootCombined: {
+    display: "grid",
+    gridTemplateColumns: "30px minmax(0, 1fr)",
+    gap: "12px",
+    alignItems: "start",
+    width: "100%",
+  },
+  stack: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+    width: "100%",
+  },
+  selectedLine: {
+    background: "#fff",
+    border: "1px solid #e2e0db",
+    borderRadius: "6px",
+    padding: "8px 10px",
+    width: "100%",
+  },
 } satisfies Record<string, React.CSSProperties>;
 
-// Evaluation bar base styles (shared between vertical/horizontal)
 const barBase: React.CSSProperties = {
   position: "relative",
   overflow: "hidden",
@@ -56,11 +76,10 @@ const barBase: React.CSSProperties = {
 };
 
 const barStyles = {
-  vertical: { ...barBase, width: "30px", height: "300px" },
-  horizontal: { ...barBase, width: "300px", height: "30px" },
+  vertical: { ...barBase, width: "30px", height: "220px" },
+  horizontal: { ...barBase, width: "100%", height: "30px", maxWidth: "320px" },
 } satisfies Record<"vertical" | "horizontal", React.CSSProperties>;
 
-// FEN positions
 const FEN = {
   start: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   italian:
@@ -70,9 +89,6 @@ const FEN = {
     "rnbqkbnr/1ppp1ppp/p5Q1/4p3/4P3/8/PPPP1PPP/RNB1KBNR b KQkq - 0 1",
 };
 
-// ============================================================================
-// Evaluation Bar CSS (Chess.com style)
-// ============================================================================
 const EVAL_BAR_CSS = `
   [data-stockfish-orientation="vertical"],
   [data-stockfish-orientation="horizontal"] {
@@ -88,7 +104,7 @@ const EVAL_BAR_CSS = `
     position: absolute;
     inset: 0;
     background: var(--eval-light);
-    transition: transform 1s ease-in;
+    transition: transform 0.8s ease;
   }
 
   [data-stockfish-eval-text] {
@@ -96,61 +112,33 @@ const EVAL_BAR_CSS = `
     font-size: 0.72rem;
     font-weight: 600;
     line-height: 1;
-    padding: 0.35rem 0;
     position: absolute;
     text-align: center;
     white-space: nowrap;
     width: 100%;
     z-index: 2;
-    transition: all 0.2s ease;
   }
 
-  /* Hover state */
-  [data-stockfish-orientation]:hover [data-stockfish-eval-text] {
-    border-radius: 6px;
-    bottom: auto !important;
-    font-weight: 700;
-    left: 50% !important;
-    padding: 0.1rem 0.5rem;
-    right: auto !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%);
-    width: auto;
-  }
-
-  [data-stockfish-eval-value^="-"]:hover [data-stockfish-eval-text] {
-    background: var(--eval-dark);
+  [data-stockfish-orientation="vertical"][data-stockfish-perspective="w"][data-stockfish-eval-value^="-"] [data-stockfish-eval-text] {
     color: var(--eval-light);
+    top: 6px;
   }
 
-  [data-stockfish-eval-value]:not([data-stockfish-eval-value^="-"]):hover [data-stockfish-eval-text] {
-    background: var(--eval-light);
+  [data-stockfish-orientation="vertical"][data-stockfish-perspective="w"]:not([data-stockfish-eval-value^="-"]) [data-stockfish-eval-text] {
+    bottom: 6px;
     color: var(--eval-dark);
   }
 
-  /* Vertical - White perspective */
-  [data-stockfish-orientation="vertical"][data-stockfish-perspective="white"][data-stockfish-eval-value^="-"] [data-stockfish-eval-text] {
+  [data-stockfish-orientation="vertical"][data-stockfish-perspective="b"][data-stockfish-eval-value^="-"] [data-stockfish-eval-text] {
     color: var(--eval-light);
-    top: 0;
+    bottom: 6px;
   }
 
-  [data-stockfish-orientation="vertical"][data-stockfish-perspective="white"]:not([data-stockfish-eval-value^="-"]) [data-stockfish-eval-text] {
-    bottom: 0;
+  [data-stockfish-orientation="vertical"][data-stockfish-perspective="b"]:not([data-stockfish-eval-value^="-"]) [data-stockfish-eval-text] {
     color: var(--eval-dark);
+    top: 6px;
   }
 
-  /* Vertical - Black perspective */
-  [data-stockfish-orientation="vertical"][data-stockfish-perspective="black"][data-stockfish-eval-value^="-"] [data-stockfish-eval-text] {
-    bottom: 0;
-    color: var(--eval-light);
-  }
-
-  [data-stockfish-orientation="vertical"][data-stockfish-perspective="black"]:not([data-stockfish-eval-value^="-"]) [data-stockfish-eval-text] {
-    color: var(--eval-dark);
-    top: 0;
-  }
-
-  /* Horizontal */
   [data-stockfish-orientation="horizontal"] [data-stockfish-eval-text] {
     padding: 0 0.5rem;
     top: 50%;
@@ -158,27 +146,26 @@ const EVAL_BAR_CSS = `
     width: auto;
   }
 
-  [data-stockfish-orientation="horizontal"][data-stockfish-perspective="white"][data-stockfish-eval-value^="-"] [data-stockfish-eval-text] {
+  [data-stockfish-orientation="horizontal"][data-stockfish-perspective="w"][data-stockfish-eval-value^="-"] [data-stockfish-eval-text] {
     color: var(--eval-light);
     right: 0;
   }
 
-  [data-stockfish-orientation="horizontal"][data-stockfish-perspective="white"]:not([data-stockfish-eval-value^="-"]) [data-stockfish-eval-text] {
+  [data-stockfish-orientation="horizontal"][data-stockfish-perspective="w"]:not([data-stockfish-eval-value^="-"]) [data-stockfish-eval-text] {
     color: var(--eval-dark);
     left: 0;
   }
 
-  [data-stockfish-orientation="horizontal"][data-stockfish-perspective="black"][data-stockfish-eval-value^="-"] [data-stockfish-eval-text] {
+  [data-stockfish-orientation="horizontal"][data-stockfish-perspective="b"][data-stockfish-eval-value^="-"] [data-stockfish-eval-text] {
     color: var(--eval-light);
     left: 0;
   }
 
-  [data-stockfish-orientation="horizontal"][data-stockfish-perspective="black"]:not([data-stockfish-eval-value^="-"]) [data-stockfish-eval-text] {
+  [data-stockfish-orientation="horizontal"][data-stockfish-perspective="b"]:not([data-stockfish-eval-value^="-"]) [data-stockfish-eval-text] {
     color: var(--eval-dark);
     right: 0;
   }
 
-  /* No evaluation type */
   [data-stockfish-eval-type="none"] [data-stockfish-eval-text] {
     color: var(--eval-light);
     top: 50%;
@@ -186,7 +173,61 @@ const EVAL_BAR_CSS = `
   }
 `;
 
-// Styled bar wrappers
+const ENGINE_LINES_CSS = `
+  [data-pv-rank] {
+    align-items: baseline;
+    background: #f7f7f7;
+    border-bottom: 1px solid #d8d8d8;
+    display: grid;
+    font-family: "Noto Sans", "Inter", sans-serif;
+    font-size: 15px;
+    grid-template-columns: 64px minmax(0, 1fr);
+    line-height: 1.35;
+    padding: 6px 10px;
+  }
+
+  [data-eval-text] {
+    color: #1f1f1f;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  [data-moves] {
+    color: #2e2e2e;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  [data-pv-rank="1"] {
+    border-top: 1px solid #d8d8d8;
+  }
+`;
+
+type RootProps = Omit<
+  React.ComponentProps<typeof ChessStockfish.Root>,
+  "workerOptions"
+>;
+
+function AnalysisRoot(props: RootProps) {
+  return (
+    <ChessStockfish.Root
+      workerOptions={{ workerPath: WORKER_PATH }}
+      {...props}
+    />
+  );
+}
+
+function StoryHeader({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <div style={styles.header}>
+      <h3 style={styles.title}>{title}</h3>
+      <p style={styles.subtitle}>{subtitle}</p>
+    </div>
+  );
+}
+
 const VerticalBar = (
   props: Omit<
     React.ComponentProps<typeof ChessStockfish.EvaluationBar>,
@@ -209,17 +250,20 @@ const HorizontalBar = (
   </ChessStockfish.EvaluationBar>
 );
 
-// ============================================================================
-// Helper Components
-// ============================================================================
-const EngineStatus = () => {
+const StyledEngineLines = (props: React.ComponentProps<typeof EngineLines>) => (
+  <EngineLines {...props}>
+    <style>{ENGINE_LINES_CSS}</style>
+  </EngineLines>
+);
+
+function EngineStatus() {
   const { info, methods } = useStockfish();
   const bestMove = methods.getBestMove();
 
   return (
     <div
       style={{
-        ...styles.monoText,
+        ...styles.mono,
         display: "flex",
         flexDirection: "column",
         gap: "4px",
@@ -246,330 +290,246 @@ const EngineStatus = () => {
       )}
     </div>
   );
-};
+}
 
-// ============================================================================
-// Meta
-// ============================================================================
 const meta = {
   title: "react-chess-stockfish/Components/ChessStockfish",
   component: ChessStockfish.Root,
   tags: ["components", "stockfish", "analysis"],
   parameters: { layout: "centered" },
+  args: {
+    fen: FEN.start,
+    workerOptions: { workerPath: WORKER_PATH },
+    children: null,
+  },
 } satisfies Meta<typeof ChessStockfish.Root>;
 
 export default meta;
+type Story = StoryObj<typeof meta>;
 
-// ============================================================================
-// Stories
-// ============================================================================
-
-export const Default = () => (
-  <ChessStockfish.Root
-    fen={FEN.start}
-    workerOptions={{ workerPath: WORKER_PATH }}
-  >
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h3 style={styles.title}>Evaluation Bar</h3>
-        <p style={styles.subtitle}>Vertical bar with evaluation text</p>
-      </div>
-      <VerticalBar showEvaluation style={barStyles.vertical} />
-      <EngineStatus />
-      <p style={styles.hint}>White fills from bottom · Equal position ≈ 50%</p>
-    </div>
-  </ChessStockfish.Root>
-);
-
-export const HorizontalBarStory = () => (
-  <ChessStockfish.Root
-    fen={FEN.start}
-    workerOptions={{ workerPath: WORKER_PATH }}
-  >
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h3 style={styles.title}>Horizontal Bar</h3>
-        <p style={styles.subtitle}>Same data, horizontal layout</p>
-      </div>
-      <HorizontalBar showEvaluation style={barStyles.horizontal} />
-      <EngineStatus />
-      <p style={styles.hint}>White fills from left</p>
-    </div>
-  </ChessStockfish.Root>
-);
-
-export const WhiteWinning = () => (
-  <ChessStockfish.Root
-    fen={FEN.whiteWinning}
-    workerOptions={{ workerPath: WORKER_PATH }}
-  >
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h3 style={styles.title}>White Winning</h3>
-        <p style={styles.subtitle}>
-          Scholar&apos;s mate threat — significant advantage
-        </p>
-      </div>
-      <VerticalBar showEvaluation style={barStyles.vertical} />
-      <EngineStatus />
-    </div>
-  </ChessStockfish.Root>
-);
-
-export const BlackWinning = () => (
-  <ChessStockfish.Root
-    fen={FEN.blackWinning}
-    workerOptions={{ workerPath: WORKER_PATH }}
-  >
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h3 style={styles.title}>Black Winning</h3>
-        <p style={styles.subtitle}>
-          Two Minor Pieces — Black has a material advantage
-        </p>
-      </div>
-      <VerticalBar showEvaluation style={barStyles.vertical} />
-      <EngineStatus />
-    </div>
-  </ChessStockfish.Root>
-);
-
-export const MultiPV = () => (
-  <ChessStockfish.Root
-    fen={FEN.italian}
-    config={{ multiPV: 3 }}
-    workerOptions={{ workerPath: WORKER_PATH }}
-  >
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h3 style={styles.title}>Multi-PV Analysis</h3>
-        <p style={styles.subtitle}>Engine calculates 3 principal variations</p>
-      </div>
-      <VerticalBar showEvaluation style={barStyles.vertical} />
-      <EngineStatus />
-      <p style={styles.hint}>
-        Italian Game — evaluation based on best line (PV 1)
-      </p>
-    </div>
-  </ChessStockfish.Root>
-);
-
-export const CustomConfig = () => (
-  <ChessStockfish.Root
-    fen={FEN.start}
-    config={{ skillLevel: 10, depth: 15 }}
-    workerOptions={{ workerPath: WORKER_PATH }}
-  >
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h3 style={styles.title}>Custom Engine Config</h3>
-        <p style={styles.subtitle}>Skill Level 10, Depth 15</p>
-      </div>
-      <VerticalBar showEvaluation style={barStyles.vertical} />
-      <EngineStatus />
-      <p style={styles.hint}>
-        Lower skill and depth for faster, weaker analysis
-      </p>
-    </div>
-  </ChessStockfish.Root>
-);
-
-export const BarWithoutText = () => (
-  <ChessStockfish.Root
-    fen={FEN.start}
-    workerOptions={{ workerPath: WORKER_PATH }}
-  >
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h3 style={styles.title}>Minimal Bar</h3>
-        <p style={styles.subtitle}>No evaluation text — just the fill</p>
-      </div>
-      <VerticalBar showEvaluation={false} style={barStyles.vertical} />
-      <EngineStatus />
-    </div>
-  </ChessStockfish.Root>
-);
-
-export const MultipleBars = () => (
-  <ChessStockfish.Root
-    fen={FEN.italian}
-    workerOptions={{ workerPath: WORKER_PATH }}
-  >
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h3 style={styles.title}>Multiple Bars</h3>
-        <p style={styles.subtitle}>
-          Both orientations side by side — same context
-        </p>
-      </div>
-      <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
-        <VerticalBar
-          showEvaluation
-          style={{ ...barStyles.vertical, height: "200px" }}
-        />
-        <HorizontalBar
-          showEvaluation
-          style={{ ...barStyles.horizontal, width: "200px" }}
-        />
-      </div>
-      <EngineStatus />
-    </div>
-  </ChessStockfish.Root>
-);
-
-export const AsChild = () => (
-  <ChessStockfish.Root
-    fen={FEN.start}
-    workerOptions={{ workerPath: WORKER_PATH }}
-  >
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h3 style={styles.title}>asChild Pattern</h3>
-        <p style={styles.subtitle}>
-          Renders as a custom &lt;section&gt; via Radix Slot
-        </p>
-      </div>
-      <ChessStockfish.EvaluationBar asChild showEvaluation>
-        <section style={{ ...barStyles.vertical, border: "1px solid #e2e0db" }}>
-          <style>{EVAL_BAR_CSS}</style>
-        </section>
-      </ChessStockfish.EvaluationBar>
-      <EngineStatus />
-      <p style={styles.hint}>
-        Inspect the DOM — root element is &lt;section&gt; not &lt;div&gt;
-      </p>
-    </div>
-  </ChessStockfish.Root>
-);
-
-export const Callbacks = () => {
-  const [lastEval, setLastEval] = React.useState("Waiting...");
-  const [depthHistory, setDepthHistory] = React.useState<number[]>([]);
-  const [lastError, setLastError] = React.useState("");
-
-  return (
-    <ChessStockfish.Root
-      fen={FEN.italian}
-      config={{ multiPV: 3 }}
-      workerOptions={{ workerPath: WORKER_PATH }}
-      onEvaluationChange={(eval_) => {
-        if (!eval_) return setLastEval("No evaluation");
-        setLastEval(
-          eval_.type === "cp"
-            ? `${eval_.value > 0 ? "+" : ""}${(eval_.value / 100).toFixed(2)} pawns`
-            : `Mate in ${eval_.value}`,
-        );
-      }}
-      onDepthChange={(d) => setDepthHistory((prev) => [...prev.slice(-9), d])}
-      onError={(e) => setLastError(e.message)}
-    >
+// Root stories (bar + lines)
+export const RootDefault: Story = {
+  name: "Root/Default (Bar + Lines)",
+  render: () => (
+    <AnalysisRoot fen={FEN.start} config={{ multiPV: 3 }}>
       <div style={styles.container}>
-        <div style={styles.header}>
-          <h3 style={styles.title}>Callbacks</h3>
-          <p style={styles.subtitle}>
-            React to evaluation, depth, and error changes
-          </p>
-        </div>
-        <VerticalBar showEvaluation style={barStyles.vertical} />
-        <div
-          style={{
-            ...styles.monoText,
-            display: "flex",
-            flexDirection: "column",
-            gap: "8px",
-            width: "100%",
-          }}
-        >
-          <InfoBox label="Last eval" value={lastEval} />
-          <InfoBox
-            label="Depth history"
-            value={
-              depthHistory.length ? depthHistory.join(" → ") : "Waiting..."
-            }
-          />
-          {lastError && <InfoBox label="Error" value={lastError} error />}
+        <StoryHeader
+          title="Root composition"
+          subtitle="Default position with evaluation bar and lines"
+        />
+        <div style={styles.rootCombined}>
+          <VerticalBar showEvaluation style={barStyles.vertical} />
+          <StyledEngineLines maxLines={3} />
         </div>
         <EngineStatus />
-        <p style={styles.hint}>
-          Callbacks fire on every change · No useEffect needed
-        </p>
       </div>
-    </ChessStockfish.Root>
-  );
+    </AnalysisRoot>
+  ),
 };
 
-// Small helper for the Callbacks story
-const InfoBox = ({
-  label,
-  value,
-  error,
-}: {
-  label: string;
-  value: string;
-  error?: boolean;
-}) => (
-  <div
-    style={{
-      padding: "8px 12px",
-      background: error ? "#fee2e2" : "#fff",
-      borderRadius: "4px",
-      border: `1px solid ${error ? "#fca5a5" : "#e2e0db"}`,
-      color: error ? "#991b1b" : undefined,
-    }}
-  >
-    <span style={{ color: "#a5a59c" }}>{label}: </span>
-    <span
-      style={{
-        color: error ? undefined : "#2d2d2d",
-        fontWeight: error ? 600 : undefined,
-      }}
-    >
-      {value}
-    </span>
-  </div>
-);
+export const RootItalianMultiPV: Story = {
+  name: "Root/Italian MultiPV (Bar + Lines)",
+  render: () => (
+    <AnalysisRoot fen={FEN.italian} config={{ multiPV: 4 }}>
+      <div style={styles.container}>
+        <StoryHeader
+          title="Root with multiPV"
+          subtitle="Italian opening with four principal variations"
+        />
+        <div style={styles.rootCombined}>
+          <VerticalBar showEvaluation style={barStyles.vertical} />
+          <StyledEngineLines maxLines={4} />
+        </div>
+        <EngineStatus />
+        <p style={styles.hint}>PV1 drives the evaluation bar value.</p>
+      </div>
+    </AnalysisRoot>
+  ),
+};
 
-export const Perspective = () => (
-  <ChessStockfish.Root
-    fen={FEN.italian}
-    workerOptions={{ workerPath: WORKER_PATH }}
-  >
-    <div style={styles.container}>
-      <div style={styles.header}>
-        <h3 style={styles.title}>Perspective Flip</h3>
-        <p style={styles.subtitle}>Same position, two perspectives</p>
+export const RootBlackToMove: Story = {
+  name: "Root/Black To Move (Bar + Lines)",
+  render: () => (
+    <AnalysisRoot fen={FEN.blackWinning} config={{ multiPV: 2 }}>
+      <div style={styles.container}>
+        <StoryHeader
+          title="Root black-to-move view"
+          subtitle="Horizontal bar plus lines with black starting move"
+        />
+        <div style={styles.stack}>
+          <HorizontalBar showEvaluation style={barStyles.horizontal} />
+          <StyledEngineLines maxLines={2} />
+        </div>
+        <EngineStatus />
       </div>
-      <div style={{ display: "flex", gap: "32px", alignItems: "center" }}>
-        {["white", "black"].map((p) => (
-          <div
-            key={p}
-            style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+    </AnalysisRoot>
+  ),
+};
+
+// EvaluationBar stories
+export const EvaluationBarVertical: Story = {
+  name: "EvaluationBar/Vertical",
+  render: () => (
+    <AnalysisRoot fen={FEN.start}>
+      <div style={{ ...styles.container, ...styles.containerNarrow }}>
+        <StoryHeader
+          title="Vertical evaluation bar"
+          subtitle="White fills from bottom, black fills from top"
+        />
+        <VerticalBar showEvaluation style={barStyles.vertical} />
+        <EngineStatus />
+      </div>
+    </AnalysisRoot>
+  ),
+};
+
+export const EvaluationBarHorizontal: Story = {
+  name: "EvaluationBar/Horizontal",
+  render: () => (
+    <AnalysisRoot fen={FEN.whiteWinning}>
+      <div style={styles.container}>
+        <StoryHeader
+          title="Horizontal evaluation bar"
+          subtitle="Same evaluation data in horizontal orientation"
+        />
+        <HorizontalBar showEvaluation style={barStyles.horizontal} />
+        <EngineStatus />
+      </div>
+    </AnalysisRoot>
+  ),
+};
+
+export const EvaluationBarPerspective: Story = {
+  name: "EvaluationBar/Perspective",
+  render: () => (
+    <AnalysisRoot fen={FEN.italian}>
+      <div style={styles.container}>
+        <StoryHeader
+          title="Perspective switch"
+          subtitle="Same eval value rendered from white and black perspectives"
+        />
+        <div style={{ display: "flex", gap: "28px", alignItems: "center" }}>
+          {(["w", "b"] as const).map((perspective) => (
+            <div
+              key={perspective}
+              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+            >
+              <span style={{ ...styles.mono }}>
+                {perspective === "w" ? "white" : "black"} perspective
+              </span>
+              <VerticalBar
+                perspective={perspective}
+                showEvaluation
+                style={barStyles.vertical}
+              />
+            </div>
+          ))}
+        </div>
+        <EngineStatus />
+      </div>
+    </AnalysisRoot>
+  ),
+};
+
+export const EvaluationBarNoText: Story = {
+  name: "EvaluationBar/No Text",
+  render: () => (
+    <AnalysisRoot fen={FEN.start}>
+      <div style={{ ...styles.container, ...styles.containerNarrow }}>
+        <StoryHeader
+          title="Bar only"
+          subtitle="Fill animation without score label"
+        />
+        <VerticalBar showEvaluation={false} style={barStyles.vertical} />
+        <EngineStatus />
+      </div>
+    </AnalysisRoot>
+  ),
+};
+
+export const EvaluationBarAsChild: Story = {
+  name: "EvaluationBar/asChild",
+  render: () => (
+    <AnalysisRoot fen={FEN.start}>
+      <div style={{ ...styles.container, ...styles.containerNarrow }}>
+        <StoryHeader
+          title="asChild pattern"
+          subtitle="Render the bar into a custom section element"
+        />
+        <ChessStockfish.EvaluationBar asChild showEvaluation>
+          <section
+            style={{ ...barStyles.vertical, border: "1px solid #e2e0db" }}
           >
-            <span
-              style={{
-                fontSize: "11px",
-                fontWeight: 600,
-                textAlign: "center",
-                color: "#7a7a72",
-              }}
-            >
-              {p} perspective
-            </span>
-            <ChessStockfish.EvaluationBar
-              perspective={p as "white" | "black"}
-              showEvaluation
-              style={barStyles.vertical}
-            >
-              <style>{EVAL_BAR_CSS}</style>
-            </ChessStockfish.EvaluationBar>
-          </div>
-        ))}
+            <style>{EVAL_BAR_CSS}</style>
+          </section>
+        </ChessStockfish.EvaluationBar>
+        <EngineStatus />
       </div>
-      <EngineStatus />
-      <p style={styles.hint}>
-        Perspective flips fill direction only · Use black perspective when the
-        board is flipped
-      </p>
-    </div>
-  </ChessStockfish.Root>
-);
+    </AnalysisRoot>
+  ),
+};
+
+// Lines stories
+export const LinesBasic: Story = {
+  name: "Lines/Basic",
+  render: () => (
+    <AnalysisRoot fen={FEN.italian} config={{ multiPV: 3 }}>
+      <div style={styles.container}>
+        <StoryHeader
+          title="Engine lines"
+          subtitle="Default composed rows with evaluation and move list"
+        />
+        <StyledEngineLines maxLines={3} />
+        <EngineStatus />
+      </div>
+    </AnalysisRoot>
+  ),
+};
+
+export const LinesBlackToMove: Story = {
+  name: "Lines/Black To Move",
+  render: () => (
+    <AnalysisRoot fen={FEN.blackWinning} config={{ multiPV: 2 }}>
+      <div style={styles.container}>
+        <StoryHeader
+          title="Black-to-move lines"
+          subtitle="First SAN token starts with the 1... prefix"
+        />
+        <StyledEngineLines maxLines={2} />
+        <EngineStatus />
+      </div>
+    </AnalysisRoot>
+  ),
+};
+
+export const LinesClickable: Story = {
+  name: "Lines/Clickable",
+  render: () => {
+    const [selected, setSelected] = React.useState("Click a line");
+
+    return (
+      <AnalysisRoot fen={FEN.italian} config={{ multiPV: 3 }}>
+        <div style={styles.container}>
+          <StoryHeader
+            title="Clickable lines"
+            subtitle="Inspect a variation with onLineClick"
+          />
+          <StyledEngineLines
+            maxLines={3}
+            onLineClick={(rank, pv) =>
+              setSelected(
+                `PV ${rank}: ${pv.moves
+                  .slice(0, 4)
+                  .map((move) => move.san)
+                  .join(" ")}`,
+              )
+            }
+          />
+          <div style={{ ...styles.mono, ...styles.selectedLine }}>
+            selected: <span style={{ color: "#2d2d2d" }}>{selected}</span>
+          </div>
+        </div>
+      </AnalysisRoot>
+    );
+  },
+};

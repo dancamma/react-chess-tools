@@ -18,11 +18,14 @@
 
 import { Root } from "./parts/index";
 import { EvaluationBar } from "./parts/index";
+import { EngineLines } from "./parts/index";
 
 export const ChessStockfish = {
   Root,
   EvaluationBar,
+  EngineLines,
 };
 
 export type { RootProps } from "./parts/Root";
 export type { EvaluationBarProps } from "./parts/EvaluationBar";
+export type { EngineLinesProps } from "./parts/EngineLines";

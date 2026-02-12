@@ -14,13 +14,14 @@
  * ```tsx
  * <ChessStockfish.EvaluationBar
  *   orientation="vertical"
- *   perspective="white"
+ *   perspective="w"
  *   showEvaluation
  * />
  * ```
  */
 
 import { Slot, Slottable } from "@radix-ui/react-slot";
+import type { Color } from "chess.js";
 import React, {
   forwardRef,
   memo,
@@ -49,7 +50,7 @@ export interface EvaluationBarProps extends Omit<
    * This changes only visual fill direction (bottom/left vs top/right),
    * not the evaluation value mapping.
    */
-  perspective?: "white" | "black";
+  perspective?: Color;
   /** Whether to show the evaluation text (e.g., "+1.2") */
   showEvaluation?: boolean;
   /** When true, renders as child instead of div (Radix Slot pattern) */
@@ -67,7 +68,7 @@ const EvaluationBarImpl: ForwardRefRenderFunction<
 > = (
   {
     orientation = "vertical",
-    perspective = "white",
+    perspective = "w",
     showEvaluation = false,
     className,
     asChild = false,
@@ -90,10 +91,10 @@ const EvaluationBarImpl: ForwardRefRenderFunction<
 
   const fillOrigin =
     orientation === "vertical"
-      ? perspective === "black"
+      ? perspective === "b"
         ? "top"
         : "bottom"
-      : perspective === "black"
+      : perspective === "b"
         ? "right"
         : "left";
 
@@ -147,13 +148,13 @@ const EvaluationBarImpl: ForwardRefRenderFunction<
  * Displays a visual representation of the engine's evaluation as a filled bar.
  * The fill grows from the bottom (vertical) or left (horizontal) for white advantage.
  *
- * Use `perspective="black"` to flip the bar's fill origin so white advantage
+ * Use `perspective="b"` to flip the bar's fill origin so white advantage
  * fills from the top (vertical) or right (horizontal) - matching a flipped board.
  * Evaluation values remain white-centric for both perspectives.
  *
  * Data attributes are provided for styling:
  * - `data-stockfish-orientation` - "vertical" or "horizontal"
- * - `data-stockfish-perspective` - "white" or "black"
+ * - `data-stockfish-perspective` - "w" or "b"
  * - `data-stockfish-eval` - Formatted evaluation text ("+1.2", "#3", "–")
  * - `data-stockfish-eval-type` - "cp", "mate", or "none"
  * - `data-stockfish-eval-value` - Raw numeric value (omitted when no evaluation)
@@ -167,7 +168,7 @@ const EvaluationBarImpl: ForwardRefRenderFunction<
  * // Vertical bar with evaluation text
  * <ChessStockfish.EvaluationBar
  *   orientation="vertical"
- *   perspective="white"
+ *   perspective="w"
  *   showEvaluation
  *   className="eval-bar"
  * />
@@ -178,7 +179,7 @@ const EvaluationBarImpl: ForwardRefRenderFunction<
  * // Flipped for black's perspective
  * <ChessStockfish.EvaluationBar
  *   orientation="vertical"
- *   perspective="black"
+ *   perspective="b"
  *   showEvaluation
  * />
  * ```

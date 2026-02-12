@@ -314,6 +314,7 @@ describe("StockfishEngine", () => {
         expect(snapshot.principalVariations[0].rank).toBe(1);
         expect(snapshot.principalVariations[1].rank).toBe(2);
         expect(snapshot.bestLine).toEqual(snapshot.principalVariations[0]);
+        expect(snapshot.evaluation).toEqual({ type: "cp", value: 123 });
         done();
       }, 150);
     });

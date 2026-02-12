@@ -1276,13 +1276,13 @@ EngineLines.displayName = "ChessStockfish.EngineLines";
 
 **Acceptance Criteria:**
 
-- [ ] Renders PV lines with data attributes
-- [ ] Respects maxLines prop
-- [ ] Supports `onLineClick` callback
-- [ ] Supports `asChild` via Radix Slot
-- [ ] Memoized with `React.memo`
-- [ ] `forwardRef` support
-- [ ] **Code fully tested and documented before marking task complete**
+- [x] Renders PV lines with data attributes
+- [x] Respects maxLines prop
+- [x] Supports `onLineClick` callback
+- [x] Supports `asChild` via Radix Slot
+- [x] Memoized with `React.memo`
+- [x] `forwardRef` support
+- [x] **Code fully tested and documented before marking task complete**
 
 ---
 

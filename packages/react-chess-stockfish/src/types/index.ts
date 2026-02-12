@@ -1,4 +1,4 @@
-import { Color } from "chess.js";
+export type { Color } from "chess.js";
 
 export type Evaluation =
   | { type: "cp"; value: number }

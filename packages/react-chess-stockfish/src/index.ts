@@ -1,5 +1,10 @@
-// Placeholder - will be implemented in Task 11
-// Re-export utilities for now to allow build
+export { ChessStockfish } from "./components/ChessStockfish";
+export type {
+  RootProps,
+  EvaluationBarProps,
+  EngineLinesProps,
+} from "./components/ChessStockfish";
+
 export {
   InvalidFenError,
   cpToWinningChances,
@@ -9,6 +14,7 @@ export {
 export { validateFen, uciToSan, uciToPvMoves } from "./utils/uci";
 
 export type {
+  Color,
   Evaluation,
   PVMove,
   PrincipalVariation,
