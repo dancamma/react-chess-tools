@@ -2,64 +2,13 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import React from "react";
 import { ChessStockfish } from "./index";
 import { EngineLines } from "./parts/EngineLines";
-import { useStockfish } from "../../hooks/useStockfish";
-
-const WORKER_PATH = "/stockfish.js";
-
-const styles = {
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-    padding: "24px",
-    width: "420px",
-    maxWidth: "100%",
-    fontFamily: "'Inter', -apple-system, sans-serif",
-  },
-  header: {
-    textAlign: "center",
-  },
-  title: {
-    fontSize: "15px",
-    fontWeight: 600,
-    color: "#2d2d2d",
-    margin: "0 0 4px",
-  },
-  subtitle: {
-    fontSize: "13px",
-    color: "#7a7a72",
-    margin: 0,
-    lineHeight: 1.4,
-  },
-  hint: {
-    fontSize: "12px",
-    color: "#a5a59c",
-    margin: 0,
-    lineHeight: 1.5,
-  },
-  mono: {
-    fontFamily: "'JetBrains Mono', monospace",
-    fontSize: "11px",
-    color: "#7a7a72",
-  },
-  fen: {
-    fontFamily: "'JetBrains Mono', monospace",
-    fontSize: "10px",
-    color: "#a5a59c",
-    background: "#f9f9f9",
-    padding: "6px 8px",
-    borderRadius: "4px",
-    wordBreak: "break-all",
-    lineHeight: 1.4,
-  },
-  selectedLine: {
-    background: "#fff",
-    border: "1px solid #e2e0db",
-    borderRadius: "6px",
-    padding: "8px 10px",
-    width: "100%",
-  },
-} satisfies Record<string, React.CSSProperties>;
+import { StoryHeader } from "@story-helpers";
+import {
+  AnalysisRoot,
+  StyledEngineLines,
+  EngineStatus,
+  ENGINE_LINES_CSS,
+} from "@story-helpers/stockfish";
 
 const FEN = {
   start: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -71,112 +20,6 @@ const FEN = {
   mateIn3: "r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1",
 };
 
-const ENGINE_LINES_CSS = `
-  [data-pv-rank] {
-    align-items: baseline;
-    background: #f7f7f7;
-    border-bottom: 1px solid #d8d8d8;
-    display: grid;
-    font-family: "Noto Sans", "Inter", sans-serif;
-    font-size: 15px;
-    grid-template-columns: 64px minmax(0, 1fr);
-    line-height: 1.35;
-    padding: 6px 10px;
-  }
-
-  [data-eval-text] {
-    color: #1f1f1f;
-    font-variant-numeric: tabular-nums;
-    font-weight: 700;
-  }
-
-  [data-moves] {
-    color: #2e2e2e;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  [data-pv-rank="1"] {
-    border-top: 1px solid #d8d8d8;
-  }
-`;
-
-type RootProps = Omit<
-  React.ComponentProps<typeof ChessStockfish.Root>,
-  "workerOptions"
->;
-
-function AnalysisRoot(props: RootProps) {
-  return (
-    <ChessStockfish.Root
-      workerOptions={{ workerPath: WORKER_PATH }}
-      {...props}
-    />
-  );
-}
-
-function StoryHeader({
-  title,
-  subtitle,
-  fen,
-}: {
-  title: string;
-  subtitle: string;
-  fen?: string;
-}) {
-  return (
-    <div style={styles.header}>
-      <h3 style={styles.title}>{title}</h3>
-      <p style={styles.subtitle}>{subtitle}</p>
-      {fen && <div style={styles.fen}>{fen}</div>}
-    </div>
-  );
-}
-
-const StyledEngineLines = (props: React.ComponentProps<typeof EngineLines>) => (
-  <EngineLines {...props}>
-    <style>{ENGINE_LINES_CSS}</style>
-  </EngineLines>
-);
-
-function EngineStatus() {
-  const { info, methods } = useStockfish();
-  const bestMove = methods.getBestMove();
-
-  return (
-    <div
-      style={{
-        ...styles.mono,
-        display: "flex",
-        flexDirection: "column",
-        gap: "4px",
-      }}
-    >
-      <div style={{ display: "flex", gap: "12px" }}>
-        <span>depth: {info.depth}</span>
-        <span>
-          status:{" "}
-          {info.isEngineThinking ? (
-            <span style={{ color: "#22c55e" }}>thinking</span>
-          ) : (
-            <span style={{ color: "#a5a59c" }}>ready</span>
-          )}
-        </span>
-      </div>
-      {bestMove && (
-        <span>
-          best:{" "}
-          <span style={{ color: "#2d2d2d", fontWeight: 600 }}>
-            {bestMove.san}
-          </span>
-        </span>
-      )}
-    </div>
-  );
-}
-
 const meta = {
   title: "React-Chess-Stockfish/Components/EngineLines",
   component: EngineLines,
@@ -187,10 +30,13 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const STORY_CONTAINER_CLASS =
+  "flex flex-col gap-4 p-6 w-story max-w-full font-sans";
+
 export const Basic: Story = {
   render: () => (
     <AnalysisRoot fen={FEN.italian} config={{ multiPV: 3 }}>
-      <div style={styles.container}>
+      <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="Engine lines"
           subtitle="Default composed rows with evaluation and move list"
@@ -206,7 +52,7 @@ export const Basic: Story = {
 export const BlackToMove: Story = {
   render: () => (
     <AnalysisRoot fen={FEN.blackWinning} config={{ multiPV: 2 }}>
-      <div style={styles.container}>
+      <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="Black to move"
           subtitle="First SAN token starts with the 1... prefix"
@@ -222,7 +68,7 @@ export const BlackToMove: Story = {
 export const WhiteWinning: Story = {
   render: () => (
     <AnalysisRoot fen={FEN.whiteWinning} config={{ multiPV: 2 }}>
-      <div style={styles.container}>
+      <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="White winning"
           subtitle="Position with large white advantage"
@@ -238,7 +84,7 @@ export const WhiteWinning: Story = {
 export const MateInThree: Story = {
   render: () => (
     <AnalysisRoot fen={FEN.mateIn3} config={{ multiPV: 2 }}>
-      <div style={styles.container}>
+      <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="Mate in three"
           subtitle="Forced checkmate position"
@@ -257,7 +103,7 @@ export const Clickable: Story = {
 
     return (
       <AnalysisRoot fen={FEN.italian} config={{ multiPV: 3 }}>
-        <div style={styles.container}>
+        <div className={STORY_CONTAINER_CLASS}>
           <StoryHeader
             title="Clickable lines"
             subtitle="Inspect a variation with onLineClick"
@@ -265,17 +111,17 @@ export const Clickable: Story = {
           />
           <StyledEngineLines
             maxLines={3}
-            onLineClick={(rank, pv) =>
+            onLineClick={(rank: number, pv: { moves: { san: string }[] }) =>
               setSelected(
                 `PV ${rank}: ${pv.moves
                   .slice(0, 4)
-                  .map((move) => move.san)
+                  .map((move: { san: string }) => move.san)
                   .join(" ")}`,
               )
             }
           />
-          <div style={{ ...styles.mono, ...styles.selectedLine }}>
-            selected: <span style={{ color: "#2d2d2d" }}>{selected}</span>
+          <div className="font-mono text-size-xs text-text-secondary bg-surface border border-border rounded-sm p-2 px-2.5 w-full">
+            selected: <span className="text-text">{selected}</span>
           </div>
         </div>
       </AnalysisRoot>
@@ -286,23 +132,14 @@ export const Clickable: Story = {
 export const AsChild: Story = {
   render: () => (
     <AnalysisRoot fen={FEN.italian} config={{ multiPV: 2 }}>
-      <div style={styles.container}>
+      <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="asChild pattern"
           subtitle="Render lines into a custom list element"
           fen={FEN.italian}
         />
         <ChessStockfish.EngineLines asChild maxLines={2}>
-          <ul
-            style={{
-              listStyle: "none",
-              margin: 0,
-              padding: 0,
-              border: "1px solid #e2e0db",
-              borderRadius: "6px",
-              overflow: "hidden",
-            }}
-          >
+          <ul className="list-none m-0 p-0 border border-border rounded-sm overflow-hidden">
             <style>{ENGINE_LINES_CSS}</style>
           </ul>
         </ChessStockfish.EngineLines>
@@ -315,14 +152,14 @@ export const AsChild: Story = {
 export const MaxLinesOverflow: Story = {
   render: () => (
     <AnalysisRoot fen={FEN.start} config={{ multiPV: 2 }}>
-      <div style={styles.container}>
+      <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="maxLines vs available PV"
           subtitle="maxLines=5 but only 2 PVs available (multiPV=2)"
           fen={FEN.start}
         />
         <StyledEngineLines maxLines={5} />
-        <p style={styles.hint}>
+        <p className="text-size-xs text-text-muted m-0 leading-relaxed">
           Engine returns 2 lines, maxLines=5 gracefully shows what&apos;s
           available.
         </p>
@@ -335,7 +172,7 @@ export const MaxLinesOverflow: Story = {
 export const MultiPV: Story = {
   render: () => (
     <AnalysisRoot fen={FEN.italian} config={{ multiPV: 4 }}>
-      <div style={styles.container}>
+      <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="MultiPV analysis"
           subtitle="Four principal variations"

@@ -10,7 +10,7 @@ const meta = {
   tags: ["theme", "puzzle"],
   decorators: [
     (Story) => (
-      <div style={{ maxWidth: "900px" }}>
+      <div className="max-w-story-xl">
         <Story />
       </div>
     ),
@@ -50,26 +50,19 @@ const ColorInput: React.FC<{
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-        marginBottom: "8px",
-      }}
-    >
+    <div className="flex items-center gap-2 mb-2">
       <input
         type="color"
         value={rgbaToHex(value)}
         onChange={(e) => onChange(hexToRgba(e.target.value))}
-        style={{ width: "40px", height: "30px", cursor: "pointer" }}
+        className="w-10 h-[30px] cursor-pointer"
       />
-      <span style={{ fontSize: "12px", minWidth: "100px" }}>{label}</span>
+      <span className="text-size-xs min-w-[100px]">{label}</span>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        style={{ fontSize: "11px", width: "180px", padding: "4px" }}
+        className="text-size-xs w-[180px] p-1 border border-border rounded-sm"
       />
     </div>
   );
@@ -107,13 +100,13 @@ export const PuzzlePlayground = () => {
   };
 
   return (
-    <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
-      <div style={{ flex: "1", minWidth: "300px" }}>
-        <h3 style={{ marginBottom: "16px" }}>Puzzle Theme Editor</h3>
+    <div className="flex gap-6 flex-wrap font-sans">
+      <div className="flex-1 min-w-[300px]">
+        <h3 className="mb-4">Puzzle Theme Editor</h3>
 
-        <div style={{ marginBottom: "16px" }}>
+        <div className="mb-4">
           <strong>Puzzle Colors</strong>
-          <div style={{ marginTop: "8px" }}>
+          <div className="mt-2">
             <ColorInput
               label="Success"
               value={theme.puzzle.success}
@@ -132,40 +125,26 @@ export const PuzzlePlayground = () => {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+        <div className="flex gap-2 mb-4">
           <button
             onClick={copyTheme}
-            style={{
-              padding: "8px 16px",
-              backgroundColor: copied ? "#4caf50" : "#2196f3",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
+            className={`px-4 py-2 text-white border-none rounded-sm cursor-pointer ${copied ? "bg-success" : "bg-info-blue"}`}
           >
             {copied ? "Copied!" : "Copy Theme Code"}
           </button>
           <button
             onClick={resetPuzzle}
-            style={{
-              padding: "8px 16px",
-              backgroundColor: "#666",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
+            className="px-4 py-2 text-white border-none rounded-sm cursor-pointer bg-btn-gray"
           >
             Reset Puzzle
           </button>
         </div>
 
-        <div style={{ fontSize: "12px", color: "#666" }}>
+        <div className="text-size-xs text-text-muted">
           <p>
             <strong>How to test colors:</strong>
           </p>
-          <ul style={{ paddingLeft: "16px" }}>
+          <ul className="pl-4">
             <li>Click "Hint" to see the hint color</li>
             <li>Make a correct move to see success color</li>
             <li>Make a wrong move to see failure color</li>
@@ -174,22 +153,26 @@ export const PuzzlePlayground = () => {
         </div>
       </div>
 
-      <div style={{ flex: "1", minWidth: "350px" }}>
-        <h3 style={{ marginBottom: "16px" }}>Preview</h3>
-        <div style={{ maxWidth: "400px" }}>
+      <div className="flex-1 min-w-[350px]">
+        <h3 className="mb-4">Preview</h3>
+        <div className="max-w-story-lg">
           <ChessPuzzle.Root key={puzzleKey} puzzle={samplePuzzle} theme={theme}>
             <ChessPuzzle.Board />
-            <div style={{ marginTop: "8px", display: "flex", gap: "8px" }}>
+            <div className="mt-2 flex gap-2">
               <ChessPuzzle.Hint asChild>
-                <button style={{ padding: "6px 12px" }}>Hint</button>
+                <button className="py-1.5 px-3 text-size-sm border border-border rounded-sm bg-surface">
+                  Hint
+                </button>
               </ChessPuzzle.Hint>
               <ChessPuzzle.Reset asChild>
-                <button style={{ padding: "6px 12px" }}>Reset</button>
+                <button className="py-1.5 px-3 text-size-sm border border-border rounded-sm bg-surface">
+                  Reset
+                </button>
               </ChessPuzzle.Reset>
             </div>
           </ChessPuzzle.Root>
         </div>
-        <p style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
+        <p className="text-size-xs text-text-muted mt-2">
           Solution: Bxd7+, Nxd7, Qb8+, Nxb8, Rd8#
         </p>
       </div>
@@ -219,30 +202,22 @@ export const PuzzleThemeExamples = () => {
   };
 
   return (
-    <div>
-      <h2 style={{ marginBottom: "24px" }}>Puzzle Theme Examples</h2>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: "24px",
-        }}
-      >
+    <div className="font-sans">
+      <h2 className="mb-6">Puzzle Theme Examples</h2>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-6">
         {Object.entries(customThemes).map(([name, theme]) => (
           <div key={name}>
-            <h4 style={{ marginBottom: "8px", textTransform: "capitalize" }}>
-              {name}
-            </h4>
+            <h4 className="mb-2 capitalize">{name}</h4>
             <ChessPuzzle.Root puzzle={samplePuzzle} theme={theme}>
               <ChessPuzzle.Board />
-              <div style={{ marginTop: "8px", display: "flex", gap: "8px" }}>
+              <div className="mt-2 flex gap-2">
                 <ChessPuzzle.Hint asChild>
-                  <button style={{ padding: "4px 8px", fontSize: "12px" }}>
+                  <button className="py-1 px-2 text-size-xs border border-border rounded-sm bg-surface">
                     Hint
                   </button>
                 </ChessPuzzle.Hint>
                 <ChessPuzzle.Reset asChild>
-                  <button style={{ padding: "4px 8px", fontSize: "12px" }}>
+                  <button className="py-1 px-2 text-size-xs border border-border rounded-sm bg-surface">
                     Reset
                   </button>
                 </ChessPuzzle.Reset>
@@ -264,34 +239,31 @@ export const PartialPuzzleTheme = () => {
   };
 
   return (
-    <div style={{ maxWidth: "500px" }}>
+    <div className="max-w-story-lg font-sans">
       <h3>Partial Puzzle Theme</h3>
-      <p style={{ fontSize: "14px", color: "#666", marginBottom: "16px" }}>
+      <p className="text-size-sm text-text-muted mb-4 m-0">
         Only override the hint color to gold. Success and failure use defaults.
       </p>
       <ChessPuzzle.Root puzzle={samplePuzzle} theme={partialTheme}>
         <ChessPuzzle.Board />
-        <div style={{ marginTop: "8px", display: "flex", gap: "8px" }}>
+        <div className="mt-2 flex gap-2">
           <ChessPuzzle.Hint asChild>
-            <button style={{ padding: "6px 12px" }}>Show Gold Hint</button>
+            <button className="py-1.5 px-3 text-size-sm border border-border rounded-sm bg-surface">
+              Show Gold Hint
+            </button>
           </ChessPuzzle.Hint>
           <ChessPuzzle.Reset asChild>
-            <button style={{ padding: "6px 12px" }}>Reset</button>
+            <button className="py-1.5 px-3 text-size-sm border border-border rounded-sm bg-surface">
+              Reset
+            </button>
           </ChessPuzzle.Reset>
         </div>
       </ChessPuzzle.Root>
-      <details style={{ marginTop: "16px" }}>
-        <summary style={{ cursor: "pointer", fontSize: "14px" }}>
+      <details className="mt-4">
+        <summary className="cursor-pointer text-size-sm">
           View theme code
         </summary>
-        <pre
-          style={{
-            fontSize: "11px",
-            background: "#f5f5f5",
-            padding: "12px",
-            overflow: "auto",
-          }}
-        >
+        <pre className="text-size-xs bg-surface-alt p-3 overflow-auto border border-border rounded-sm">
           {JSON.stringify(partialTheme, null, 2)}
         </pre>
       </details>

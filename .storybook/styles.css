@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* Tell Tailwind where to find class names */
+@source "../packages/**/*.stories.tsx";
+@source "../packages/**/*.mdx";
+@source "./*.tsx";
+
+@theme {
+  /* Story Container Themes (choose one via class) */
+  /* Option A: Pure Minimal - transparent, no background */
+  --color-story-container: transparent;
+
+  /* Option B: Warm Paper - uncomment to use */
+  /* --color-story-container: #fefdfb; */
+
+  /* Option C: Slate Dark - uncomment to use */
+  /* --color-story-container: #1e1e24; --color-story-text: #f4f4f5; --color-story-text-secondary: #a1a1aa; */
+
+  /* Refined Shadows for depth without bg */
+  --shadow-story-card:
+    0 0 0 1px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.03);
+  --shadow-story-elevated:
+    0 0 0 1px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+
+  /* Base Colors */
+  --color-bg: #fafaf9;
+  --color-surface: #ffffff;
+  --color-surface-alt: #fafaf9;
+  --color-border: #e4e4e7;
+  --color-text: #18181b;
+  --color-text-secondary: #71717a;
+  --color-text-muted: #a1a1aa;
+  --color-accent: #5b8a3c;
+  --color-accent-light: #eef4e8;
+  --color-dark: #18181b;
+
+  /* Font Sizes - refined scale */
+  --text-size-xs: 11px;
+  --text-size-sm: 13px;
+  --text-size-md: 15px;
+  --text-size-lg: 20px;
+
+  /* Line Heights */
+  --leading-snug: 1.4;
+  --leading-relaxed: 1.5;
+
+  /* Border Radius */
+  --radius-sm: 5px;
+  --radius-md: 10px;
+
+  /* Shadows - refined for depth without heaviness */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.04), 0 8px 16px rgba(0, 0, 0, 0.06);
+  --shadow-board:
+    0 0 0 1px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.04),
+    0 8px 16px rgba(0, 0, 0, 0.04);
+
+  /* Semantic State Colors */
+  --color-success: #22c55e;
+  --color-success-text: #2b8a3e;
+  --color-success-bg: #d3f9d8;
+  --color-danger: #c44;
+  --color-danger-text: #c92a2a;
+  --color-danger-bg: #ffe3e3;
+  --color-danger-border: #e8b4b4;
+
+  /* Warning Colors */
+  --color-warn: #b58a1b;
+  --color-warn-bg: #fff9db;
+  --color-warn-light: #fdf8ec;
+  --color-warn-border: #e0d3a8;
+
+  /* Info Colors */
+  --color-info: #e7f5ff;
+  --color-info-border: #b4d5f0;
+  --color-info-text: #1864ab;
+  --color-info-blue: #4dabf7;
+  --color-info-blue-bg: #f5edcf;
+
+  /* Dark Theme Colors */
+  --color-dark-bg: #403d39;
+  --color-dark-border: #5b5752;
+  --color-dark-text: #f0f0ec;
+
+  /* Kbd Colors */
+  --color-kbd-bg: #e9ecef;
+  --color-kbd-border: #ced4da;
+
+  /* Story Container Widths */
+  --max-width-story: 420px;
+  --max-width-story-lg: 560px;
+  --max-width-story-xl: 900px;
+  --max-width-board-preview: 320px;
+  --width-story: 420px;
+  --width-board-preview: 320px;
+
+  /* Button Colors */
+  --color-btn-blue: #4dabf7;
+  --color-btn-green: #51cf66;
+  --color-btn-gray: #666;
+}

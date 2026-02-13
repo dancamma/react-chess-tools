@@ -32,6 +32,17 @@ function App() {
 }
 ```
 
+## CSS Styling
+
+All components accept standard HTML attributes (`className`, `style`, `id`, `data-*`, `aria-*`), making them compatible with any CSS approach including Tailwind CSS:
+
+```tsx
+<ChessPuzzle.Board className="rounded-lg shadow-lg" />
+<ChessPuzzle.Reset className="px-4 py-2 bg-blue-500 text-white rounded">
+  Try Again
+</ChessPuzzle.Reset>
+```
+
 ## Puzzle Theme Structure
 
 The puzzle theme extends `ChessGameTheme` with an additional `puzzle` section:

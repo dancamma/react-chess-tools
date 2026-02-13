@@ -4,6 +4,16 @@ import React from "react";
 import { RootProps } from "./parts/Root";
 import { ChessPuzzle } from ".";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
+import {
+  StoryHeader,
+  StoryContainer,
+  BoardWrapper,
+  Kbd,
+  SecondaryBtn,
+  PrimaryBtn,
+  SuccessBtn,
+  HintBtn,
+} from "@story-helpers";
 
 const puzzles = [
   {
@@ -18,106 +28,6 @@ const puzzles = [
   },
 ];
 
-// ============================================================================
-// Shared Story Styles
-// ============================================================================
-const storyStyles = {
-  container: {
-    display: "flex",
-    flexDirection: "column" as const,
-    alignItems: "center",
-    gap: "20px",
-    padding: "24px",
-    backgroundColor: "#f8f9fa",
-    borderRadius: "12px",
-    maxWidth: "500px",
-    margin: "0 auto",
-  },
-  header: {
-    display: "flex",
-    flexDirection: "column" as const,
-    alignItems: "center",
-    gap: "8px",
-  },
-  title: {
-    fontSize: "22px",
-    fontWeight: 700,
-    color: "#2c3e50",
-    margin: 0,
-    textAlign: "center" as const,
-  },
-  subtitle: {
-    fontSize: "14px",
-    color: "#6c757d",
-    margin: 0,
-    textAlign: "center" as const,
-  },
-  boardWrapper: {
-    backgroundColor: "#fff",
-    padding: "16px",
-    borderRadius: "10px",
-    boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-  },
-  controlsSection: {
-    display: "flex",
-    gap: "10px",
-    justifyContent: "center",
-    flexWrap: "wrap" as const,
-  },
-  button: {
-    padding: "10px 20px",
-    fontSize: "14px",
-    fontWeight: 600,
-    cursor: "pointer",
-    border: "none",
-    borderRadius: "8px",
-    backgroundColor: "#fff",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
-    color: "#495057",
-    transition: "all 0.2s ease",
-  } as React.CSSProperties,
-  buttonPrimary: {
-    backgroundColor: "#4dabf7",
-    color: "#fff",
-    boxShadow: "0 2px 6px rgba(77, 171, 247, 0.3)",
-  } as React.CSSProperties,
-  buttonSuccess: {
-    backgroundColor: "#51cf66",
-    color: "#fff",
-    boxShadow: "0 2px 6px rgba(81, 207, 102, 0.3)",
-  } as React.CSSProperties,
-  hintButton: {
-    padding: "8px 16px",
-    fontSize: "13px",
-    fontWeight: 500,
-    cursor: "pointer",
-    border: "1px dashed #adb5bd",
-    borderRadius: "8px",
-    backgroundColor: "transparent",
-    color: "#868e96",
-  } as React.CSSProperties,
-  infoBox: {
-    padding: "12px 16px",
-    backgroundColor: "#e7f5ff",
-    borderRadius: "8px",
-    fontSize: "13px",
-    color: "#1864ab",
-    textAlign: "center" as const,
-  },
-  statusBadge: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "6px",
-    padding: "6px 14px",
-    fontSize: "12px",
-    fontWeight: 600,
-    backgroundColor: "#e9ecef",
-    borderRadius: "20px",
-    color: "#495057",
-  },
-};
-
-// More on how to set up stories at: https://storybook.js.org/docs/react/writing-stories/introduction
 const meta = {
   title: "react-chess-puzzle/Components/Puzzle",
   component: ChessPuzzle.Root,
@@ -134,44 +44,38 @@ const meta = {
 
 export default meta;
 
-// More on writing stories with args: https://storybook.js.org/docs/react/writing-stories/args
-
 export const Example = (args: RootProps) => {
   const [puzzleIndex, setPuzzleIndex] = React.useState(0);
   const puzzle = puzzles[puzzleIndex];
   return (
     <ChessPuzzle.Root {...args} puzzle={puzzle}>
-      <div style={storyStyles.container}>
-        <div style={storyStyles.header}>
-          <h3 style={storyStyles.title}>Chess Puzzle</h3>
-          <p style={storyStyles.subtitle}>Find the best move sequence</p>
-          <span style={storyStyles.statusBadge}>
-            Puzzle {puzzleIndex + 1} of {puzzles.length}
-          </span>
-        </div>
-        <div style={storyStyles.boardWrapper}>
+      <StoryContainer>
+        <StoryHeader
+          title="Chess Puzzle"
+          subtitle="Find the best move sequence"
+        />
+        <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-size-xs font-semibold bg-surface-alt rounded-full text-text-secondary">
+          Puzzle {puzzleIndex + 1} of {puzzles.length}
+        </span>
+        <BoardWrapper>
           <ChessPuzzle.Board />
-        </div>
-        <div style={storyStyles.controlsSection}>
+        </BoardWrapper>
+        <div className="flex gap-2.5 justify-center flex-wrap">
           <ChessPuzzle.Reset asChild>
-            <button style={storyStyles.button}>Restart</button>
+            <SecondaryBtn>Restart</SecondaryBtn>
           </ChessPuzzle.Reset>
           <ChessPuzzle.Reset
             asChild
             puzzle={puzzles[(puzzleIndex + 1) % puzzles.length]}
             onReset={() => setPuzzleIndex((puzzleIndex + 1) % puzzles.length)}
           >
-            <button
-              style={{ ...storyStyles.button, ...storyStyles.buttonPrimary }}
-            >
-              Next Puzzle
-            </button>
+            <PrimaryBtn>Next Puzzle</PrimaryBtn>
           </ChessPuzzle.Reset>
-          <ChessPuzzle.Hint style={storyStyles.hintButton}>
-            💡 Hint
+          <ChessPuzzle.Hint asChild>
+            <HintBtn>Hint</HintBtn>
           </ChessPuzzle.Hint>
         </div>
-      </div>
+      </StoryContainer>
     </ChessPuzzle.Root>
   );
 };
@@ -184,25 +88,23 @@ export const WithOrientation = (args: RootProps) => {
   };
   return (
     <ChessPuzzle.Root {...args} puzzle={puzzle}>
-      <div style={storyStyles.container}>
-        <div style={storyStyles.header}>
-          <h3 style={storyStyles.title}>Black to Move</h3>
-          <p style={storyStyles.subtitle}>
-            Board oriented from Black's perspective
-          </p>
-        </div>
-        <div style={storyStyles.boardWrapper}>
+      <StoryContainer>
+        <StoryHeader
+          title="Black to Move"
+          subtitle="Board oriented from Black's perspective"
+        />
+        <BoardWrapper>
           <ChessPuzzle.Board options={{ boardOrientation: "black" }} />
-        </div>
-        <div style={storyStyles.controlsSection}>
+        </BoardWrapper>
+        <div className="flex gap-2.5 justify-center flex-wrap">
           <ChessPuzzle.Reset asChild>
-            <button style={storyStyles.button}>Restart</button>
+            <SecondaryBtn>Restart</SecondaryBtn>
           </ChessPuzzle.Reset>
-          <ChessPuzzle.Hint style={storyStyles.hintButton}>
-            💡 Hint
+          <ChessPuzzle.Hint asChild>
+            <HintBtn>Hint</HintBtn>
           </ChessPuzzle.Hint>
         </div>
-      </div>
+      </StoryContainer>
     </ChessPuzzle.Root>
   );
 };
@@ -215,29 +117,23 @@ export const Underpromotion = (args: RootProps) => {
   };
   return (
     <ChessPuzzle.Root {...args} puzzle={puzzle}>
-      <div style={storyStyles.container}>
-        <div style={storyStyles.header}>
-          <h3 style={storyStyles.title}>Underpromotion Challenge</h3>
-          <p style={storyStyles.subtitle}>
-            Promote to a knight instead of a queen
-          </p>
-        </div>
-        <div style={storyStyles.boardWrapper}>
+      <StoryContainer>
+        <StoryHeader
+          title="Underpromotion Challenge"
+          subtitle="Promote to a knight instead of a queen"
+        />
+        <BoardWrapper>
           <ChessPuzzle.Board />
-        </div>
-        <div style={storyStyles.controlsSection}>
+        </BoardWrapper>
+        <div className="flex gap-2.5 justify-center flex-wrap">
           <ChessPuzzle.Reset asChild>
-            <button
-              style={{ ...storyStyles.button, ...storyStyles.buttonSuccess }}
-            >
-              ✓ Solved! Restart
-            </button>
+            <SuccessBtn>Solved! Restart</SuccessBtn>
           </ChessPuzzle.Reset>
         </div>
-        <div style={storyStyles.infoBox}>
+        <div className="px-4 py-3 bg-info border border-info-border rounded-md text-size-sm text-info-text text-center">
           Sometimes promoting to a knight is better than a queen!
         </div>
-      </div>
+      </StoryContainer>
     </ChessPuzzle.Root>
   );
 };
@@ -246,18 +142,18 @@ export const WithSounds = (args: RootProps) => {
   return (
     <ChessPuzzle.Root {...args} puzzle={puzzles[0]}>
       <ChessGame.Sounds />
-      <div style={storyStyles.container}>
-        <div style={storyStyles.header}>
-          <h3 style={storyStyles.title}>Puzzle with Sound</h3>
-          <p style={storyStyles.subtitle}>Audio feedback on every move</p>
-        </div>
-        <div style={storyStyles.boardWrapper}>
+      <StoryContainer>
+        <StoryHeader
+          title="Puzzle with Sound"
+          subtitle="Audio feedback on every move"
+        />
+        <BoardWrapper>
           <ChessPuzzle.Board />
-        </div>
-        <p style={{ fontSize: "12px", color: "#868e96", textAlign: "center" }}>
+        </BoardWrapper>
+        <p className="text-size-xs text-text-muted text-center m-0">
           Move pieces to hear different sounds
         </p>
-      </div>
+      </StoryContainer>
     </ChessPuzzle.Root>
   );
 };
@@ -274,186 +170,64 @@ export const WithKeyboardControls = (args: RootProps) => {
           d: (context) => context.methods.goToNextMove(),
         }}
       />
-      <div style={storyStyles.container}>
-        <div style={storyStyles.header}>
-          <h3 style={storyStyles.title}>Keyboard Navigation</h3>
-          <p style={storyStyles.subtitle}>Use keyboard shortcuts to navigate</p>
-        </div>
-        <div style={storyStyles.boardWrapper}>
+      <StoryContainer>
+        <StoryHeader
+          title="Keyboard Navigation"
+          subtitle="Use keyboard shortcuts to navigate"
+        />
+        <BoardWrapper>
           <ChessPuzzle.Board />
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, auto)",
-            gap: "8px",
-            justifyContent: "center",
-            marginTop: "12px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "12px",
-              color: "#495057",
-            }}
-          >
-            <kbd
-              style={{
-                padding: "2px 8px",
-                backgroundColor: "#e9ecef",
-                border: "1px solid #ced4da",
-                borderRadius: "4px",
-                fontFamily: "monospace",
-                fontSize: "11px",
-                fontWeight: 600,
-              }}
-            >
-              W
-            </kbd>{" "}
-            Start
+        </BoardWrapper>
+        <div className="grid grid-cols-3 gap-2 justify-center mt-3">
+          <div className="flex items-center gap-1.5 text-size-xs text-text">
+            <Kbd>W</Kbd> Start
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "12px",
-              color: "#495057",
-            }}
-          >
-            <kbd
-              style={{
-                padding: "2px 8px",
-                backgroundColor: "#e9ecef",
-                border: "1px solid #ced4da",
-                borderRadius: "4px",
-                fontFamily: "monospace",
-                fontSize: "11px",
-                fontWeight: 600,
-              }}
-            >
-              A
-            </kbd>{" "}
-            Previous
+          <div className="flex items-center gap-1.5 text-size-xs text-text">
+            <Kbd>A</Kbd> Previous
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "12px",
-              color: "#495057",
-            }}
-          >
-            <kbd
-              style={{
-                padding: "2px 8px",
-                backgroundColor: "#e9ecef",
-                border: "1px solid #ced4da",
-                borderRadius: "4px",
-                fontFamily: "monospace",
-                fontSize: "11px",
-                fontWeight: 600,
-              }}
-            >
-              F
-            </kbd>{" "}
-            Flip
+          <div className="flex items-center gap-1.5 text-size-xs text-text">
+            <Kbd>F</Kbd> Flip
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "12px",
-              color: "#495057",
-            }}
-          >
-            <kbd
-              style={{
-                padding: "2px 8px",
-                backgroundColor: "#e9ecef",
-                border: "1px solid #ced4da",
-                borderRadius: "4px",
-                fontFamily: "monospace",
-                fontSize: "11px",
-                fontWeight: 600,
-              }}
-            >
-              S
-            </kbd>{" "}
-            End
+          <div className="flex items-center gap-1.5 text-size-xs text-text">
+            <Kbd>S</Kbd> End
           </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "12px",
-              color: "#495057",
-            }}
-          >
-            <kbd
-              style={{
-                padding: "2px 8px",
-                backgroundColor: "#e9ecef",
-                border: "1px solid #ced4da",
-                borderRadius: "4px",
-                fontFamily: "monospace",
-                fontSize: "11px",
-                fontWeight: 600,
-              }}
-            >
-              D
-            </kbd>{" "}
-            Next
+          <div className="flex items-center gap-1.5 text-size-xs text-text">
+            <Kbd>D</Kbd> Next
           </div>
         </div>
-      </div>
+      </StoryContainer>
     </ChessPuzzle.Root>
   );
 };
 
-// Puzzle with multiple checkmate solutions for testing solveOnCheckmate prop
 const multiMatePuzzle = {
   fen: "7k/R7/1R6/2Q5/4Q3/8/8/7K w - - 0 1",
-  moves: ["a7a8"], // Canonical solution
+  moves: ["a7a8"],
   makeFirstMove: false,
 };
 
 export const MultiMatePuzzle = (args: RootProps) => {
   return (
     <ChessPuzzle.Root {...args} puzzle={multiMatePuzzle}>
-      <div style={storyStyles.container}>
-        <div style={storyStyles.header}>
-          <h3 style={storyStyles.title}>Flexible Checkmate</h3>
-          <p style={storyStyles.subtitle}>
-            Any checkmate move solves the puzzle
-          </p>
-        </div>
-        <div
-          style={{
-            ...storyStyles.infoBox,
-            backgroundColor: "#d3f9d8",
-            color: "#2b8a3e",
-          }}
-        >
+      <StoryContainer>
+        <StoryHeader
+          title="Flexible Checkmate"
+          subtitle="Any checkmate move solves the puzzle"
+        />
+        <div className="px-4 py-3 bg-success-bg border border-success rounded-md text-size-sm text-success-text text-center">
           <strong>solveOnCheckmate=true (default)</strong>
           <br />
           Try Qc8#, Qf8#, Rb8#, or the canonical Ra8#
         </div>
-        <div style={storyStyles.boardWrapper}>
+        <BoardWrapper>
           <ChessPuzzle.Board />
-        </div>
-        <div style={storyStyles.controlsSection}>
+        </BoardWrapper>
+        <div className="flex gap-2.5 justify-center flex-wrap">
           <ChessPuzzle.Reset asChild>
-            <button style={storyStyles.button}>Restart</button>
+            <SecondaryBtn>Restart</SecondaryBtn>
           </ChessPuzzle.Reset>
         </div>
-      </div>
+      </StoryContainer>
     </ChessPuzzle.Root>
   );
 };
@@ -465,33 +239,25 @@ export const MultiMatePuzzleStrict = (args: RootProps) => {
       puzzle={multiMatePuzzle}
       solveOnCheckmate={false}
     >
-      <div style={storyStyles.container}>
-        <div style={storyStyles.header}>
-          <h3 style={storyStyles.title}>Strict Checkmate</h3>
-          <p style={storyStyles.subtitle}>
-            Only the canonical solution is accepted
-          </p>
-        </div>
-        <div
-          style={{
-            ...storyStyles.infoBox,
-            backgroundColor: "#ffe3e3",
-            color: "#c92a2a",
-          }}
-        >
+      <StoryContainer>
+        <StoryHeader
+          title="Strict Checkmate"
+          subtitle="Only the canonical solution is accepted"
+        />
+        <div className="px-4 py-3 bg-danger-bg border border-danger rounded-md text-size-sm text-danger-text text-center">
           <strong>solveOnCheckmate=false</strong>
           <br />
           Only Ra8# is accepted. Alternative mates like Qc8# will fail!
         </div>
-        <div style={storyStyles.boardWrapper}>
+        <BoardWrapper>
           <ChessPuzzle.Board />
-        </div>
-        <div style={storyStyles.controlsSection}>
+        </BoardWrapper>
+        <div className="flex gap-2.5 justify-center flex-wrap">
           <ChessPuzzle.Reset asChild>
-            <button style={storyStyles.button}>Restart</button>
+            <SecondaryBtn>Restart</SecondaryBtn>
           </ChessPuzzle.Reset>
         </div>
-      </div>
+      </StoryContainer>
     </ChessPuzzle.Root>
   );
 };

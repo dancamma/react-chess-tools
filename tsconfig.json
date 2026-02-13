@@ -16,7 +16,12 @@
     "preserveWatchOutput": true,
     "skipLibCheck": true,
     "strict": true,
-    "jsx": "react"
+    "jsx": "react",
+    "paths": {
+      "@story-helpers": ["./.storybook/helpers"],
+      "@story-helpers/stockfish": ["./.storybook/helpers/stockfish"]
+    }
   },
+  "include": ["packages/**/*.ts", "packages/**/*.tsx"],
   "exclude": ["node_modules"]
 }

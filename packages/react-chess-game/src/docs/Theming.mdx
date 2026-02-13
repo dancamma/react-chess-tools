@@ -23,6 +23,22 @@ function App() {
 }
 ```
 
+## CSS Styling
+
+All components accept standard HTML attributes (`className`, `style`, `id`, `data-*`, `aria-*`), making them compatible with any CSS approach including Tailwind CSS:
+
+```tsx
+<ChessGame.Board className="rounded-lg shadow-xl border-2 border-gray-200" />
+```
+
+For clock components, use data attributes for conditional styling:
+
+```css
+[data-clock-active="true"] {
+  border-color: gold;
+}
+```
+
 ## Available Preset Themes
 
 We provide three built-in themes:

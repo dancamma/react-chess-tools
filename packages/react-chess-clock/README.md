@@ -49,6 +49,54 @@ Built using a compound component pattern (similar to [Radix UI](https://www.radi
 - **TypeScript** - Full TypeScript support with comprehensive type definitions
 - **Unstyled** - Zero runtime CSS with data attributes for easy styling
 
+## Styling
+
+All components accept standard HTML attributes (`className`, `style`, `id`, `data-*`, `aria-*`), making them compatible with any CSS approach:
+
+### Tailwind CSS
+
+```tsx
+<ChessClock.Root timeControl={{ time: "5+3" }}>
+  <div className="flex flex-col gap-4">
+    <div className="flex justify-between">
+      <ChessClock.Display
+        color="white"
+        className="px-6 py-3 bg-white text-gray-900 font-mono text-2xl rounded border-2 border-gray-300"
+      />
+      <ChessClock.Display
+        color="black"
+        className="px-6 py-3 bg-gray-900 text-white font-mono text-2xl rounded border-2 border-gray-700"
+      />
+    </div>
+    <ChessClock.PlayPause className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" />
+  </div>
+</ChessClock.Root>
+```
+
+### CSS Modules
+
+```tsx
+import styles from "./Clock.module.css";
+
+<ChessClock.Display color="white" className={styles.clockDisplay} />;
+```
+
+### Data Attributes
+
+Clock components expose data attributes for CSS selectors:
+
+```css
+[data-clock-active="true"] {
+  border-color: #fbbf24;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
+}
+
+[data-clock-timeout="true"] {
+  background-color: #ef4444;
+  animation: pulse 1s infinite;
+}
+```
+
 ## Installation
 
 ```bash

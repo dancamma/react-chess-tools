@@ -33,6 +33,58 @@
 - **TypeScript** - Full TypeScript support with comprehensive type definitions
 - **Modern React** - Built for React 19 with hooks and context API
 
+## Styling
+
+All components accept standard HTML attributes, making them easy to style with any CSS approach:
+
+### Tailwind CSS
+
+```tsx
+import { ChessGame } from "@react-chess-tools/react-chess-game";
+
+function App() {
+  return (
+    <ChessGame.Root>
+      <ChessGame.Board className="rounded-lg shadow-xl border-2 border-gray-300" />
+    </ChessGame.Root>
+  );
+}
+```
+
+### CSS Modules / Plain CSS
+
+```tsx
+import { ChessGame } from "@react-chess-tools/react-chess-game";
+import styles from "./ChessBoard.module.css";
+
+function App() {
+  return (
+    <ChessGame.Root>
+      <ChessGame.Board className={styles.board} />
+    </ChessGame.Root>
+  );
+}
+```
+
+### Inline Styles
+
+```tsx
+<ChessGame.Board
+  style={{ borderRadius: "8px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}
+/>
+```
+
+### Data Attributes
+
+Components expose data attributes for CSS selectors:
+
+```css
+[data-clock-active="true"] {
+  border-color: gold;
+  box-shadow: 0 0 10px gold;
+}
+```
+
 ## Quick Start
 
 ### Chess Game

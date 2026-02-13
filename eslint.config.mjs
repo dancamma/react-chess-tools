@@ -12,6 +12,7 @@ export default [
       "**/coverage/*",
       "**/storybook-static/*",
       ".storybook/public/stockfish.js",
+      "**/*.mdx",
     ],
   },
   // Base JavaScript rules
@@ -65,6 +66,7 @@ export default [
       "jest.setup.js",
       "**/tsup.config.ts",
       "eslint.config.mjs",
+      "**/*.stories.tsx",
     ],
     languageOptions: {
       parser: tseslint.parser,
