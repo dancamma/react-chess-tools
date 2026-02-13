@@ -38,11 +38,7 @@ const config: StorybookConfig = {
       plugins: [tailwindcss()],
       resolve: {
         alias: {
-          "@story-helpers": resolve(__dirname, "helpers.tsx"),
-          "@story-helpers/stockfish": resolve(
-            __dirname,
-            "stockfish-helpers.tsx",
-          ),
+          "@story-helpers": resolve(__dirname, "helpers"),
         },
       },
     });

@@ -18,8 +18,8 @@
     "strict": true,
     "jsx": "react",
     "paths": {
-      "@story-helpers": ["./.storybook/helpers.tsx"],
-      "@story-helpers/stockfish": ["./.storybook/stockfish-helpers.tsx"]
+      "@story-helpers": ["./.storybook/helpers"],
+      "@story-helpers/stockfish": ["./.storybook/helpers/stockfish"]
     }
   },
   "include": ["packages/**/*.ts", "packages/**/*.tsx"],
