@@ -145,8 +145,8 @@ export function Root({
     [playAs, isThinking, lastMove, error],
   );
 
-  // Handle engine errors
-  const handleEngineError = (err: Error) => {
+  // Handle errors from engine and bot controller
+  const handleError = (err: Error) => {
     setError(err);
     onBotError?.(err);
   };
@@ -156,12 +156,6 @@ export function Root({
     setLastMove(move);
     setError(null);
     onBotMoveComplete?.(move);
-  };
-
-  // Handle bot errors
-  const handleBotError = (err: Error) => {
-    setError(err);
-    onBotError?.(err);
   };
 
   // FIX F4: Update the announced move ref when lastMove changes
@@ -192,7 +186,7 @@ export function Root({
             fen={currentFen}
             config={config}
             workerOptions={workerOptions}
-            onError={handleEngineError}
+            onError={handleError}
           >
             <BotController
               playAs={playAs}
@@ -201,7 +195,7 @@ export function Root({
               onThinkingChange={setIsThinking}
               onMoveComplete={handleMoveComplete}
               onBotMoveStart={onBotMoveStart}
-              onError={handleBotError}
+              onError={handleError}
             />
             {children}
           </ChessStockfish.Root>
