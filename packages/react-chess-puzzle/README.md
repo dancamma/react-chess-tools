@@ -52,6 +52,12 @@ All components accept standard HTML attributes (`className`, `style`, `id`, `dat
 ### Tailwind CSS
 
 ```tsx
+const puzzle = {
+  fen: "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
+  moves: ["d2d4", "e5d4", "f3d4"],
+  makeFirstMove: false,
+};
+
 <ChessPuzzle.Root puzzle={puzzle}>
   <ChessPuzzle.Board className="rounded-lg shadow-lg" />
   <div className="flex gap-2 mt-4">
@@ -62,7 +68,7 @@ All components accept standard HTML attributes (`className`, `style`, `id`, `dat
       Show Hint
     </ChessPuzzle.Hint>
   </div>
-</ChessPuzzle.Root>
+</ChessPuzzle.Root>;
 ```
 
 ### CSS Modules
