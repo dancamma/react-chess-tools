@@ -21,6 +21,7 @@
 | [@react-chess-tools/react-chess-puzzle](packages/react-chess-puzzle/README.md)       | A chess puzzle component for creating interactive puzzle experiences         | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-puzzle.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-puzzle)       |
 | [@react-chess-tools/react-chess-clock](packages/react-chess-clock/README.md)         | A standalone chess clock component with multiple timing methods              | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-clock.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-clock)         |
 | [@react-chess-tools/react-chess-stockfish](packages/react-chess-stockfish/README.md) | Stockfish engine integration with evaluation bar and PV lines                | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-stockfish.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-stockfish) |
+| [@react-chess-tools/react-chess-bot](packages/react-chess-bot/README.md)             | Automated CPU opponents for chess games using Stockfish                      | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-bot.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-bot)             |
 
 ## Features
 
@@ -172,6 +173,27 @@ function App() {
       <ChessStockfish.EvaluationBar showEvaluation />
       <ChessStockfish.EngineLines maxLines={3} />
     </ChessStockfish.Root>
+  );
+}
+```
+
+### Chess Bot
+
+```bash
+npm install @react-chess-tools/react-chess-bot
+```
+
+```tsx
+import { ChessGame } from "@react-chess-tools/react-chess-game";
+import { ChessBot } from "@react-chess-tools/react-chess-bot";
+
+function App() {
+  return (
+    <ChessGame.Root>
+      <ChessBot.Root playAs="black" skillLevel={10} workerPath="/stockfish.js">
+        <ChessGame.Board />
+      </ChessBot.Root>
+    </ChessGame.Root>
   );
 }
 ```
