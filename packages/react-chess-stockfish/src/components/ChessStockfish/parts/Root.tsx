@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * ChessStockfish.Root - Provider component for Stockfish analysis.
  *
