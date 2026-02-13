@@ -2,229 +2,21 @@ import type { Meta } from "@storybook/react-vite";
 import React from "react";
 import { ChessClock } from "./index";
 import { useChessClockContext } from "../../hooks/useChessClockContext";
+import {
+  StoryHeader,
+  StoryContainer,
+  SecondaryBtn,
+  PrimaryBtn,
+  InfoBox,
+  ClockDisplayWrapper,
+  ClockPairContainer,
+  CLOCK_WHITE_CLASS,
+  CLOCK_BLACK_CLASS,
+  CLOCK_DISPLAY_CLASS,
+  PLAY_PAUSE_BTN_CLASS,
+  PLAY_PAUSE_DISABLED_CLASS,
+} from "@story-helpers";
 
-// ============================================================================
-// Design Tokens
-// ============================================================================
-const color = {
-  bg: "#f5f5f0",
-  surface: "#ffffff",
-  border: "#e2e0db",
-  text: "#2d2d2d",
-  textSecondary: "#7a7a72",
-  textMuted: "#a5a59c",
-  accent: "#5b8a3c",
-  dark: "#1c1c1a",
-  info: "#e7f5ff",
-  infoBorder: "#b4d5f0",
-  infoText: "#1864ab",
-  warn: "#b58a1b",
-  warnBg: "#fff9db",
-};
-
-const font = {
-  sans: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-  mono: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
-};
-
-// ============================================================================
-// Shared Styles
-// ============================================================================
-const s = {
-  container: {
-    display: "flex",
-    flexDirection: "column" as const,
-    alignItems: "center",
-    gap: "16px",
-    padding: "24px",
-    fontFamily: font.sans,
-    maxWidth: "420px",
-    margin: "0 auto",
-  },
-  header: {
-    textAlign: "center" as const,
-  },
-  title: {
-    fontSize: "15px",
-    fontWeight: 600,
-    color: color.text,
-    margin: "0 0 4px",
-    letterSpacing: "-0.01em",
-  },
-  subtitle: {
-    fontSize: "13px",
-    color: color.textSecondary,
-    margin: 0,
-    lineHeight: 1.4,
-  },
-  controls: {
-    display: "flex",
-    gap: "8px",
-    justifyContent: "center",
-    flexWrap: "wrap" as const,
-  },
-  btn: {
-    padding: "7px 14px",
-    fontSize: "13px",
-    fontWeight: 500,
-    fontFamily: font.sans,
-    cursor: "pointer",
-    border: `1px solid ${color.border}`,
-    borderRadius: "4px",
-    backgroundColor: color.surface,
-    color: color.text,
-  } as React.CSSProperties,
-  btnPrimary: {
-    backgroundColor: color.accent,
-    borderColor: color.accent,
-    color: "#fff",
-  } as React.CSSProperties,
-  btnDisabled: {
-    opacity: 0.5,
-    cursor: "not-allowed",
-  } as React.CSSProperties,
-  info: {
-    padding: "10px 14px",
-    backgroundColor: color.info,
-    border: `1px solid ${color.infoBorder}`,
-    borderRadius: "5px",
-    fontSize: "12px",
-    color: color.infoText,
-    textAlign: "center" as const,
-    lineHeight: 1.5,
-  },
-  logBox: {
-    width: "100%",
-    padding: "10px 12px",
-    backgroundColor: color.bg,
-    border: `1px solid ${color.border}`,
-    borderRadius: "5px",
-    fontSize: "11px",
-    fontFamily: font.mono,
-    maxHeight: "90px",
-    overflow: "auto",
-    color: color.textSecondary,
-  },
-  radioGroup: {
-    display: "flex",
-    gap: "8px",
-    flexWrap: "wrap" as const,
-    justifyContent: "center",
-  },
-  radioLabel: {
-    display: "flex",
-    alignItems: "center",
-    gap: "4px",
-    fontSize: "13px",
-    fontWeight: 500,
-    color: color.text,
-    cursor: "pointer",
-  },
-};
-
-const clock = {
-  row: {
-    display: "flex",
-    gap: "12px",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cell: {
-    display: "flex",
-    flexDirection: "column" as const,
-    alignItems: "center",
-    gap: "4px",
-  },
-  label: {
-    fontSize: "11px",
-    fontWeight: 600,
-    color: color.textMuted,
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.06em",
-  },
-  white: {
-    padding: "10px 20px",
-    fontSize: "24px",
-    fontWeight: 600,
-    fontFamily: font.mono,
-    borderRadius: "5px",
-    textAlign: "center" as const,
-    minWidth: "100px",
-    backgroundColor: color.surface,
-    border: `2px solid ${color.text}`,
-    color: color.text,
-  },
-  black: {
-    padding: "10px 20px",
-    fontSize: "24px",
-    fontWeight: 600,
-    fontFamily: font.mono,
-    borderRadius: "5px",
-    textAlign: "center" as const,
-    minWidth: "100px",
-    backgroundColor: color.dark,
-    border: `2px solid ${color.dark}`,
-    color: "#f0f0ec",
-  },
-};
-
-// ============================================================================
-// Reusable Helpers
-// ============================================================================
-
-const ClockPair = ({
-  format,
-}: {
-  format?: "auto" | "mm:ss" | "ss.d" | "hh:mm:ss";
-}) => (
-  <div style={clock.row}>
-    <div style={clock.cell}>
-      <span style={clock.label}>White</span>
-      <ChessClock.Display color="white" format={format} style={clock.white} />
-    </div>
-    <div style={clock.cell}>
-      <span style={clock.label}>Black</span>
-      <ChessClock.Display color="black" format={format} style={clock.black} />
-    </div>
-  </div>
-);
-
-const PlayPauseBtn = () => {
-  const { status } = useChessClockContext();
-  const isDisabled = status === "finished" || status === "delayed";
-
-  return (
-    <ChessClock.PlayPause
-      style={{
-        ...s.btn,
-        ...s.btnPrimary,
-        ...(isDisabled ? s.btnDisabled : {}),
-      }}
-      startContent="Start"
-      pauseContent="Pause"
-      resumeContent="Resume"
-      finishedContent="Game Over"
-    />
-  );
-};
-
-const SwitchBtn = () => (
-  <ChessClock.Switch style={s.btn}>Switch</ChessClock.Switch>
-);
-
-const ResetBtn = () => <ChessClock.Reset style={s.btn}>Reset</ChessClock.Reset>;
-
-const Controls = ({ children }: { children?: React.ReactNode }) => (
-  <div style={s.controls}>
-    <PlayPauseBtn />
-    <SwitchBtn />
-    {children}
-  </div>
-);
-
-// ============================================================================
-// Meta
-// ============================================================================
 const meta = {
   title: "react-chess-clock/Components/ChessClock",
   component: ChessClock.Root,
@@ -238,31 +30,79 @@ const meta = {
 
 export default meta;
 
-// ============================================================================
-// 1. Default
-// ============================================================================
+const ClockPair = ({
+  format,
+}: {
+  format?: "auto" | "mm:ss" | "ss.d" | "hh:mm:ss";
+}) => (
+  <ClockPairContainer>
+    <ClockDisplayWrapper label="White">
+      <ChessClock.Display
+        color="white"
+        format={format}
+        className={CLOCK_WHITE_CLASS}
+      />
+    </ClockDisplayWrapper>
+    <ClockDisplayWrapper label="Black">
+      <ChessClock.Display
+        color="black"
+        format={format}
+        className={CLOCK_BLACK_CLASS}
+      />
+    </ClockDisplayWrapper>
+  </ClockPairContainer>
+);
+
+const PlayPauseBtn = () => {
+  const { status } = useChessClockContext();
+  const isDisabled = status === "finished" || status === "delayed";
+
+  return (
+    <ChessClock.PlayPause
+      className={`${PLAY_PAUSE_BTN_CLASS} ${isDisabled ? PLAY_PAUSE_DISABLED_CLASS : ""}`}
+      startContent="Start"
+      pauseContent="Pause"
+      resumeContent="Resume"
+      finishedContent="Game Over"
+    />
+  );
+};
+
+const SwitchBtn = () => (
+  <ChessClock.Switch asChild>
+    <SecondaryBtn>Switch</SecondaryBtn>
+  </ChessClock.Switch>
+);
+
+const ResetBtn = () => (
+  <ChessClock.Reset asChild>
+    <SecondaryBtn>Reset</SecondaryBtn>
+  </ChessClock.Reset>
+);
+
+const Controls = ({ children }: { children?: React.ReactNode }) => (
+  <div className="flex gap-2 justify-center flex-wrap">
+    <PlayPauseBtn />
+    <SwitchBtn />
+    {children}
+  </div>
+);
 
 export const Default = () => (
   <ChessClock.Root timeControl={{ time: "5+3" }}>
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Blitz &middot; 5+3</h3>
-        <p style={s.subtitle}>
-          5 minutes with 3-second Fischer increment (delayed start)
-        </p>
-      </div>
+    <StoryContainer>
+      <StoryHeader
+        title="Blitz · 5+3"
+        subtitle="5 minutes with 3-second Fischer increment (delayed start)"
+      />
       <ClockPair />
-      <div style={s.info}>Clock starts after Black&apos;s first move</div>
+      <InfoBox>Clock starts after Black&apos;s first move</InfoBox>
       <Controls>
         <ResetBtn />
       </Controls>
-    </div>
+    </StoryContainer>
   </ChessClock.Root>
 );
-
-// ============================================================================
-// 2. TimingMethods
-// ============================================================================
 
 export const TimingMethods = () => {
   const [method, setMethod] = React.useState<"fischer" | "delay" | "bronstein">(
@@ -288,14 +128,17 @@ export const TimingMethods = () => {
         timingMethod: method,
       }}
     >
-      <div style={s.container}>
-        <div style={s.header}>
-          <h3 style={s.title}>Timing Methods</h3>
-          <p style={s.subtitle}>Compare Fischer, Delay, and Bronstein</p>
-        </div>
-        <div style={s.radioGroup}>
+      <StoryContainer>
+        <StoryHeader
+          title="Timing Methods"
+          subtitle="Compare Fischer, Delay, and Bronstein"
+        />
+        <div className="flex gap-2 flex-wrap justify-center">
           {(["fischer", "delay", "bronstein"] as const).map((m) => (
-            <label key={m} style={s.radioLabel}>
+            <label
+              key={m}
+              className="flex items-center gap-1 text-size-sm font-medium text-text"
+            >
               <input
                 type="radio"
                 name="timing"
@@ -307,18 +150,14 @@ export const TimingMethods = () => {
           ))}
         </div>
         <ClockPair />
-        <div style={s.info}>{descriptions[method]}</div>
+        <InfoBox>{descriptions[method]}</InfoBox>
         <Controls>
           <ResetBtn />
         </Controls>
-      </div>
+      </StoryContainer>
     </ChessClock.Root>
   );
 };
-
-// ============================================================================
-// 3. ClockStartModes
-// ============================================================================
 
 export const ClockStartModes = () => {
   const [mode, setMode] = React.useState<"delayed" | "immediate" | "manual">(
@@ -335,14 +174,17 @@ export const ClockStartModes = () => {
 
   return (
     <ChessClock.Root key={mode} timeControl={{ time: "5+3", clockStart: mode }}>
-      <div style={s.container}>
-        <div style={s.header}>
-          <h3 style={s.title}>Clock Start Modes</h3>
-          <p style={s.subtitle}>Controls when the clock begins counting down</p>
-        </div>
-        <div style={s.radioGroup}>
+      <StoryContainer>
+        <StoryHeader
+          title="Clock Start Modes"
+          subtitle="Controls when the clock begins counting down"
+        />
+        <div className="flex gap-2 flex-wrap justify-center">
           {(["delayed", "immediate", "manual"] as const).map((m) => (
-            <label key={m} style={s.radioLabel}>
+            <label
+              key={m}
+              className="flex items-center gap-1 text-size-sm font-medium text-text"
+            >
               <input
                 type="radio"
                 name="clockStart"
@@ -354,64 +196,26 @@ export const ClockStartModes = () => {
           ))}
         </div>
         <ClockPair />
-        <div style={s.info}>{descriptions[mode]}</div>
+        <InfoBox>{descriptions[mode]}</InfoBox>
         <Controls>
           <ResetBtn />
         </Controls>
-      </div>
+      </StoryContainer>
     </ChessClock.Root>
   );
 };
 
-// ============================================================================
-// 4. TimeOdds
-// ============================================================================
-
 export const TimeOdds = () => (
   <ChessClock.Root timeControl={{ time: "5", whiteTime: 300, blackTime: 180 }}>
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Time Odds</h3>
-        <p style={s.subtitle}>White 5 min vs Black 3 min</p>
-      </div>
+    <StoryContainer>
+      <StoryHeader title="Time Odds" subtitle="White 5 min vs Black 3 min" />
       <ClockPair />
       <Controls>
         <ResetBtn />
       </Controls>
-    </div>
+    </StoryContainer>
   </ChessClock.Root>
 );
-
-// ============================================================================
-// 5. DisplayFormats
-// ============================================================================
-
-const fmt = {
-  row: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "6px 10px",
-    backgroundColor: color.bg,
-    borderRadius: "4px",
-  },
-  label: {
-    fontSize: "12px",
-    fontWeight: 500,
-    color: color.textSecondary,
-    fontFamily: font.mono,
-  },
-  display: {
-    padding: "6px 14px",
-    fontSize: "16px",
-    fontWeight: 600,
-    fontFamily: font.mono,
-    borderRadius: "4px",
-    backgroundColor: color.surface,
-    border: `2px solid ${color.text}`,
-    color: color.text,
-  },
-};
 
 export const DisplayFormats = () => (
   <ChessClock.Root
@@ -420,65 +224,69 @@ export const DisplayFormats = () => (
       clockStart: "immediate",
     }}
   >
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Display Formats</h3>
-        <p style={s.subtitle}>
-          All built-in formats + custom formatTime (20s base to show auto
-          decimals)
-        </p>
-      </div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "6px",
-          width: "100%",
-        }}
-      >
-        <div style={fmt.row}>
-          <span style={fmt.label}>format=&quot;auto&quot;</span>
-          <ChessClock.Display color="white" format="auto" style={fmt.display} />
+    <StoryContainer>
+      <StoryHeader
+        title="Display Formats"
+        subtitle="All built-in formats + custom formatTime (20s base to show auto decimals)"
+      />
+      <div className="flex flex-col gap-1.5 w-full">
+        <div className="flex justify-between items-center p-1.5 px-2.5 bg-bg rounded">
+          <span className="text-xs font-medium text-text-secondary font-mono">
+            format=&quot;auto&quot;
+          </span>
+          <ChessClock.Display
+            color="white"
+            format="auto"
+            className={CLOCK_DISPLAY_CLASS}
+          />
         </div>
-        <div style={fmt.row}>
-          <span style={fmt.label}>format=&quot;mm:ss&quot;</span>
+        <div className="flex justify-between items-center p-1.5 px-2.5 bg-bg rounded">
+          <span className="text-xs font-medium text-text-secondary font-mono">
+            format=&quot;mm:ss&quot;
+          </span>
           <ChessClock.Display
             color="white"
             format="mm:ss"
-            style={fmt.display}
+            className={CLOCK_DISPLAY_CLASS}
           />
         </div>
-        <div style={fmt.row}>
-          <span style={fmt.label}>format=&quot;hh:mm:ss&quot;</span>
+        <div className="flex justify-between items-center p-1.5 px-2.5 bg-bg rounded">
+          <span className="text-xs font-medium text-text-secondary font-mono">
+            format=&quot;hh:mm:ss&quot;
+          </span>
           <ChessClock.Display
             color="white"
             format="hh:mm:ss"
-            style={fmt.display}
+            className={CLOCK_DISPLAY_CLASS}
           />
         </div>
-        <div style={fmt.row}>
-          <span style={fmt.label}>format=&quot;ss.d&quot;</span>
-          <ChessClock.Display color="white" format="ss.d" style={fmt.display} />
+        <div className="flex justify-between items-center p-1.5 px-2.5 bg-bg rounded">
+          <span className="text-xs font-medium text-text-secondary font-mono">
+            format=&quot;ss.d&quot;
+          </span>
+          <ChessClock.Display
+            color="white"
+            format="ss.d"
+            className={CLOCK_DISPLAY_CLASS}
+          />
         </div>
-        <div style={fmt.row}>
-          <span style={fmt.label}>Custom fn</span>
+        <div className="flex justify-between items-center p-1.5 px-2.5 bg-bg rounded">
+          <span className="text-xs font-medium text-text-secondary font-mono">
+            Custom fn
+          </span>
           <ChessClock.Display
             color="white"
             formatTime={(ms) => `${Math.ceil(ms / 1000)}s`}
-            style={fmt.display}
+            className={CLOCK_DISPLAY_CLASS}
           />
         </div>
       </div>
       <Controls>
         <ResetBtn />
       </Controls>
-    </div>
+    </StoryContainer>
   </ChessClock.Root>
 );
-
-// ============================================================================
-// 6. Callbacks
-// ============================================================================
 
 export const Callbacks = () => {
   const [logs, setLogs] = React.useState<string[]>([]);
@@ -495,68 +303,58 @@ export const Callbacks = () => {
           addLog(`Time: W=${times.white}ms B=${times.black}ms`),
       }}
     >
-      <div style={s.container}>
-        <div style={s.header}>
-          <h3 style={s.title}>Callbacks &middot; 1+5</h3>
-          <p style={s.subtitle}>
-            onTimeout, onSwitch, onTimeUpdate event logging
-          </p>
-        </div>
+      <StoryContainer>
+        <StoryHeader
+          title="Callbacks · 1+5"
+          subtitle="onTimeout, onSwitch, onTimeUpdate event logging"
+        />
         <ClockPair format="ss.d" />
         <Controls>
           <ResetBtn />
         </Controls>
-        <div style={s.logBox}>
+        <div className="w-full p-2.5 px-3 bg-bg border border-border rounded-sm text-size-xs font-mono max-h-[90px] overflow-auto text-text-secondary">
           {logs.length === 0 ? (
-            <span style={{ color: color.textMuted, fontStyle: "italic" }}>
+            <span className="text-text-muted italic">
               Events will appear here...
             </span>
           ) : (
             logs.map((log, i) => <div key={i}>{log}</div>)
           )}
         </div>
-      </div>
+      </StoryContainer>
     </ChessClock.Root>
   );
 };
 
-// ============================================================================
-// 7. DynamicReset
-// ============================================================================
-
 export const DynamicReset = () => (
   <ChessClock.Root timeControl={{ time: "5+3" }}>
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>Dynamic Reset</h3>
-        <p style={s.subtitle}>
-          Reset with a different time control using the timeControl prop
-        </p>
-      </div>
+    <StoryContainer>
+      <StoryHeader
+        title="Dynamic Reset"
+        subtitle="Reset with a different time control using the timeControl prop"
+      />
       <ClockPair />
       <Controls />
-      <div style={s.controls}>
-        <ChessClock.Reset style={s.btn}>Reset</ChessClock.Reset>
-        <ChessClock.Reset style={s.btn} timeControl="1">
-          1+0
+      <div className="flex gap-2 justify-center flex-wrap">
+        <ChessClock.Reset asChild>
+          <SecondaryBtn>Reset</SecondaryBtn>
         </ChessClock.Reset>
-        <ChessClock.Reset style={s.btn} timeControl="3+2">
-          3+2
+        <ChessClock.Reset timeControl="1" asChild>
+          <SecondaryBtn>1+0</SecondaryBtn>
         </ChessClock.Reset>
-        <ChessClock.Reset style={s.btn} timeControl="5+3">
-          5+3
+        <ChessClock.Reset timeControl="3+2" asChild>
+          <SecondaryBtn>3+2</SecondaryBtn>
         </ChessClock.Reset>
-        <ChessClock.Reset style={s.btn} timeControl="10">
-          10+0
+        <ChessClock.Reset timeControl="5+3" asChild>
+          <SecondaryBtn>5+3</SecondaryBtn>
+        </ChessClock.Reset>
+        <ChessClock.Reset timeControl="10" asChild>
+          <SecondaryBtn>10+0</SecondaryBtn>
         </ChessClock.Reset>
       </div>
-    </div>
+    </StoryContainer>
   </ChessClock.Root>
 );
-
-// ============================================================================
-// 8. MultiPeriod
-// ============================================================================
 
 function PeriodInfo() {
   const { currentPeriodIndex, totalPeriods, periodMoves, currentPeriod } =
@@ -573,29 +371,13 @@ function PeriodInfo() {
   };
 
   return (
-    <div
-      style={{
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        gap: "4px",
-      }}
-    >
+    <div className="w-full flex flex-col gap-1">
       {(["white", "black"] as const).map((c) => (
         <div
           key={c}
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "6px 10px",
-            backgroundColor: c === "white" ? color.bg : color.dark,
-            borderRadius: "4px",
-            fontSize: "12px",
-            fontFamily: font.mono,
-            color: c === "white" ? color.text : "#f0f0ec",
-          }}
+          className={`flex justify-between p-1.5 px-2.5 rounded text-xs font-mono ${c === "white" ? "bg-bg text-text" : "bg-dark text-dark-text"}`}
         >
-          <span style={{ textTransform: "capitalize" }}>{c}</span>
+          <span className="capitalize">{c}</span>
           <span>{periodLabel(c)}</span>
         </div>
       ))}
@@ -614,26 +396,20 @@ export const MultiPeriod = () => (
       clockStart: "manual",
     }}
   >
-    <div style={s.container}>
-      <div style={s.header}>
-        <h3 style={s.title}>FIDE Classical</h3>
-        <p style={s.subtitle}>90min/40 + 30min/20 + 15min SD</p>
-      </div>
+    <StoryContainer>
+      <StoryHeader
+        title="FIDE Classical"
+        subtitle="90min/40 + 30min/20 + 15min SD"
+      />
       <ClockPair />
       <PeriodInfo />
-      <div style={s.info}>
-        Each player advances independently through 3 periods
-      </div>
+      <InfoBox>Each player advances independently through 3 periods</InfoBox>
       <Controls>
         <ResetBtn />
       </Controls>
-    </div>
+    </StoryContainer>
   </ChessClock.Root>
 );
-
-// ============================================================================
-// 9. ServerSync
-// ============================================================================
 
 function ServerTimeSyncHelper({
   serverTimes,
@@ -680,72 +456,45 @@ export const ServerSync = () => {
       }}
     >
       <ServerTimeSyncHelper serverTimes={serverTimes} />
-      <div style={s.container}>
-        <div style={s.header}>
-          <h3 style={s.title}>Server Sync</h3>
-          <p style={s.subtitle}>Times synced from server via setTime()</p>
-        </div>
+      <StoryContainer>
+        <StoryHeader
+          title="Server Sync"
+          subtitle="Times synced from server via setTime()"
+        />
         <ClockPair format="mm:ss" />
         <Controls>
           <ResetBtn />
         </Controls>
-        <div
-          style={{
-            ...s.info,
-            backgroundColor: color.warnBg,
-            borderColor: "#e0d3a8",
-            color: color.warn,
-          }}
-        >
-          <span style={{ fontFamily: font.mono, fontSize: "11px" }}>
+        <div className="p-2.5 px-3.5 bg-warn-bg border border-warn-border rounded-sm text-xs text-warn text-center leading-relaxed">
+          <span className="font-mono text-size-xs">
             Server: W={Math.ceil(serverTimes.white / 1000)}s B=
             {Math.ceil(serverTimes.black / 1000)}s
           </span>
         </div>
-      </div>
+      </StoryContainer>
     </ChessClock.Root>
   );
 };
 
-// ============================================================================
-// 10. AsChild
-// ============================================================================
-
 function AsChildStatus() {
   const { status } = useChessClockContext();
   return (
-    <div
-      style={{
-        fontSize: "12px",
-        fontFamily: font.mono,
-        color: color.textSecondary,
-      }}
-    >
+    <div className="text-xs font-mono text-text-secondary">
       Status: {status}
     </div>
   );
 }
 
 export const AsChild = () => {
-  const customBtn: React.CSSProperties = {
-    ...s.btn,
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "6px",
-    userSelect: "none",
-  };
-
   return (
     <ChessClock.Root timeControl={{ time: "5+3", clockStart: "manual" }}>
-      <div style={s.container}>
-        <div style={s.header}>
-          <h3 style={s.title}>asChild Pattern</h3>
-          <p style={s.subtitle}>
-            All controls rendered as custom elements via asChild
-          </p>
-        </div>
+      <StoryContainer>
+        <StoryHeader
+          title="asChild Pattern"
+          subtitle="All controls rendered as custom elements via asChild"
+        />
         <ClockPair />
-        <div style={s.controls}>
+        <div className="flex gap-2 justify-center flex-wrap">
           <ChessClock.PlayPause
             asChild
             startContent="Start"
@@ -753,30 +502,24 @@ export const AsChild = () => {
             resumeContent="Resume"
             finishedContent="Game Over"
           >
-            <div style={{ ...customBtn, ...s.btnPrimary }}>
-              <span>placeholder</span>
-            </div>
+            <PrimaryBtn>placeholder</PrimaryBtn>
           </ChessClock.PlayPause>
 
           <ChessClock.Switch asChild>
-            <div style={customBtn}>
-              <span>Switch</span>
-            </div>
+            <SecondaryBtn>Switch</SecondaryBtn>
           </ChessClock.Switch>
 
           <ChessClock.Reset asChild>
-            <div style={customBtn}>
-              <span>Reset</span>
-            </div>
+            <SecondaryBtn>Reset</SecondaryBtn>
           </ChessClock.Reset>
         </div>
         <AsChildStatus />
-        <div style={s.info}>
-          All 3 buttons use asChild with custom &lt;div&gt; elements.
+        <InfoBox>
+          All 3 buttons use asChild with custom elements.
           <br />
           Disabled state propagates automatically (try when idle or finished).
-        </div>
-      </div>
+        </InfoBox>
+      </StoryContainer>
     </ChessClock.Root>
   );
 };

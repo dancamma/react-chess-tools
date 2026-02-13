@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useChessGameContext } from "../../hooks/useChessGameContext";
 import type { ClockColor } from "@react-chess-tools/react-chess-clock";
 
@@ -178,4 +178,48 @@ export function ServerTimeSync({
   }, [serverTimes, clock]);
 
   return null;
+}
+
+export function GameStatus({ className }: { className?: string }) {
+  const { info, clock } = useChessGameContext();
+
+  const timeout = clock?.timeout;
+  const status = clock?.status;
+
+  let message: string | null = null;
+
+  if (timeout) {
+    const winner = timeout === "white" ? "Black" : "White";
+    message = `${winner} wins on time`;
+  } else if (info.isCheckmate) {
+    const winner = info.turn === "w" ? "Black" : "White";
+    message = `Checkmate! ${winner} wins`;
+  } else if (info.isStalemate) {
+    message = "Stalemate - Draw";
+  } else if (info.isThreefoldRepetition) {
+    message = "Draw by repetition";
+  } else if (info.isInsufficientMaterial) {
+    message = "Draw by insufficient material";
+  } else if (info.isDraw) {
+    message = "Draw";
+  }
+
+  if (!message && status !== "finished") return null;
+
+  return (
+    <div
+      className={className}
+      style={{
+        padding: "8px 16px",
+        background: message ? "#1a1a2e" : "#f5f5f5",
+        borderRadius: "8px",
+        fontWeight: 600,
+        fontSize: "14px",
+        color: message ? "#fff" : "#666",
+        textAlign: "center",
+      }}
+    >
+      {message || "Game in progress"}
+    </div>
+  );
 }

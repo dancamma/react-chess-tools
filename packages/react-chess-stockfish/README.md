@@ -43,6 +43,61 @@
 - **Web Worker** - Non-blocking analysis using Web Workers
 - **Security** - Built-in worker path validation to prevent XSS attacks
 
+## Styling
+
+All components accept standard HTML attributes (`className`, `style`, `id`, `data-*`, `aria-*`), making them compatible with any CSS approach:
+
+### Tailwind CSS
+
+```tsx
+<ChessStockfish.Root fen={fen} workerOptions={{ workerPath: "/stockfish.js" }}>
+  <div className="flex gap-4">
+    <ChessStockfish.EvaluationBar
+      orientation="vertical"
+      showEvaluation
+      className="w-8 h-64 bg-gray-700 rounded border border-gray-600 overflow-hidden relative"
+    />
+    <ChessStockfish.EngineLines
+      maxLines={3}
+      className="flex flex-col border border-gray-300 rounded overflow-hidden"
+    />
+  </div>
+</ChessStockfish.Root>
+```
+
+### CSS Modules
+
+```tsx
+import styles from "./Engine.module.css";
+
+<ChessStockfish.EvaluationBar className={styles.evalBar} />
+<ChessStockfish.EngineLines className={styles.engineLines} />
+```
+
+### Data Attributes
+
+Components expose data attributes for CSS selectors:
+
+```css
+/* Evaluation bar */
+[data-stockfish-eval-type="mate"] {
+  color: #fbbf24;
+}
+
+/* Engine lines */
+[data-eval^="+"] {
+  color: #22c55e;
+}
+
+[data-eval^="-"] {
+  color: #ef4444;
+}
+
+[data-pv-rank="1"] {
+  background-color: #f0fdf4;
+}
+```
+
 ## Installation
 
 ```bash

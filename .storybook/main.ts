@@ -1,9 +1,9 @@
 import { createRequire } from "node:module";
-import { dirname, join } from "path";
+import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 import type { StorybookConfig } from "@storybook/react-vite";
 import { mergeConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -33,9 +33,18 @@ const config: StorybookConfig = {
     reactDocgen: "react-docgen-typescript",
   },
 
-  vite: async (config) => {
+  viteFinal: async (config) => {
     return mergeConfig(config, {
-      plugins: [react()],
+      plugins: [tailwindcss()],
+      resolve: {
+        alias: {
+          "@story-helpers": resolve(__dirname, "helpers.tsx"),
+          "@story-helpers/stockfish": resolve(
+            __dirname,
+            "stockfish-helpers.tsx",
+          ),
+        },
+      },
     });
   },
 };

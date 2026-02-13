@@ -45,6 +45,38 @@
 - **TypeScript** - Full TypeScript support with comprehensive type definitions
 - **Multiple solutions** - Accept any checkmate as a solution (configurable via `solveOnCheckmate`)
 
+## Styling
+
+All components accept standard HTML attributes (`className`, `style`, `id`, `data-*`, `aria-*`), making them compatible with any CSS approach:
+
+### Tailwind CSS
+
+```tsx
+<ChessPuzzle.Root puzzle={puzzle}>
+  <ChessPuzzle.Board className="rounded-lg shadow-lg" />
+  <div className="flex gap-2 mt-4">
+    <ChessPuzzle.Reset className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+      Try Again
+    </ChessPuzzle.Reset>
+    <ChessPuzzle.Hint className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+      Show Hint
+    </ChessPuzzle.Hint>
+  </div>
+</ChessPuzzle.Root>
+```
+
+### CSS Modules
+
+```tsx
+import styles from "./Puzzle.module.css";
+
+<ChessPuzzle.Board className={styles.board} />;
+```
+
+### Custom Theme
+
+See the [ChessPuzzle.Root props](#chesspuzzleroot) for the `theme` prop to customize puzzle-specific colors (success, failure, hint).
+
 ## Installation
 
 ```bash

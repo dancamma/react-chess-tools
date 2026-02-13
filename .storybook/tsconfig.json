@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@story-helpers": ["helpers.tsx"],
+      "@story-helpers/stockfish": ["stockfish-helpers.tsx"]
+    }
+  },
+  "include": ["./*.tsx", "../packages/**/*.stories.tsx", "../packages/**/*.mdx"]
+}

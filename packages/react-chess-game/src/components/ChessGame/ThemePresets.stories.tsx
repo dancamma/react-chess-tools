@@ -9,7 +9,7 @@ const meta = {
   tags: ["theme", "presets"],
   decorators: [
     (Story) => (
-      <div style={{ maxWidth: "1200px" }}>
+      <div className="max-w-story-xl">
         <Story />
       </div>
     ),
@@ -23,9 +23,9 @@ const POSITION_WITH_MOVE =
   "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2";
 
 export const DefaultTheme = () => (
-  <div style={{ maxWidth: "500px" }}>
+  <div className="max-w-board-preview">
     <h3>Default Theme</h3>
-    <p style={{ fontSize: "14px", color: "#666", marginBottom: "16px" }}>
+    <p className="text-size-sm text-text-muted mb-4 m-0">
       The original colors matching the classic chessboard look.
     </p>
     <ChessGame.Root theme={themes.default}>
@@ -35,9 +35,9 @@ export const DefaultTheme = () => (
 );
 
 export const LichessTheme = () => (
-  <div style={{ maxWidth: "500px" }}>
+  <div className="max-w-board-preview">
     <h3>Lichess Theme</h3>
-    <p style={{ fontSize: "14px", color: "#666", marginBottom: "16px" }}>
+    <p className="text-size-sm text-text-muted mb-4 m-0">
       Green highlights inspired by Lichess.org style.
     </p>
     <ChessGame.Root theme={themes.lichess}>
@@ -47,9 +47,9 @@ export const LichessTheme = () => (
 );
 
 export const ChessComTheme = () => (
-  <div style={{ maxWidth: "500px" }}>
+  <div className="max-w-board-preview">
     <h3>Chess.com Theme</h3>
-    <p style={{ fontSize: "14px", color: "#666", marginBottom: "16px" }}>
+    <p className="text-size-sm text-text-muted mb-4 m-0">
       Green board with yellow highlights inspired by Chess.com.
     </p>
     <ChessGame.Root theme={themes.chessCom}>
@@ -78,26 +78,19 @@ export const CustomThemeExample = () => {
   };
 
   return (
-    <div style={{ maxWidth: "500px" }}>
+    <div className="max-w-board-preview">
       <h3>Custom Dark Theme Example</h3>
-      <p style={{ fontSize: "14px", color: "#666", marginBottom: "16px" }}>
+      <p className="text-size-sm text-text-muted mb-4 m-0">
         Example of a fully custom theme with dark colors and blue highlights.
       </p>
       <ChessGame.Root theme={darkTheme}>
         <ChessGame.Board />
       </ChessGame.Root>
-      <details style={{ marginTop: "16px" }}>
-        <summary style={{ cursor: "pointer", fontSize: "14px" }}>
+      <details className="mt-4">
+        <summary className="cursor-pointer text-size-sm">
           View theme code
         </summary>
-        <pre
-          style={{
-            fontSize: "11px",
-            background: "#f5f5f5",
-            padding: "12px",
-            overflow: "auto",
-          }}
-        >
+        <pre className="text-size-xs bg-surface-alt p-3 overflow-auto border border-border rounded-sm">
           {JSON.stringify(darkTheme, null, 2)}
         </pre>
       </details>
@@ -115,27 +108,20 @@ export const PartialThemeOverride = () => {
   };
 
   return (
-    <div style={{ maxWidth: "500px" }}>
+    <div className="max-w-board-preview">
       <h3>Partial Theme Override</h3>
-      <p style={{ fontSize: "14px", color: "#666", marginBottom: "16px" }}>
+      <p className="text-size-sm text-text-muted mb-4 m-0">
         Only override specific colors (purple last move, orange check). Other
         colors use defaults.
       </p>
       <ChessGame.Root fen={POSITION_WITH_MOVE} theme={partialTheme}>
         <ChessGame.Board />
       </ChessGame.Root>
-      <details style={{ marginTop: "16px" }}>
-        <summary style={{ cursor: "pointer", fontSize: "14px" }}>
+      <details className="mt-4">
+        <summary className="cursor-pointer text-size-sm">
           View theme code
         </summary>
-        <pre
-          style={{
-            fontSize: "11px",
-            background: "#f5f5f5",
-            padding: "12px",
-            overflow: "auto",
-          }}
-        >
+        <pre className="text-size-xs bg-surface-alt p-3 overflow-auto border border-border rounded-sm">
           {JSON.stringify(partialTheme, null, 2)}
         </pre>
       </details>

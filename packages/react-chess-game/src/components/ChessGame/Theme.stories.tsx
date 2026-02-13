@@ -10,7 +10,7 @@ const meta = {
   tags: ["theme"],
   decorators: [
     (Story) => (
-      <div style={{ maxWidth: "900px" }}>
+      <div className="max-w-story-xl">
         <Story />
       </div>
     ),
@@ -45,26 +45,19 @@ const ColorInput: React.FC<{
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-        marginBottom: "8px",
-      }}
-    >
+    <div className="flex items-center gap-2 mb-2">
       <input
         type="color"
         value={rgbaToHex(value)}
         onChange={(e) => onChange(hexToRgba(e.target.value))}
-        style={{ width: "40px", height: "30px", cursor: "pointer" }}
+        className="w-10 h-[30px] cursor-pointer"
       />
-      <span style={{ fontSize: "12px", minWidth: "100px" }}>{label}</span>
+      <span className="text-size-xs min-w-[100px]">{label}</span>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        style={{ fontSize: "11px", width: "180px", padding: "4px" }}
+        className="text-size-xs w-[180px] p-1 border border-border rounded-sm"
       />
     </div>
   );
@@ -77,26 +70,19 @@ const BgColorInput: React.FC<{
   onChange: (value: string) => void;
 }> = ({ label, value, onChange }) => {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "8px",
-        marginBottom: "8px",
-      }}
-    >
+    <div className="flex items-center gap-2 mb-2">
       <input
         type="color"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        style={{ width: "40px", height: "30px", cursor: "pointer" }}
+        className="w-10 h-[30px] cursor-pointer"
       />
-      <span style={{ fontSize: "12px", minWidth: "100px" }}>{label}</span>
+      <span className="text-size-xs min-w-[100px]">{label}</span>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        style={{ fontSize: "11px", width: "180px", padding: "4px" }}
+        className="text-size-xs w-[180px] p-1 border border-border rounded-sm"
       />
     </div>
   );
@@ -134,24 +120,37 @@ export const Playground = () => {
   };
 
   return (
-    <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
-      <div style={{ flex: "1", minWidth: "300px" }}>
-        <h3 style={{ marginBottom: "16px" }}>Theme Editor</h3>
+    <div className="flex gap-6 flex-wrap">
+      <div className="flex-1 min-w-[300px]">
+        <h3 className="mb-4">Theme Editor</h3>
 
-        <div style={{ marginBottom: "16px" }}>
+        <div className="mb-4">
           <strong>Load Preset:</strong>
-          <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-            <button onClick={() => loadPreset(themes.default)}>Default</button>
-            <button onClick={() => loadPreset(themes.lichess)}>Lichess</button>
-            <button onClick={() => loadPreset(themes.chessCom)}>
+          <div className="flex gap-2 mt-2">
+            <button
+              className="px-3 py-1.5 text-size-sm border border-border rounded-sm bg-surface"
+              onClick={() => loadPreset(themes.default)}
+            >
+              Default
+            </button>
+            <button
+              className="px-3 py-1.5 text-size-sm border border-border rounded-sm bg-surface"
+              onClick={() => loadPreset(themes.lichess)}
+            >
+              Lichess
+            </button>
+            <button
+              className="px-3 py-1.5 text-size-sm border border-border rounded-sm bg-surface"
+              onClick={() => loadPreset(themes.chessCom)}
+            >
               Chess.com
             </button>
           </div>
         </div>
 
-        <div style={{ marginBottom: "16px" }}>
+        <div className="mb-4">
           <strong>Board Colors</strong>
-          <div style={{ marginTop: "8px" }}>
+          <div className="mt-2">
             <BgColorInput
               label="Light Square"
               value={
@@ -171,9 +170,9 @@ export const Playground = () => {
           </div>
         </div>
 
-        <div style={{ marginBottom: "16px" }}>
+        <div className="mb-4">
           <strong>State Colors</strong>
-          <div style={{ marginTop: "8px" }}>
+          <div className="mt-2">
             <ColorInput
               label="Last Move"
               value={theme.state.lastMove}
@@ -192,9 +191,9 @@ export const Playground = () => {
           </div>
         </div>
 
-        <div style={{ marginBottom: "16px" }}>
+        <div className="mb-4">
           <strong>Indicator Colors</strong>
-          <div style={{ marginTop: "8px" }}>
+          <div className="mt-2">
             <ColorInput
               label="Move Dot"
               value={theme.indicators.move}
@@ -210,22 +209,15 @@ export const Playground = () => {
 
         <button
           onClick={copyTheme}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: copied ? "#4caf50" : "#2196f3",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
+          className={`px-4 py-2 text-white border-none rounded-sm cursor-pointer ${copied ? "bg-success" : "bg-info-blue"}`}
         >
           {copied ? "Copied!" : "Copy Theme Code"}
         </button>
       </div>
 
-      <div style={{ flex: "1", minWidth: "350px" }}>
-        <h3 style={{ marginBottom: "16px" }}>Preview</h3>
-        <div style={{ maxWidth: "400px" }}>
+      <div className="flex-1 min-w-[350px]">
+        <h3 className="mb-4">Preview</h3>
+        <div className="max-w-board-preview">
           <ChessGame.Root
             fen="r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4"
             theme={theme}
@@ -233,7 +225,7 @@ export const Playground = () => {
             <ChessGame.Board />
           </ChessGame.Root>
         </div>
-        <p style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
+        <p className="text-xs text-text-muted mt-2">
           Click on a piece to see move indicators. The position shows a check.
         </p>
       </div>

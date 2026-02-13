@@ -50,6 +50,40 @@ The package now includes integrated chess clock functionality powered by [`@reac
 - **TypeScript** - Full TypeScript support with comprehensive type definitions
 - **Customizable** - Override any default with your own implementation
 
+## Styling
+
+All components accept standard HTML attributes (`className`, `style`, `id`, `data-*`, `aria-*`), making them compatible with any CSS approach:
+
+### Tailwind CSS
+
+```tsx
+<ChessGame.Board className="rounded-lg shadow-xl border-2 border-gray-200 max-w-md mx-auto" />
+```
+
+### CSS Modules
+
+```tsx
+import styles from "./Board.module.css";
+
+<ChessGame.Board className={styles.customBoard} />;
+```
+
+### Data Attributes (for CSS selectors)
+
+Clock components expose data attributes:
+
+```css
+[data-clock-active="true"] {
+  border-color: #fbbf24;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
+}
+
+[data-clock-timeout="true"] {
+  background-color: #ef4444;
+  color: white;
+}
+```
+
 ## Installation
 
 ```bash
