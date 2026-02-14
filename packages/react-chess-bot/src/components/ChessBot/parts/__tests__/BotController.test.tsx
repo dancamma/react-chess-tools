@@ -7,9 +7,21 @@
 
 import React from "react";
 import { render, act, waitFor } from "@testing-library/react";
+import { merge } from "lodash";
 import { BotController } from "../BotController";
-import { useChessGameContext } from "@react-chess-tools/react-chess-game";
-import { useStockfish } from "@react-chess-tools/react-chess-stockfish";
+import {
+  useChessGameContext,
+  ChessGameContextType,
+} from "@react-chess-tools/react-chess-game";
+import {
+  useStockfish,
+  StockfishContextValue,
+} from "@react-chess-tools/react-chess-stockfish";
+
+// Type for deeply partial objects (for test overrides)
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
 
 // Mock useChessGameContext
 jest.mock("@react-chess-tools/react-chess-game", () => ({
@@ -32,29 +44,65 @@ const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const AFTER_E4_FEN =
   "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
 
-// Helper to create mock game context
-function createMockGameContext(overrides = {}) {
-  return {
+// Helper to create mock game context with minimal required fields for tests
+function createMockGameContext(
+  overrides: DeepPartial<ChessGameContextType> = {},
+): ChessGameContextType {
+  const defaults: ChessGameContextType = {
+    game: {} as ChessGameContextType["game"],
     currentFen: START_FEN,
+    currentPosition: "",
+    orientation: "w",
+    currentMoveIndex: -1,
+    isLatestMove: true,
     info: {
       turn: "w" as const,
+      isPlayerTurn: true,
+      isOpponentTurn: false,
+      moveNumber: 0,
+      lastMove: undefined,
+      isCheck: false,
+      isCheckmate: false,
+      isDraw: false,
+      isStalemate: false,
+      isThreefoldRepetition: false,
+      isInsufficientMaterial: false,
       isGameOver: false,
+      isDrawn: false,
+      hasPlayerWon: false,
+      hasPlayerLost: false,
     },
     methods: {
       makeMove: jest.fn().mockReturnValue(true),
+      setPosition: jest.fn(),
+      flipBoard: jest.fn(),
+      goToMove: jest.fn(),
+      goToStart: jest.fn(),
+      goToEnd: jest.fn(),
+      goToPreviousMove: jest.fn(),
+      goToNextMove: jest.fn(),
     },
-    ...overrides,
+    clock: null,
   };
+  return merge({}, defaults, overrides);
 }
 
-// Helper to create mock stockfish context
-function createMockStockfishContext(overrides = {}) {
-  return {
+// Helper to create mock stockfish context with minimal required fields for tests
+function createMockStockfishContext(
+  overrides: DeepPartial<StockfishContextValue> = {},
+): StockfishContextValue {
+  const defaults: StockfishContextValue = {
     fen: START_FEN,
     info: {
       hasResults: true,
       status: "ready" as const,
       isEngineThinking: false,
+      evaluation: null,
+      normalizedEvaluation: 0,
+      bestLine: null,
+      principalVariations: [],
+      depth: 0,
+      error: null,
     },
     methods: {
       getBestMove: jest.fn().mockReturnValue({ san: "e4", uci: "e2e4" }),
@@ -62,8 +110,8 @@ function createMockStockfishContext(overrides = {}) {
       stopAnalysis: jest.fn(),
       setConfig: jest.fn(),
     },
-    ...overrides,
   };
+  return merge({}, defaults, overrides);
 }
 
 describe("BotController", () => {
@@ -79,8 +127,8 @@ describe("BotController", () => {
     onBotMoveStart = jest.fn();
     onError = jest.fn();
 
-    mockedUseChessGameContext.mockReturnValue(createMockGameContext() as any);
-    mockedUseStockfish.mockReturnValue(createMockStockfishContext() as any);
+    mockedUseChessGameContext.mockReturnValue(createMockGameContext());
+    mockedUseStockfish.mockReturnValue(createMockStockfishContext());
   });
 
   afterEach(() => {
@@ -111,7 +159,7 @@ describe("BotController", () => {
         createMockGameContext({
           info: { turn: "w", isGameOver: false },
           methods: { makeMove: mockMakeMove },
-        }) as any,
+        }),
       );
 
       renderBotController({ playAs: "white" });
@@ -135,7 +183,7 @@ describe("BotController", () => {
         createMockGameContext({
           info: { turn: "b", isGameOver: false },
           methods: { makeMove: mockMakeMove },
-        }) as any,
+        }),
       );
 
       mockedUseStockfish.mockReturnValue(
@@ -144,7 +192,7 @@ describe("BotController", () => {
             ...createMockStockfishContext().methods,
             getBestMove: mockGetBestMove,
           },
-        }) as any,
+        }),
       );
 
       renderBotController({ playAs: "black" });
@@ -165,7 +213,7 @@ describe("BotController", () => {
         createMockGameContext({
           info: { turn: "b", isGameOver: false }, // Black's turn
           methods: { makeMove: mockMakeMove },
-        }) as any,
+        }),
       );
 
       renderBotController({ playAs: "white" }); // Bot plays white
@@ -187,7 +235,7 @@ describe("BotController", () => {
         createMockGameContext({
           info: { turn: "w", isGameOver: true },
           methods: { makeMove: mockMakeMove },
-        }) as any,
+        }),
       );
 
       renderBotController({ playAs: "white" });
@@ -212,14 +260,14 @@ describe("BotController", () => {
             status: "analyzing",
             isEngineThinking: true,
           },
-        }) as any,
+        }),
       );
 
       mockedUseChessGameContext.mockReturnValue(
         createMockGameContext({
           info: { turn: "w", isGameOver: false },
           methods: { makeMove: mockMakeMove },
-        }) as any,
+        }),
       );
 
       renderBotController({ playAs: "white" });
@@ -240,7 +288,7 @@ describe("BotController", () => {
         createMockGameContext({
           info: { turn: "w", isGameOver: false },
           methods: { makeMove: mockMakeMove },
-        }) as any,
+        }),
       );
 
       const { rerender } = renderBotController({ playAs: "white" });
@@ -281,13 +329,12 @@ describe("BotController", () => {
       const mockMakeMove = jest.fn().mockReturnValue(true);
       let currentFen = START_FEN;
 
-      mockedUseChessGameContext.mockImplementation(
-        () =>
-          createMockGameContext({
-            currentFen,
-            info: { turn: "w", isGameOver: false },
-            methods: { makeMove: mockMakeMove },
-          }) as any,
+      mockedUseChessGameContext.mockImplementation(() =>
+        createMockGameContext({
+          currentFen,
+          info: { turn: "w", isGameOver: false },
+          methods: { makeMove: mockMakeMove },
+        }),
       );
 
       const { rerender } = renderBotController({
@@ -339,13 +386,13 @@ describe("BotController", () => {
             stopAnalysis: jest.fn(),
             setConfig: jest.fn(),
           },
-        }) as any,
+        }),
       );
 
       mockedUseChessGameContext.mockReturnValue(
         createMockGameContext({
           info: { turn: "w", isGameOver: false },
-        }) as any,
+        }),
       );
 
       renderBotController({ playAs: "white" });
@@ -371,7 +418,7 @@ describe("BotController", () => {
         createMockGameContext({
           info: { turn: "w", isGameOver: false },
           methods: { makeMove: mockMakeMove },
-        }) as any,
+        }),
       );
 
       renderBotController({ playAs: "white" });
@@ -393,7 +440,7 @@ describe("BotController", () => {
         createMockGameContext({
           info: { turn: "w", isGameOver: false },
           methods: { makeMove: mockMakeMove },
-        }) as any,
+        }),
       );
 
       renderBotController({ playAs: "white" });
@@ -419,7 +466,7 @@ describe("BotController", () => {
         createMockGameContext({
           info: { turn: "w", isGameOver: false },
           methods: { makeMove: mockMakeMove },
-        }) as any,
+        }),
       );
 
       renderBotController({
@@ -454,7 +501,7 @@ describe("BotController", () => {
       mockedUseChessGameContext.mockReturnValue(
         createMockGameContext({
           info: { turn: "w", isGameOver: false },
-        }) as any,
+        }),
       );
 
       renderBotController({
@@ -474,7 +521,7 @@ describe("BotController", () => {
       mockedUseChessGameContext.mockReturnValue(
         createMockGameContext({
           info: { turn: "w", isGameOver: false },
-        }) as any,
+        }),
       );
 
       const { unmount } = renderBotController({
@@ -509,7 +556,7 @@ describe("BotController", () => {
         createMockGameContext({
           info: { turn: "w", isGameOver: false },
           methods: { makeMove: mockMakeMove },
-        }) as any,
+        }),
       );
 
       mockedUseStockfish.mockReturnValue(
@@ -518,7 +565,7 @@ describe("BotController", () => {
             ...createMockStockfishContext().methods,
             getBestMove: mockGetBestMove,
           },
-        }) as any,
+        }),
       );
 
       renderBotController({ playAs: "white" });

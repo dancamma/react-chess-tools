@@ -23,5 +23,8 @@ module.exports = {
     "!**/node_modules/**",
     "!**/dist/**",
     "!**/*.stories.{ts,tsx}",
+    "!**/*.stories.*.{ts,tsx}",
+    "!**/tsup.config.ts",
+    "!**/index.ts",
   ],
 };

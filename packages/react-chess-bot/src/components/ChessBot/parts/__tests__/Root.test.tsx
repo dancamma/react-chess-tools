@@ -7,11 +7,22 @@
 
 import React from "react";
 import { render, screen, waitFor, act } from "@testing-library/react";
+import { merge } from "lodash";
 import { Root } from "../Root";
 import { useChessBotContext } from "../../../../hooks/useChessBotContext";
-import { useChessGameContext } from "@react-chess-tools/react-chess-game";
-import { useStockfish } from "@react-chess-tools/react-chess-stockfish";
-import type { PlayAsColor, BotMove } from "../../../../types";
+import {
+  useChessGameContext,
+  ChessGameContextType,
+} from "@react-chess-tools/react-chess-game";
+import {
+  useStockfish,
+  StockfishContextValue,
+} from "@react-chess-tools/react-chess-stockfish";
+
+// Type for deeply partial objects (for test overrides)
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
 
 // Mock useChessGameContext
 jest.mock("@react-chess-tools/react-chess-game", () => ({
@@ -37,29 +48,65 @@ const mockedUseStockfish = useStockfish as jest.MockedFunction<
 const MOCK_WORKER_PATH = "https://example.com/stockfish.js";
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-// Helper to create mock game context
-function createMockGameContext(overrides = {}) {
-  return {
+// Helper to create mock game context with minimal required fields for tests
+function createMockGameContext(
+  overrides: DeepPartial<ChessGameContextType> = {},
+): ChessGameContextType {
+  const defaults: ChessGameContextType = {
+    game: {} as ChessGameContextType["game"],
     currentFen: START_FEN,
+    currentPosition: "",
+    orientation: "w",
+    currentMoveIndex: -1,
+    isLatestMove: true,
     info: {
       turn: "w" as const,
+      isPlayerTurn: true,
+      isOpponentTurn: false,
+      moveNumber: 0,
+      lastMove: undefined,
+      isCheck: false,
+      isCheckmate: false,
+      isDraw: false,
+      isStalemate: false,
+      isThreefoldRepetition: false,
+      isInsufficientMaterial: false,
       isGameOver: false,
+      isDrawn: false,
+      hasPlayerWon: false,
+      hasPlayerLost: false,
     },
     methods: {
       makeMove: jest.fn().mockReturnValue(true),
+      setPosition: jest.fn(),
+      flipBoard: jest.fn(),
+      goToMove: jest.fn(),
+      goToStart: jest.fn(),
+      goToEnd: jest.fn(),
+      goToPreviousMove: jest.fn(),
+      goToNextMove: jest.fn(),
     },
-    ...overrides,
+    clock: null,
   };
+  return merge({}, defaults, overrides);
 }
 
-// Helper to create mock stockfish context
-function createMockStockfishContext(overrides = {}) {
-  return {
+// Helper to create mock stockfish context with minimal required fields for tests
+function createMockStockfishContext(
+  overrides: DeepPartial<StockfishContextValue> = {},
+): StockfishContextValue {
+  const defaults: StockfishContextValue = {
     fen: START_FEN,
     info: {
       hasResults: true,
       status: "ready" as const,
       isEngineThinking: false,
+      evaluation: null,
+      normalizedEvaluation: 0,
+      bestLine: null,
+      principalVariations: [],
+      depth: 0,
+      error: null,
     },
     methods: {
       getBestMove: jest.fn().mockReturnValue({ san: "e4", uci: "e2e4" }),
@@ -67,8 +114,8 @@ function createMockStockfishContext(overrides = {}) {
       stopAnalysis: jest.fn(),
       setConfig: jest.fn(),
     },
-    ...overrides,
   };
+  return merge({}, defaults, overrides);
 }
 
 // Test component that consumes ChessBot context
@@ -87,8 +134,8 @@ const TestChild = () => {
 describe("Root", () => {
   beforeEach(() => {
     jest.useFakeTimers();
-    mockedUseChessGameContext.mockReturnValue(createMockGameContext() as any);
-    mockedUseStockfish.mockReturnValue(createMockStockfishContext() as any);
+    mockedUseChessGameContext.mockReturnValue(createMockGameContext());
+    mockedUseStockfish.mockReturnValue(createMockStockfishContext());
   });
 
   afterEach(() => {
@@ -224,7 +271,7 @@ describe("Root", () => {
         createMockGameContext({
           info: { turn: "b", isGameOver: false },
           methods: { makeMove: mockMakeMove },
-        }) as any,
+        }),
       );
 
       render(
@@ -261,13 +308,13 @@ describe("Root", () => {
             stopAnalysis: jest.fn(),
             setConfig: jest.fn(),
           },
-        }) as any,
+        }),
       );
 
       mockedUseChessGameContext.mockReturnValue(
         createMockGameContext({
           info: { turn: "b", isGameOver: false },
-        }) as any,
+        }),
       );
 
       render(
@@ -308,7 +355,7 @@ describe("Root", () => {
   describe("CPU vs CPU", () => {
     it("allows two bots with different playAs values to coexist", () => {
       // This test verifies that two Root components can be rendered together
-      const { container } = render(
+      render(
         <>
           <Root playAs="white" workerPath={MOCK_WORKER_PATH}>
             <div data-testid="white-bot">White Bot</div>

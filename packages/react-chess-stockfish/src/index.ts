@@ -6,6 +6,7 @@ export type {
 } from "./components/ChessStockfish";
 
 export { useStockfish } from "./hooks/useStockfish";
+export type { StockfishContextValue } from "./hooks/useStockfishContext";
 
 export {
   InvalidFenError,
