@@ -61,12 +61,12 @@ function createMockStockfishContext(
       setConfig: jest.fn(),
     },
   };
+
   return {
-    ...defaults,
-    ...overrides,
+    fen: overrides.fen ?? defaults.fen,
     info: { ...defaults.info, ...overrides.info },
     methods: { ...defaults.methods, ...overrides.methods },
-  };
+  } as StockfishContextValue;
 }
 
 // Test component that consumes ChessBot context
