@@ -1,41 +1,29 @@
 /**
  * Tests for BotController component.
  *
- * These tests mock both ChessGame and Stockfish contexts to test the
- * bot's decision-making logic in isolation.
+ * These tests use the real ChessGame context and mock only Stockfish,
+ * since chess.js is a pure, fast logic library that should be tested against.
  */
 
 import React from "react";
 import { render, act, waitFor } from "@testing-library/react";
-import { merge } from "lodash";
-import { BotController } from "../BotController";
-import {
-  useChessGameContext,
-  ChessGameContextType,
-} from "@react-chess-tools/react-chess-game";
+import { ChessGame } from "@react-chess-tools/react-chess-game";
 import {
   useStockfish,
   StockfishContextValue,
 } from "@react-chess-tools/react-chess-stockfish";
+import { BotController } from "../BotController";
 
 // Type for deeply partial objects (for test overrides)
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
 };
 
-// Mock useChessGameContext
-jest.mock("@react-chess-tools/react-chess-game", () => ({
-  useChessGameContext: jest.fn(),
-}));
-
-// Mock useStockfish
+// Mock useStockfish only - ChessGame uses real chess.js
 jest.mock("@react-chess-tools/react-chess-stockfish", () => ({
   useStockfish: jest.fn(),
 }));
 
-const mockedUseChessGameContext = useChessGameContext as jest.MockedFunction<
-  typeof useChessGameContext
->;
 const mockedUseStockfish = useStockfish as jest.MockedFunction<
   typeof useStockfish
 >;
@@ -43,49 +31,6 @@ const mockedUseStockfish = useStockfish as jest.MockedFunction<
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const AFTER_E4_FEN =
   "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
-
-// Helper to create mock game context with minimal required fields for tests
-function createMockGameContext(
-  overrides: DeepPartial<ChessGameContextType> = {},
-): ChessGameContextType {
-  const defaults: ChessGameContextType = {
-    game: {} as ChessGameContextType["game"],
-    currentFen: START_FEN,
-    currentPosition: "",
-    orientation: "w",
-    currentMoveIndex: -1,
-    isLatestMove: true,
-    info: {
-      turn: "w" as const,
-      isPlayerTurn: true,
-      isOpponentTurn: false,
-      moveNumber: 0,
-      lastMove: undefined,
-      isCheck: false,
-      isCheckmate: false,
-      isDraw: false,
-      isStalemate: false,
-      isThreefoldRepetition: false,
-      isInsufficientMaterial: false,
-      isGameOver: false,
-      isDrawn: false,
-      hasPlayerWon: false,
-      hasPlayerLost: false,
-    },
-    methods: {
-      makeMove: jest.fn().mockReturnValue(true),
-      setPosition: jest.fn(),
-      flipBoard: jest.fn(),
-      goToMove: jest.fn(),
-      goToStart: jest.fn(),
-      goToEnd: jest.fn(),
-      goToPreviousMove: jest.fn(),
-      goToNextMove: jest.fn(),
-    },
-    clock: null,
-  };
-  return merge({}, defaults, overrides);
-}
 
 // Helper to create mock stockfish context with minimal required fields for tests
 function createMockStockfishContext(
@@ -111,7 +56,12 @@ function createMockStockfishContext(
       setConfig: jest.fn(),
     },
   };
-  return merge({}, defaults, overrides);
+  return {
+    ...defaults,
+    ...overrides,
+    info: { ...defaults.info, ...overrides.info },
+    methods: { ...defaults.methods, ...overrides.methods },
+  };
 }
 
 describe("BotController", () => {
@@ -127,7 +77,6 @@ describe("BotController", () => {
     onBotMoveStart = jest.fn();
     onError = jest.fn();
 
-    mockedUseChessGameContext.mockReturnValue(createMockGameContext());
     mockedUseStockfish.mockReturnValue(createMockStockfishContext());
   });
 
@@ -136,29 +85,44 @@ describe("BotController", () => {
     jest.clearAllMocks();
   });
 
-  // Helper to render BotController with default props
-  const renderBotController = (props = {}) => {
+  // Helper to render BotController wrapped in real ChessGame context
+  const renderBotController = (
+    props: {
+      playAs?: "white" | "black";
+      minDelayMs?: number;
+      maxDelayMs?: number;
+      fen?: string;
+    } = {},
+  ) => {
     return render(
-      <BotController
-        playAs="white"
-        minDelayMs={0}
-        maxDelayMs={0}
-        onThinkingChange={onThinkingChange}
-        onMoveComplete={onMoveComplete}
-        onBotMoveStart={onBotMoveStart}
-        onError={onError}
-        {...props}
-      />,
+      <ChessGame.Root fen={props.fen}>
+        <BotController
+          playAs={props.playAs ?? "white"}
+          minDelayMs={props.minDelayMs ?? 0}
+          maxDelayMs={props.maxDelayMs ?? 0}
+          onThinkingChange={onThinkingChange}
+          onMoveComplete={onMoveComplete}
+          onBotMoveStart={onBotMoveStart}
+          onError={onError}
+        />
+      </ChessGame.Root>,
     );
   };
 
   describe("turn detection", () => {
     it("makes a move when it's the bot's turn (white)", async () => {
-      const mockMakeMove = jest.fn().mockReturnValue(true);
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "w", isGameOver: false },
-          methods: { makeMove: mockMakeMove },
+      const mockGetBestMove = jest
+        .fn()
+        .mockReturnValue({ san: "e4", uci: "e2e4" });
+
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          methods: {
+            getBestMove: mockGetBestMove,
+            startAnalysis: jest.fn(),
+            stopAnalysis: jest.fn(),
+            setConfig: jest.fn(),
+          },
         }),
       );
 
@@ -169,90 +133,76 @@ describe("BotController", () => {
       });
 
       await waitFor(() => {
-        expect(mockMakeMove).toHaveBeenCalledWith("e4");
+        expect(onMoveComplete).toHaveBeenCalledWith({
+          san: "e4",
+          uci: "e2e4",
+        });
       });
     });
 
     it("makes a move when it's the bot's turn (black)", async () => {
-      const mockMakeMove = jest.fn().mockReturnValue(true);
       const mockGetBestMove = jest
         .fn()
         .mockReturnValue({ san: "e5", uci: "e7e5" });
 
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "b", isGameOver: false },
-          methods: { makeMove: mockMakeMove },
-        }),
-      );
-
       mockedUseStockfish.mockReturnValue(
         createMockStockfishContext({
           methods: {
-            ...createMockStockfishContext().methods,
             getBestMove: mockGetBestMove,
+            startAnalysis: jest.fn(),
+            stopAnalysis: jest.fn(),
+            setConfig: jest.fn(),
           },
         }),
       );
 
-      renderBotController({ playAs: "black" });
+      // Start from position where it's black's turn
+      renderBotController({ playAs: "black", fen: AFTER_E4_FEN });
 
       act(() => {
         jest.runAllTimers();
       });
 
       await waitFor(() => {
-        expect(mockMakeMove).toHaveBeenCalledWith("e5");
+        expect(onMoveComplete).toHaveBeenCalledWith({
+          san: "e5",
+          uci: "e7e5",
+        });
       });
     });
 
     it("does NOT move when it's not the bot's turn", () => {
-      const mockMakeMove = jest.fn();
-
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "b", isGameOver: false }, // Black's turn
-          methods: { makeMove: mockMakeMove },
-        }),
-      );
-
-      renderBotController({ playAs: "white" }); // Bot plays white
+      // Bot plays white, but it's black's turn (after e4)
+      renderBotController({ playAs: "white", fen: AFTER_E4_FEN });
 
       act(() => {
         jest.runAllTimers();
       });
 
-      expect(mockMakeMove).not.toHaveBeenCalled();
+      expect(onMoveComplete).not.toHaveBeenCalled();
       expect(onBotMoveStart).not.toHaveBeenCalled();
     });
   });
 
   describe("game over detection", () => {
-    it("does NOT move when game is over", () => {
-      const mockMakeMove = jest.fn();
+    it("does NOT move when game is over (checkmate)", () => {
+      // Fool's mate position - black has checkmated white
+      const checkmateFen =
+        "rnb1kbnr/pppp1ppp/4p3/8/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3";
 
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "w", isGameOver: true },
-          methods: { makeMove: mockMakeMove },
-        }),
-      );
-
-      renderBotController({ playAs: "white" });
+      renderBotController({ playAs: "white", fen: checkmateFen });
 
       act(() => {
         jest.runAllTimers();
       });
 
-      expect(mockMakeMove).not.toHaveBeenCalled();
+      expect(onMoveComplete).not.toHaveBeenCalled();
       expect(onBotMoveStart).not.toHaveBeenCalled();
     });
   });
 
   describe("hasResults waiting", () => {
     it("does NOT move when hasResults is false", () => {
-      const mockMakeMove = jest.fn();
-
       mockedUseStockfish.mockReturnValue(
         createMockStockfishContext({
           info: {
@@ -263,31 +213,30 @@ describe("BotController", () => {
         }),
       );
 
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "w", isGameOver: false },
-          methods: { makeMove: mockMakeMove },
-        }),
-      );
-
       renderBotController({ playAs: "white" });
 
       act(() => {
         jest.runAllTimers();
       });
 
-      expect(mockMakeMove).not.toHaveBeenCalled();
+      expect(onMoveComplete).not.toHaveBeenCalled();
     });
   });
 
   describe("hasMovedForPosition tracking", () => {
     it("does NOT move twice for the same position", async () => {
-      const mockMakeMove = jest.fn().mockReturnValue(true);
+      const mockGetBestMove = jest
+        .fn()
+        .mockReturnValue({ san: "e4", uci: "e2e4" });
 
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "w", isGameOver: false },
-          methods: { makeMove: mockMakeMove },
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          methods: {
+            getBestMove: mockGetBestMove,
+            startAnalysis: jest.fn(),
+            stopAnalysis: jest.fn(),
+            setConfig: jest.fn(),
+          },
         }),
       );
 
@@ -298,21 +247,24 @@ describe("BotController", () => {
       });
 
       await waitFor(() => {
-        expect(mockMakeMove).toHaveBeenCalledTimes(1);
+        expect(onMoveComplete).toHaveBeenCalledTimes(1);
       });
 
-      // Rerender with same position (turn still white for some reason)
-      mockMakeMove.mockClear();
+      // Clear and rerender with same position
+      onMoveComplete.mockClear();
+
       rerender(
-        <BotController
-          playAs="white"
-          minDelayMs={0}
-          maxDelayMs={0}
-          onThinkingChange={onThinkingChange}
-          onMoveComplete={onMoveComplete}
-          onBotMoveStart={onBotMoveStart}
-          onError={onError}
-        />,
+        <ChessGame.Root>
+          <BotController
+            playAs="white"
+            minDelayMs={0}
+            maxDelayMs={0}
+            onThinkingChange={onThinkingChange}
+            onMoveComplete={onMoveComplete}
+            onBotMoveStart={onBotMoveStart}
+            onError={onError}
+          />
+        </ChessGame.Root>,
       );
 
       act(() => {
@@ -320,20 +272,24 @@ describe("BotController", () => {
       });
 
       // Should not move again for the same position
-      expect(mockMakeMove).not.toHaveBeenCalled();
+      expect(onMoveComplete).not.toHaveBeenCalled();
     });
   });
 
   describe("race condition handling", () => {
     it("aborts move if FEN changes during delay", async () => {
-      const mockMakeMove = jest.fn().mockReturnValue(true);
-      let currentFen = START_FEN;
+      const mockGetBestMove = jest
+        .fn()
+        .mockReturnValue({ san: "e4", uci: "e2e4" });
 
-      mockedUseChessGameContext.mockImplementation(() =>
-        createMockGameContext({
-          currentFen,
-          info: { turn: "w", isGameOver: false },
-          methods: { makeMove: mockMakeMove },
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          methods: {
+            getBestMove: mockGetBestMove,
+            startAnalysis: jest.fn(),
+            stopAnalysis: jest.fn(),
+            setConfig: jest.fn(),
+          },
         }),
       );
 
@@ -347,19 +303,19 @@ describe("BotController", () => {
       expect(onBotMoveStart).toHaveBeenCalled();
       expect(onThinkingChange).toHaveBeenCalledWith(true);
 
-      // Simulate FEN change during delay (opponent moved)
-      currentFen = AFTER_E4_FEN;
-
+      // Simulate FEN change during delay (position changed externally)
       rerender(
-        <BotController
-          playAs="white"
-          minDelayMs={100}
-          maxDelayMs={100}
-          onThinkingChange={onThinkingChange}
-          onMoveComplete={onMoveComplete}
-          onBotMoveStart={onBotMoveStart}
-          onError={onError}
-        />,
+        <ChessGame.Root fen={AFTER_E4_FEN}>
+          <BotController
+            playAs="white"
+            minDelayMs={100}
+            maxDelayMs={100}
+            onThinkingChange={onThinkingChange}
+            onMoveComplete={onMoveComplete}
+            onBotMoveStart={onBotMoveStart}
+            onError={onError}
+          />
+        </ChessGame.Root>,
       );
 
       // Complete the delay
@@ -369,7 +325,7 @@ describe("BotController", () => {
 
       await waitFor(() => {
         // Move should be aborted because FEN changed
-        expect(mockMakeMove).not.toHaveBeenCalled();
+        expect(onMoveComplete).not.toHaveBeenCalled();
         expect(onThinkingChange).toHaveBeenLastCalledWith(false);
       });
     });
@@ -389,12 +345,6 @@ describe("BotController", () => {
         }),
       );
 
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "w", isGameOver: false },
-        }),
-      );
-
       renderBotController({ playAs: "white" });
 
       act(() => {
@@ -409,37 +359,20 @@ describe("BotController", () => {
       });
     });
 
-    it("fires onError when makeMove throws", async () => {
-      const mockMakeMove = jest.fn().mockImplementation(() => {
-        throw new Error("Invalid move");
-      });
+    it("fires onError when makeMove returns false (invalid move)", async () => {
+      // Return an invalid move that chess.js will reject
+      const mockGetBestMove = jest
+        .fn()
+        .mockReturnValue({ san: "O-O", uci: "e1g1" }); // Castling when not possible
 
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "w", isGameOver: false },
-          methods: { makeMove: mockMakeMove },
-        }),
-      );
-
-      renderBotController({ playAs: "white" });
-
-      act(() => {
-        jest.runAllTimers();
-      });
-
-      await waitFor(() => {
-        expect(onError).toHaveBeenCalled();
-        expect(onError.mock.calls[0][0].message).toContain("Invalid move");
-      });
-    });
-
-    it("fires onError when makeMove returns false", async () => {
-      const mockMakeMove = jest.fn().mockReturnValue(false);
-
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "w", isGameOver: false },
-          methods: { makeMove: mockMakeMove },
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          methods: {
+            getBestMove: mockGetBestMove,
+            startAnalysis: jest.fn(),
+            stopAnalysis: jest.fn(),
+            setConfig: jest.fn(),
+          },
         }),
       );
 
@@ -460,12 +393,18 @@ describe("BotController", () => {
 
   describe("delay", () => {
     it("respects minDelayMs and maxDelayMs range", async () => {
-      const mockMakeMove = jest.fn().mockReturnValue(true);
+      const mockGetBestMove = jest
+        .fn()
+        .mockReturnValue({ san: "e4", uci: "e2e4" });
 
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "w", isGameOver: false },
-          methods: { makeMove: mockMakeMove },
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          methods: {
+            getBestMove: mockGetBestMove,
+            startAnalysis: jest.fn(),
+            stopAnalysis: jest.fn(),
+            setConfig: jest.fn(),
+          },
         }),
       );
 
@@ -476,7 +415,7 @@ describe("BotController", () => {
       });
 
       // Should not have moved immediately
-      expect(mockMakeMove).not.toHaveBeenCalled();
+      expect(onMoveComplete).not.toHaveBeenCalled();
       expect(onBotMoveStart).toHaveBeenCalled();
 
       // Advance time by less than minDelay
@@ -485,7 +424,7 @@ describe("BotController", () => {
       });
 
       // Still should not have moved
-      expect(mockMakeMove).not.toHaveBeenCalled();
+      expect(onMoveComplete).not.toHaveBeenCalled();
 
       // Advance past max delay
       act(() => {
@@ -493,14 +432,19 @@ describe("BotController", () => {
       });
 
       await waitFor(() => {
-        expect(mockMakeMove).toHaveBeenCalled();
+        expect(onMoveComplete).toHaveBeenCalled();
       });
     });
 
     it("fires onBotMoveStart before delay", () => {
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "w", isGameOver: false },
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          methods: {
+            getBestMove: jest.fn().mockReturnValue({ san: "e4", uci: "e2e4" }),
+            startAnalysis: jest.fn(),
+            stopAnalysis: jest.fn(),
+            setConfig: jest.fn(),
+          },
         }),
       );
 
@@ -518,9 +462,14 @@ describe("BotController", () => {
 
   describe("cleanup", () => {
     it("clears timeout on unmount", () => {
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "w", isGameOver: false },
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          methods: {
+            getBestMove: jest.fn().mockReturnValue({ san: "e4", uci: "e2e4" }),
+            startAnalysis: jest.fn(),
+            stopAnalysis: jest.fn(),
+            setConfig: jest.fn(),
+          },
         }),
       );
 
@@ -547,23 +496,17 @@ describe("BotController", () => {
 
   describe("callbacks", () => {
     it("fires onMoveComplete with correct move data", async () => {
-      const mockMakeMove = jest.fn().mockReturnValue(true);
       const mockGetBestMove = jest
         .fn()
         .mockReturnValue({ san: "Nf3", uci: "g1f3" });
 
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "w", isGameOver: false },
-          methods: { makeMove: mockMakeMove },
-        }),
-      );
-
       mockedUseStockfish.mockReturnValue(
         createMockStockfishContext({
           methods: {
-            ...createMockStockfishContext().methods,
             getBestMove: mockGetBestMove,
+            startAnalysis: jest.fn(),
+            stopAnalysis: jest.fn(),
+            setConfig: jest.fn(),
           },
         }),
       );

@@ -1,36 +1,26 @@
 /**
  * Tests for ChessBot.Root component.
  *
- * These tests mock the StockfishEngine at the engine level and use a mock
- * ChessGameContext to control game state.
+ * These tests use the real ChessGame context and mock only Stockfish,
+ * since chess.js is a pure, fast logic library that should be tested against.
  */
 
 import React from "react";
 import { render, screen, waitFor, act } from "@testing-library/react";
-import { merge } from "lodash";
-import { Root } from "../Root";
-import { useChessBotContext } from "../../../../hooks/useChessBotContext";
-import {
-  useChessGameContext,
-  ChessGameContextType,
-} from "@react-chess-tools/react-chess-game";
+import { ChessGame } from "@react-chess-tools/react-chess-game";
 import {
   useStockfish,
   StockfishContextValue,
 } from "@react-chess-tools/react-chess-stockfish";
+import { Root } from "../Root";
+import { useChessBotContext } from "../../../../hooks/useChessBotContext";
 
 // Type for deeply partial objects (for test overrides)
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
 };
 
-// Mock useChessGameContext
-jest.mock("@react-chess-tools/react-chess-game", () => ({
-  useChessGameContext: jest.fn(),
-  ChessGameContext: React.createContext(null),
-}));
-
-// Mock useStockfish
+// Mock useStockfish only - ChessGame uses real chess.js
 jest.mock("@react-chess-tools/react-chess-stockfish", () => ({
   useStockfish: jest.fn(),
   ChessStockfish: {
@@ -38,58 +28,14 @@ jest.mock("@react-chess-tools/react-chess-stockfish", () => ({
   },
 }));
 
-const mockedUseChessGameContext = useChessGameContext as jest.MockedFunction<
-  typeof useChessGameContext
->;
 const mockedUseStockfish = useStockfish as jest.MockedFunction<
   typeof useStockfish
 >;
 
 const MOCK_WORKER_PATH = "https://example.com/stockfish.js";
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
-// Helper to create mock game context with minimal required fields for tests
-function createMockGameContext(
-  overrides: DeepPartial<ChessGameContextType> = {},
-): ChessGameContextType {
-  const defaults: ChessGameContextType = {
-    game: {} as ChessGameContextType["game"],
-    currentFen: START_FEN,
-    currentPosition: "",
-    orientation: "w",
-    currentMoveIndex: -1,
-    isLatestMove: true,
-    info: {
-      turn: "w" as const,
-      isPlayerTurn: true,
-      isOpponentTurn: false,
-      moveNumber: 0,
-      lastMove: undefined,
-      isCheck: false,
-      isCheckmate: false,
-      isDraw: false,
-      isStalemate: false,
-      isThreefoldRepetition: false,
-      isInsufficientMaterial: false,
-      isGameOver: false,
-      isDrawn: false,
-      hasPlayerWon: false,
-      hasPlayerLost: false,
-    },
-    methods: {
-      makeMove: jest.fn().mockReturnValue(true),
-      setPosition: jest.fn(),
-      flipBoard: jest.fn(),
-      goToMove: jest.fn(),
-      goToStart: jest.fn(),
-      goToEnd: jest.fn(),
-      goToPreviousMove: jest.fn(),
-      goToNextMove: jest.fn(),
-    },
-    clock: null,
-  };
-  return merge({}, defaults, overrides);
-}
+const AFTER_E4_FEN =
+  "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
 
 // Helper to create mock stockfish context with minimal required fields for tests
 function createMockStockfishContext(
@@ -115,7 +61,12 @@ function createMockStockfishContext(
       setConfig: jest.fn(),
     },
   };
-  return merge({}, defaults, overrides);
+  return {
+    ...defaults,
+    ...overrides,
+    info: { ...defaults.info, ...overrides.info },
+    methods: { ...defaults.methods, ...overrides.methods },
+  };
 }
 
 // Test component that consumes ChessBot context
@@ -131,10 +82,34 @@ const TestChild = () => {
   );
 };
 
+// Helper to render Root wrapped in real ChessGame context
+const renderChessBotRoot = (
+  props: {
+    playAs?: "white" | "black";
+    skillLevel?: number;
+    minDelayMs?: number;
+    maxDelayMs?: number;
+    fen?: string;
+  } = {},
+) => {
+  return render(
+    <ChessGame.Root fen={props.fen}>
+      <Root
+        playAs={props.playAs ?? "white"}
+        workerPath={MOCK_WORKER_PATH}
+        skillLevel={props.skillLevel}
+        minDelayMs={props.minDelayMs ?? 0}
+        maxDelayMs={props.maxDelayMs ?? 0}
+      >
+        <TestChild />
+      </Root>
+    </ChessGame.Root>,
+  );
+};
+
 describe("Root", () => {
   beforeEach(() => {
     jest.useFakeTimers();
-    mockedUseChessGameContext.mockReturnValue(createMockGameContext());
     mockedUseStockfish.mockReturnValue(createMockStockfishContext());
   });
 
@@ -146,9 +121,11 @@ describe("Root", () => {
   describe("rendering", () => {
     it("renders children correctly", () => {
       render(
-        <Root playAs="black" workerPath={MOCK_WORKER_PATH}>
-          <div>Child content</div>
-        </Root>,
+        <ChessGame.Root>
+          <Root playAs="black" workerPath={MOCK_WORKER_PATH}>
+            <div>Child content</div>
+          </Root>
+        </ChessGame.Root>,
       );
 
       expect(screen.getByText("Child content")).toBeInTheDocument();
@@ -159,82 +136,35 @@ describe("Root", () => {
     });
 
     it("provides context to children with correct playAs value", () => {
-      render(
-        <Root playAs="white" workerPath={MOCK_WORKER_PATH}>
-          <TestChild />
-        </Root>,
-      );
+      renderChessBotRoot({ playAs: "white" });
 
       expect(screen.getByTestId("playAs")).toHaveTextContent("white");
     });
 
     it("provides context to children with correct isThinking value", () => {
-      render(
-        <Root playAs="black" workerPath={MOCK_WORKER_PATH}>
-          <TestChild />
-        </Root>,
-      );
+      renderChessBotRoot({ playAs: "black" });
 
       expect(screen.getByTestId("isThinking")).toHaveTextContent("false");
     });
   });
 
-  describe("context errors", () => {
-    it("throws descriptive error when used outside ChessGame.Root", () => {
-      // Suppress console.error for this test
-      const consoleSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-
-      mockedUseChessGameContext.mockImplementation(() => {
-        throw new Error(
-          "useChessGameContext must be used within a ChessGame component.",
-        );
-      });
-
-      expect(() => {
-        render(
-          <Root playAs="black" workerPath={MOCK_WORKER_PATH}>
-            <TestChild />
-          </Root>,
-        );
-      }).toThrow(
-        "useChessGameContext must be used within a ChessGame component.",
-      );
-
-      consoleSpy.mockRestore();
-    });
-  });
-
   describe("data attributes", () => {
     it("sets data-thinking attribute correctly when not thinking", () => {
-      const { container } = render(
-        <Root playAs="black" workerPath={MOCK_WORKER_PATH}>
-          <TestChild />
-        </Root>,
-      );
+      const { container } = renderChessBotRoot({ playAs: "black" });
 
       const rootElement = container.querySelector("[data-thinking]");
       expect(rootElement).toHaveAttribute("data-thinking", "false");
     });
 
     it("sets data-color attribute correctly for white", () => {
-      const { container } = render(
-        <Root playAs="white" workerPath={MOCK_WORKER_PATH}>
-          <TestChild />
-        </Root>,
-      );
+      const { container } = renderChessBotRoot({ playAs: "white" });
 
       const rootElement = container.querySelector("[data-color]");
       expect(rootElement).toHaveAttribute("data-color", "white");
     });
 
     it("sets data-color attribute correctly for black", () => {
-      const { container } = render(
-        <Root playAs="black" workerPath={MOCK_WORKER_PATH}>
-          <TestChild />
-        </Root>,
-      );
+      const { container } = renderChessBotRoot({ playAs: "black" });
 
       const rootElement = container.querySelector("[data-color]");
       expect(rootElement).toHaveAttribute("data-color", "black");
@@ -244,21 +174,13 @@ describe("Root", () => {
   describe("skillLevel validation", () => {
     it("clamps skillLevel to 0 when below range", () => {
       // We verify this by checking that the component renders without error
-      render(
-        <Root playAs="black" workerPath={MOCK_WORKER_PATH} skillLevel={-5}>
-          <TestChild />
-        </Root>,
-      );
+      renderChessBotRoot({ playAs: "black", skillLevel: -5 });
 
       expect(screen.getByTestId("playAs")).toHaveTextContent("black");
     });
 
     it("clamps skillLevel to 20 when above range", () => {
-      render(
-        <Root playAs="black" workerPath={MOCK_WORKER_PATH} skillLevel={25}>
-          <TestChild />
-        </Root>,
-      );
+      renderChessBotRoot({ playAs: "black", skillLevel: 25 });
 
       expect(screen.getByTestId("playAs")).toHaveTextContent("black");
     });
@@ -266,24 +188,23 @@ describe("Root", () => {
 
   describe("context value updates", () => {
     it("updates lastMove when bot makes a move", async () => {
-      const mockMakeMove = jest.fn().mockReturnValue(true);
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "b", isGameOver: false },
-          methods: { makeMove: mockMakeMove },
+      const mockGetBestMove = jest
+        .fn()
+        .mockReturnValue({ san: "e5", uci: "e7e5" });
+
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          methods: {
+            getBestMove: mockGetBestMove,
+            startAnalysis: jest.fn(),
+            stopAnalysis: jest.fn(),
+            setConfig: jest.fn(),
+          },
         }),
       );
 
-      render(
-        <Root
-          playAs="black"
-          workerPath={MOCK_WORKER_PATH}
-          minDelayMs={0}
-          maxDelayMs={0}
-        >
-          <TestChild />
-        </Root>,
-      );
+      // Start from position where it's black's turn
+      renderChessBotRoot({ playAs: "black", fen: AFTER_E4_FEN });
 
       // Initial state
       expect(screen.getByTestId("lastMove")).toHaveTextContent("null");
@@ -294,7 +215,7 @@ describe("Root", () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByTestId("lastMove")).toHaveTextContent("e4");
+        expect(screen.getByTestId("lastMove")).toHaveTextContent("e5");
       });
     });
 
@@ -311,22 +232,8 @@ describe("Root", () => {
         }),
       );
 
-      mockedUseChessGameContext.mockReturnValue(
-        createMockGameContext({
-          info: { turn: "b", isGameOver: false },
-        }),
-      );
-
-      render(
-        <Root
-          playAs="black"
-          workerPath={MOCK_WORKER_PATH}
-          minDelayMs={0}
-          maxDelayMs={0}
-        >
-          <TestChild />
-        </Root>,
-      );
+      // Start from position where it's black's turn
+      renderChessBotRoot({ playAs: "black", fen: AFTER_E4_FEN });
 
       act(() => {
         jest.runAllTimers();
@@ -340,11 +247,7 @@ describe("Root", () => {
 
   describe("accessibility", () => {
     it("includes ARIA live region for move announcements", () => {
-      const { container } = render(
-        <Root playAs="black" workerPath={MOCK_WORKER_PATH}>
-          <TestChild />
-        </Root>,
-      );
+      const { container } = renderChessBotRoot({ playAs: "black" });
 
       const liveRegion = container.querySelector("[aria-live='polite']");
       expect(liveRegion).toBeInTheDocument();
@@ -356,14 +259,14 @@ describe("Root", () => {
     it("allows two bots with different playAs values to coexist", () => {
       // This test verifies that two Root components can be rendered together
       render(
-        <>
+        <ChessGame.Root>
           <Root playAs="white" workerPath={MOCK_WORKER_PATH}>
             <div data-testid="white-bot">White Bot</div>
           </Root>
           <Root playAs="black" workerPath={MOCK_WORKER_PATH}>
             <div data-testid="black-bot">Black Bot</div>
           </Root>
-        </>,
+        </ChessGame.Root>,
       );
 
       expect(screen.getByTestId("white-bot")).toBeInTheDocument();
