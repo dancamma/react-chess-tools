@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "npm run build --ws",
+    "build": "npm run build -w packages/react-chess-clock -w packages/react-chess-game -w packages/react-chess-stockfish && npm run build -w packages/react-chess-puzzle -w packages/react-chess-bot",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
