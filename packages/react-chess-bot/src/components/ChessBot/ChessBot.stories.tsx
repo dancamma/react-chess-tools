@@ -370,7 +370,7 @@ The \`ChessBot\` component provides a chess AI opponent using Stockfish.
 
 ## Features
 - 8 difficulty levels (Lichess calibration)
-- Skill Level -9 to 20
+- Skill Level 0 to 20
 - Configurable move time (50ms to 1000ms)
 - Event callbacks for monitoring bot behavior
 - Works with \`ChessGame\` and \`ChessClock\` components
@@ -378,13 +378,13 @@ The \`ChessBot\` component provides a chess AI opponent using Stockfish.
 ## Difficulty Levels (Lichess Calibration)
 | Level | Skill | Depth | Move Time |
 |-------|-------|-------|-----------|
-| 1     | 0     | 5     | 50ms      |
-| 2     | 3     | 5     | 100ms     |
-| 3     | 6     | 5     | 150ms     |
-| 4     | 9     | 5     | 200ms     |
-| 5     | 12    | 8     | 300ms     |
-| 6     | 15    | 10    | 500ms     |
-| 7     | 18    | 15    | 700ms     |
+| 1     | 0     | 1     | 50ms      |
+| 2     | 3     | 1     | 100ms     |
+| 3     | 6     | 2     | 150ms     |
+| 4     | 10    | 3     | 200ms     |
+| 5     | 14    | 5     | 300ms     |
+| 6     | 16    | 8     | 400ms     |
+| 7     | 18    | 13    | 500ms     |
 | 8     | 20    | 22    | 1000ms    |
 
 ## Usage

@@ -105,13 +105,13 @@ The bot uses the same calibration as Lichess.org, combining Stockfish Skill Leve
 
 | Level | Skill Level | Depth | Move Time | Approximate Strength |
 | ----- | ----------- | ----- | --------- | -------------------- |
-| 1     | -9          | 5     | 50ms      | Beginner             |
-| 2     | -5          | 5     | 100ms     | ~1100 Elo            |
-| 3     | -1          | 5     | 150ms     | ~1400 Elo            |
-| 4     | 3           | 5     | 200ms     | ~1700 Elo            |
-| 5     | 7           | 5     | 300ms     | ~2000 Elo (default)  |
-| 6     | 11          | 8     | 400ms     | ~2300 Elo            |
-| 7     | 16          | 13    | 500ms     | ~2600 Elo            |
+| 1     | 0           | 1     | 50ms      | Beginner             |
+| 2     | 3           | 1     | 100ms     | ~1100 Elo            |
+| 3     | 6           | 2     | 150ms     | ~1400 Elo            |
+| 4     | 10          | 3     | 200ms     | ~1700 Elo            |
+| 5     | 14          | 5     | 300ms     | ~2000 Elo (default)  |
+| 6     | 16          | 8     | 400ms     | ~2300 Elo            |
+| 7     | 18          | 13    | 500ms     | ~2600 Elo            |
 | 8     | 20          | 22    | 1000ms    | ~2900 Elo (max)      |
 
 The strength variation is achieved through Stockfish's internal Skill Level UCI option, which applies a randomized bias to move scores for weaker play.
@@ -188,7 +188,7 @@ interface BotMove {
 // Difficulty configuration (Lichess calibration)
 interface DifficultyConfig {
   depth: number; // Search depth limit
-  skillLevel: number; // Stockfish Skill Level (-9 to 20)
+  skillLevel: number; // Stockfish Skill Level (0 to 20)
   moveTime: number; // Thinking time in milliseconds
 }
 ```
