@@ -43,6 +43,7 @@ interface UseStockfishAnalysisReturn {
 /** Convert internal AnalysisState to public AnalysisInfo (drops fen/config). */
 function toAnalysisInfo(state: AnalysisState): AnalysisInfo {
   return {
+    analyzedFen: state.hasResults ? state.fen : "",
     evaluation: state.evaluation,
     normalizedEvaluation: state.normalizedEvaluation,
     bestLine: state.bestLine,

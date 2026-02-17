@@ -31,6 +31,7 @@ const principalVariations: PrincipalVariation[] = [
 ];
 
 const mockInfo: AnalysisInfo = {
+  analyzedFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   evaluation: principalVariations[0].evaluation,
   normalizedEvaluation: 0.2,
   bestLine: principalVariations[0],

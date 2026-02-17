@@ -2,22 +2,23 @@ import type { PVMove } from "@react-chess-tools/react-chess-stockfish";
 
 export type PlayAsColor = "white" | "black";
 
-/**
- * Re-export PVMove as BotMove for consumer convenience.
- * Contains UCI and SAN notation for the bot's move.
- */
+export type DifficultyLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+export type RandomnessLevel = 0 | 1 | 2 | 3 | 4 | 5;
+
+export interface DifficultyConfig {
+  depth: number;
+  elo: number;
+  description: string;
+}
+
 export type BotMove = PVMove;
 
-/**
- * Context value provided by ChessBot.Root.
- */
 export interface ChessBotContextValue {
-  /** The color the bot plays as */
   playAs: PlayAsColor;
-  /** Whether the bot is currently thinking (analyzing or in delay) */
+  difficulty: DifficultyLevel;
+  randomness: RandomnessLevel;
   isThinking: boolean;
-  /** The last move the bot made, or null if no move yet */
   lastMove: BotMove | null;
-  /** Any error that occurred, or null */
   error: Error | null;
 }

@@ -2,7 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import React, { useState } from "react";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 import { ChessBot } from "./index";
+import { DIFFICULTY_PRESETS } from "../../utils/difficulty";
 import { useChessBotContext } from "../../hooks";
+import type { DifficultyLevel, RandomnessLevel } from "../../types";
 import {
   StoryHeader,
   StoryContainer,
@@ -27,9 +29,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Helper component to display bot status
 const BotStatus = () => {
-  const { playAs, isThinking, lastMove, error } = useChessBotContext();
+  const { playAs, difficulty, randomness, isThinking, lastMove, error } =
+    useChessBotContext();
+
+  const preset = DIFFICULTY_PRESETS[difficulty];
 
   return (
     <div className="font-mono text-size-xs text-text-secondary flex flex-col gap-1 mt-3">
@@ -44,6 +48,18 @@ const BotStatus = () => {
           ) : (
             <span className="text-text-muted">no</span>
           )}
+        </span>
+      </div>
+      <div className="flex gap-3">
+        <span>
+          difficulty:{" "}
+          <span className="font-semibold text-text">
+            {difficulty} ({preset.elo} ELO)
+          </span>
+        </span>
+        <span>
+          randomness:{" "}
+          <span className="font-semibold text-text">{randomness}</span>
         </span>
       </div>
       {lastMove && (
@@ -69,7 +85,8 @@ export const HumanVsCpuWhite: Story = {
         <BoardWrapper>
           <ChessBot.Root
             playAs="black"
-            skillLevel={10}
+            difficulty={5}
+            randomness={0}
             workerPath={WORKER_PATH}
           >
             <ChessGame.Board />
@@ -95,7 +112,8 @@ export const HumanVsCpuBlack: Story = {
         <BoardWrapper>
           <ChessBot.Root
             playAs="white"
-            skillLevel={10}
+            difficulty={5}
+            randomness={0}
             workerPath={WORKER_PATH}
           >
             <ChessGame.Board />
@@ -115,20 +133,22 @@ export const CpuVsCpu: Story = {
           title="CPU vs CPU"
           subtitle="Watch two bots play each other"
         />
-        <InfoBox>White bot (skill 10) vs Black bot (skill 8)</InfoBox>
+        <InfoBox>
+          White (difficulty 6, ELO 2300) vs Black (difficulty 4, ELO 1700)
+        </InfoBox>
         <BoardWrapper>
-          {/* White bot */}
           <ChessBot.Root
             playAs="white"
-            skillLevel={10}
+            difficulty={6}
+            randomness={1}
             minDelayMs={200}
             maxDelayMs={500}
             workerPath={WORKER_PATH}
           >
-            {/* Black bot */}
             <ChessBot.Root
               playAs="black"
-              skillLevel={8}
+              difficulty={4}
+              randomness={1}
               minDelayMs={200}
               maxDelayMs={500}
               workerPath={WORKER_PATH}
@@ -145,9 +165,12 @@ export const CpuVsCpu: Story = {
 
 export const ConfigurableBot: Story = {
   render: () => {
-    const [skillLevel, setSkillLevel] = useState(10);
+    const [difficulty, setDifficulty] = useState<DifficultyLevel>(5);
+    const [randomness, setRandomness] = useState<RandomnessLevel>(0);
     const [minDelay, setMinDelay] = useState(0);
     const [maxDelay, setMaxDelay] = useState(1000);
+
+    const preset = DIFFICULTY_PRESETS[difficulty];
 
     return (
       <ChessGame.Root>
@@ -159,17 +182,37 @@ export const ConfigurableBot: Story = {
           <div className="flex flex-col gap-3 mb-4 p-4 bg-surface-alt rounded">
             <div className="flex items-center gap-3">
               <label className="text-size-sm font-medium w-32">
-                Skill Level:
+                Difficulty (1-8):
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="8"
+                value={difficulty}
+                onChange={(e) =>
+                  setDifficulty(Number(e.target.value) as DifficultyLevel)
+                }
+                className="flex-1"
+              />
+              <span className="font-mono text-size-sm w-32">
+                {difficulty} ({preset.elo} ELO, depth {preset.depth})
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <label className="text-size-sm font-medium w-32">
+                Randomness (0-5):
               </label>
               <input
                 type="range"
                 min="0"
-                max="20"
-                value={skillLevel}
-                onChange={(e) => setSkillLevel(Number(e.target.value))}
+                max="5"
+                value={randomness}
+                onChange={(e) =>
+                  setRandomness(Number(e.target.value) as RandomnessLevel)
+                }
                 className="flex-1"
               />
-              <span className="font-mono text-size-sm w-8">{skillLevel}</span>
+              <span className="font-mono text-size-sm w-8">{randomness}</span>
             </div>
             <div className="flex items-center gap-3">
               <label className="text-size-sm font-medium w-32">
@@ -201,7 +244,8 @@ export const ConfigurableBot: Story = {
           <BoardWrapper>
             <ChessBot.Root
               playAs="black"
-              skillLevel={skillLevel}
+              difficulty={difficulty}
+              randomness={randomness}
               minDelayMs={minDelay}
               maxDelayMs={maxDelay}
               workerPath={WORKER_PATH}
@@ -210,6 +254,90 @@ export const ConfigurableBot: Story = {
               <BotStatus />
             </ChessBot.Root>
           </BoardWrapper>
+        </StoryContainer>
+      </ChessGame.Root>
+    );
+  },
+};
+
+export const DifficultyLevels: Story = {
+  render: () => {
+    const levels: DifficultyLevel[] = [1, 2, 3, 4, 5, 6, 7, 8];
+
+    return (
+      <ChessGame.Root>
+        <StoryContainer>
+          <StoryHeader
+            title="Difficulty Levels"
+            subtitle="All 8 difficulty presets"
+          />
+          <div className="grid grid-cols-4 gap-4 p-4">
+            {levels.map((level) => {
+              const preset = DIFFICULTY_PRESETS[level];
+              return (
+                <div
+                  key={level}
+                  className="p-3 bg-surface-alt rounded text-center"
+                >
+                  <div className="font-bold text-lg">Level {level}</div>
+                  <div className="text-size-sm text-text-secondary">
+                    ELO: {preset.elo}
+                  </div>
+                  <div className="text-size-sm text-text-secondary">
+                    Depth: {preset.depth}
+                  </div>
+                  {preset.description && (
+                    <div className="text-size-xs text-text-muted mt-1">
+                      {preset.description}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </StoryContainer>
+      </ChessGame.Root>
+    );
+  },
+};
+
+export const RandomnessDemo: Story = {
+  render: () => {
+    return (
+      <ChessGame.Root>
+        <StoryContainer>
+          <StoryHeader
+            title="Randomness Comparison"
+            subtitle="Deterministic (0) vs Variable (5)"
+          />
+          <div className="flex gap-6">
+            <BoardWrapper>
+              <div className="text-center mb-2 font-semibold">
+                Randomness = 0 (Deterministic)
+              </div>
+              <ChessBot.Root
+                playAs="black"
+                difficulty={5}
+                randomness={0}
+                workerPath={WORKER_PATH}
+              >
+                <ChessGame.Board />
+              </ChessBot.Root>
+            </BoardWrapper>
+            <BoardWrapper>
+              <div className="text-center mb-2 font-semibold">
+                Randomness = 5 (Variable)
+              </div>
+              <ChessBot.Root
+                playAs="black"
+                difficulty={5}
+                randomness={5}
+                workerPath={WORKER_PATH}
+              >
+                <ChessGame.Board />
+              </ChessBot.Root>
+            </BoardWrapper>
+          </div>
         </StoryContainer>
       </ChessGame.Root>
     );
@@ -238,7 +366,8 @@ export const WithEventCallbacks: Story = {
             <BoardWrapper>
               <ChessBot.Root
                 playAs="black"
-                skillLevel={10}
+                difficulty={5}
+                randomness={0}
                 workerPath={WORKER_PATH}
                 onBotMoveStart={() => addLog("Bot started thinking...")}
                 onBotMoveComplete={(move) => addLog(`Bot played ${move.san}`)}

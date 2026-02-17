@@ -19,7 +19,6 @@
     "build": "tsup src/index.ts"
   },
   "dependencies": {
-    "@radix-ui/react-slot": "^1.2.4",
     "@react-chess-tools/react-chess-game": "^1.0.0",
     "@react-chess-tools/react-chess-stockfish": "^1.0.0",
     "chess.js": "^1.4.0"

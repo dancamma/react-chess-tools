@@ -874,6 +874,20 @@ export class StockfishEngine {
 
     const config = this.pendingConfig;
 
+    // UCI_LimitStrength must be set before UCI_Elo
+    if (
+      config.limitStrength !== undefined &&
+      config.limitStrength !== this.appliedConfig.limitStrength
+    ) {
+      this.postMessage(
+        `setoption name UCI_LimitStrength value ${config.limitStrength}`,
+      );
+      this.appliedConfig.limitStrength = config.limitStrength;
+    }
+
+    // UCI_Elo (only effective when UCI_LimitStrength is true)
+    this.applyUciOption("UCI_Elo", "uciElo", config.uciElo, 100, 3000);
+
     // Skill Level (UCI option name contains a space)
     this.applyUciOption("Skill Level", "skillLevel", config.skillLevel, 0, 20);
 
@@ -886,7 +900,7 @@ export class StockfishEngine {
 
   private applyUciOption(
     uciName: string,
-    key: keyof StockfishConfig,
+    key: "skillLevel" | "multiPV" | "depth" | "uciElo",
     value: number | undefined,
     min: number,
     max: number,

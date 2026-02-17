@@ -1,10 +1,3 @@
-/**
- * Tests for BotController component.
- *
- * These tests use the real ChessGame context and mock only Stockfish,
- * since chess.js is a pure, fast logic library that should be tested against.
- */
-
 import React from "react";
 import { render, act, waitFor } from "@testing-library/react";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
@@ -12,14 +5,13 @@ import {
   useStockfish,
   StockfishContextValue,
 } from "@react-chess-tools/react-chess-stockfish";
+import type { PrincipalVariation } from "@react-chess-tools/react-chess-stockfish";
 import { BotController } from "../BotController";
 
-// Type for deeply partial objects (for test overrides)
 type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
 };
 
-// Mock useStockfish only - ChessGame uses real chess.js
 jest.mock("@react-chess-tools/react-chess-stockfish", () => ({
   useStockfish: jest.fn(),
 }));
@@ -32,20 +24,36 @@ const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const AFTER_E4_FEN =
   "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
 
-// Helper to create mock stockfish context with minimal required fields for tests
+function createPV(
+  rank: number,
+  san: string,
+  uci: string,
+  cp: number,
+): PrincipalVariation {
+  return {
+    rank,
+    evaluation: { type: "cp", value: cp },
+    moves: [{ san, uci }],
+  };
+}
+
 function createMockStockfishContext(
   overrides: DeepPartial<StockfishContextValue> = {},
 ): StockfishContextValue {
+  const defaultPVs = [createPV(1, "e4", "e2e4", 50)];
+  const fen = overrides.fen ?? START_FEN;
+
   const defaults: StockfishContextValue = {
-    fen: START_FEN,
+    fen,
     info: {
       hasResults: true,
+      analyzedFen: fen,
       status: "ready" as const,
       isEngineThinking: false,
       evaluation: null,
       normalizedEvaluation: 0,
       bestLine: null,
-      principalVariations: [],
+      principalVariations: defaultPVs,
       depth: 0,
       error: null,
     },
@@ -57,9 +65,18 @@ function createMockStockfishContext(
     },
   };
 
+  const mergedInfo = {
+    ...defaults.info,
+    ...overrides.info,
+    // Keep analyzedFen in sync with fen unless explicitly overridden
+    analyzedFen:
+      overrides.info?.analyzedFen ??
+      (overrides.info?.hasResults === false ? "" : fen),
+  };
+
   return {
     fen: overrides.fen ?? defaults.fen,
-    info: { ...defaults.info, ...overrides.info },
+    info: mergedInfo,
     methods: { ...defaults.methods, ...overrides.methods },
   } as StockfishContextValue;
 }
@@ -85,10 +102,10 @@ describe("BotController", () => {
     jest.clearAllMocks();
   });
 
-  // Helper to render BotController wrapped in real ChessGame context
   const renderBotController = (
     props: {
       playAs?: "white" | "black";
+      randomness?: 0 | 1 | 2 | 3 | 4 | 5;
       minDelayMs?: number;
       maxDelayMs?: number;
       fen?: string;
@@ -98,6 +115,7 @@ describe("BotController", () => {
       <ChessGame.Root fen={props.fen}>
         <BotController
           playAs={props.playAs ?? "white"}
+          randomness={props.randomness ?? 0}
           minDelayMs={props.minDelayMs ?? 0}
           maxDelayMs={props.maxDelayMs ?? 0}
           onThinkingChange={onThinkingChange}
@@ -111,21 +129,6 @@ describe("BotController", () => {
 
   describe("turn detection", () => {
     it("makes a move when it's the bot's turn (white)", async () => {
-      const mockGetBestMove = jest
-        .fn()
-        .mockReturnValue({ san: "e4", uci: "e2e4" });
-
-      mockedUseStockfish.mockReturnValue(
-        createMockStockfishContext({
-          methods: {
-            getBestMove: mockGetBestMove,
-            startAnalysis: jest.fn(),
-            stopAnalysis: jest.fn(),
-            setConfig: jest.fn(),
-          },
-        }),
-      );
-
       renderBotController({ playAs: "white" });
 
       act(() => {
@@ -141,22 +144,15 @@ describe("BotController", () => {
     });
 
     it("makes a move when it's the bot's turn (black)", async () => {
-      const mockGetBestMove = jest
-        .fn()
-        .mockReturnValue({ san: "e5", uci: "e7e5" });
-
       mockedUseStockfish.mockReturnValue(
         createMockStockfishContext({
-          methods: {
-            getBestMove: mockGetBestMove,
-            startAnalysis: jest.fn(),
-            stopAnalysis: jest.fn(),
-            setConfig: jest.fn(),
+          fen: AFTER_E4_FEN,
+          info: {
+            principalVariations: [createPV(1, "e5", "e7e5", 50)],
           },
         }),
       );
 
-      // Start from position where it's black's turn
       renderBotController({ playAs: "black", fen: AFTER_E4_FEN });
 
       act(() => {
@@ -172,7 +168,6 @@ describe("BotController", () => {
     });
 
     it("does NOT move when it's not the bot's turn", () => {
-      // Bot plays white, but it's black's turn (after e4)
       renderBotController({ playAs: "white", fen: AFTER_E4_FEN });
 
       act(() => {
@@ -186,7 +181,6 @@ describe("BotController", () => {
 
   describe("game over detection", () => {
     it("does NOT move when game is over (checkmate)", () => {
-      // Fool's mate position - black has checkmated white
       const checkmateFen =
         "rnb1kbnr/pppp1ppp/4p3/8/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3";
 
@@ -225,21 +219,6 @@ describe("BotController", () => {
 
   describe("hasMovedForPosition tracking", () => {
     it("does NOT move twice for the same position", async () => {
-      const mockGetBestMove = jest
-        .fn()
-        .mockReturnValue({ san: "e4", uci: "e2e4" });
-
-      mockedUseStockfish.mockReturnValue(
-        createMockStockfishContext({
-          methods: {
-            getBestMove: mockGetBestMove,
-            startAnalysis: jest.fn(),
-            stopAnalysis: jest.fn(),
-            setConfig: jest.fn(),
-          },
-        }),
-      );
-
       const { rerender } = renderBotController({ playAs: "white" });
 
       act(() => {
@@ -250,13 +229,13 @@ describe("BotController", () => {
         expect(onMoveComplete).toHaveBeenCalledTimes(1);
       });
 
-      // Clear and rerender with same position
       onMoveComplete.mockClear();
 
       rerender(
         <ChessGame.Root>
           <BotController
             playAs="white"
+            randomness={0}
             minDelayMs={0}
             maxDelayMs={0}
             onThinkingChange={onThinkingChange}
@@ -271,43 +250,26 @@ describe("BotController", () => {
         jest.runAllTimers();
       });
 
-      // Should not move again for the same position
       expect(onMoveComplete).not.toHaveBeenCalled();
     });
   });
 
   describe("race condition handling", () => {
     it("aborts move if FEN changes during delay", async () => {
-      const mockGetBestMove = jest
-        .fn()
-        .mockReturnValue({ san: "e4", uci: "e2e4" });
-
-      mockedUseStockfish.mockReturnValue(
-        createMockStockfishContext({
-          methods: {
-            getBestMove: mockGetBestMove,
-            startAnalysis: jest.fn(),
-            stopAnalysis: jest.fn(),
-            setConfig: jest.fn(),
-          },
-        }),
-      );
-
       const { rerender } = renderBotController({
         playAs: "white",
         minDelayMs: 100,
         maxDelayMs: 100,
       });
 
-      // Should have started thinking
       expect(onBotMoveStart).toHaveBeenCalled();
       expect(onThinkingChange).toHaveBeenCalledWith(true);
 
-      // Simulate FEN change during delay (position changed externally)
       rerender(
         <ChessGame.Root fen={AFTER_E4_FEN}>
           <BotController
             playAs="white"
+            randomness={0}
             minDelayMs={100}
             maxDelayMs={100}
             onThinkingChange={onThinkingChange}
@@ -318,29 +280,51 @@ describe("BotController", () => {
         </ChessGame.Root>,
       );
 
-      // Complete the delay
       act(() => {
         jest.advanceTimersByTime(100);
       });
 
       await waitFor(() => {
-        // Move should be aborted because FEN changed
         expect(onMoveComplete).not.toHaveBeenCalled();
         expect(onThinkingChange).toHaveBeenLastCalledWith(false);
       });
     });
+
+    it("does NOT use stale results when analyzedFen does not match currentFen", async () => {
+      const staleFen = START_FEN;
+      const currentFen = AFTER_E4_FEN;
+
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          fen: currentFen,
+          info: {
+            hasResults: true,
+            analyzedFen: staleFen,
+            principalVariations: [createPV(1, "e4", "e2e4", 50)],
+          },
+        }),
+      );
+
+      renderBotController({ playAs: "black", fen: currentFen });
+
+      act(() => {
+        jest.runAllTimers();
+      });
+
+      expect(onMoveComplete).not.toHaveBeenCalled();
+      expect(onBotMoveStart).not.toHaveBeenCalled();
+    });
   });
 
   describe("error handling", () => {
-    it("fires onError when getBestMove returns null with hasResults=true", async () => {
+    it("fires onError when no valid move found from engine", async () => {
       mockedUseStockfish.mockReturnValue(
         createMockStockfishContext({
-          info: { hasResults: true, status: "ready", isEngineThinking: false },
-          methods: {
-            getBestMove: jest.fn().mockReturnValue(null),
-            startAnalysis: jest.fn(),
-            stopAnalysis: jest.fn(),
-            setConfig: jest.fn(),
+          info: {
+            hasResults: true,
+            status: "ready",
+            isEngineThinking: false,
+            principalVariations: [],
           },
         }),
       );
@@ -354,24 +338,16 @@ describe("BotController", () => {
       await waitFor(() => {
         expect(onError).toHaveBeenCalled();
         expect(onError.mock.calls[0][0].message).toContain(
-          "Engine returned no best move",
+          "No valid move found",
         );
       });
     });
 
     it("fires onError when makeMove returns false (invalid move)", async () => {
-      // Return an invalid move that chess.js will reject
-      const mockGetBestMove = jest
-        .fn()
-        .mockReturnValue({ san: "O-O", uci: "e1g1" }); // Castling when not possible
-
       mockedUseStockfish.mockReturnValue(
         createMockStockfishContext({
-          methods: {
-            getBestMove: mockGetBestMove,
-            startAnalysis: jest.fn(),
-            stopAnalysis: jest.fn(),
-            setConfig: jest.fn(),
+          info: {
+            principalVariations: [createPV(1, "O-O", "e1g1", 50)],
           },
         }),
       );
@@ -393,40 +369,21 @@ describe("BotController", () => {
 
   describe("delay", () => {
     it("respects minDelayMs and maxDelayMs range", async () => {
-      const mockGetBestMove = jest
-        .fn()
-        .mockReturnValue({ san: "e4", uci: "e2e4" });
-
-      mockedUseStockfish.mockReturnValue(
-        createMockStockfishContext({
-          methods: {
-            getBestMove: mockGetBestMove,
-            startAnalysis: jest.fn(),
-            stopAnalysis: jest.fn(),
-            setConfig: jest.fn(),
-          },
-        }),
-      );
-
       renderBotController({
         playAs: "white",
         minDelayMs: 500,
         maxDelayMs: 1000,
       });
 
-      // Should not have moved immediately
       expect(onMoveComplete).not.toHaveBeenCalled();
       expect(onBotMoveStart).toHaveBeenCalled();
 
-      // Advance time by less than minDelay
       act(() => {
         jest.advanceTimersByTime(400);
       });
 
-      // Still should not have moved
       expect(onMoveComplete).not.toHaveBeenCalled();
 
-      // Advance past max delay
       act(() => {
         jest.advanceTimersByTime(1000);
       });
@@ -437,24 +394,12 @@ describe("BotController", () => {
     });
 
     it("fires onBotMoveStart before delay", () => {
-      mockedUseStockfish.mockReturnValue(
-        createMockStockfishContext({
-          methods: {
-            getBestMove: jest.fn().mockReturnValue({ san: "e4", uci: "e2e4" }),
-            startAnalysis: jest.fn(),
-            stopAnalysis: jest.fn(),
-            setConfig: jest.fn(),
-          },
-        }),
-      );
-
       renderBotController({
         playAs: "white",
         minDelayMs: 1000,
         maxDelayMs: 1000,
       });
 
-      // onBotMoveStart should be called immediately, before delay
       expect(onBotMoveStart).toHaveBeenCalled();
       expect(onThinkingChange).toHaveBeenCalledWith(true);
     });
@@ -462,67 +407,102 @@ describe("BotController", () => {
 
   describe("cleanup", () => {
     it("clears timeout on unmount", () => {
-      mockedUseStockfish.mockReturnValue(
-        createMockStockfishContext({
-          methods: {
-            getBestMove: jest.fn().mockReturnValue({ san: "e4", uci: "e2e4" }),
-            startAnalysis: jest.fn(),
-            stopAnalysis: jest.fn(),
-            setConfig: jest.fn(),
-          },
-        }),
-      );
-
       const { unmount } = renderBotController({
         playAs: "white",
         minDelayMs: 1000,
         maxDelayMs: 1000,
       });
 
-      // Thinking should have started
       expect(onThinkingChange).toHaveBeenCalledWith(true);
 
       unmount();
 
-      // Advance timers after unmount
       act(() => {
         jest.runAllTimers();
       });
 
-      // Should not have called onThinkingChange again (no state update after unmount)
       expect(onThinkingChange).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe("callbacks", () => {
-    it("fires onMoveComplete with correct move data", async () => {
-      const mockGetBestMove = jest
-        .fn()
-        .mockReturnValue({ san: "Nf3", uci: "g1f3" });
+  describe("randomness", () => {
+    it("with randomness=0, always selects first move", async () => {
+      const pvs = [
+        createPV(1, "e4", "e2e4", 100),
+        createPV(2, "d4", "d2d4", 80),
+        createPV(3, "c4", "c2c4", 60),
+      ];
 
       mockedUseStockfish.mockReturnValue(
         createMockStockfishContext({
-          methods: {
-            getBestMove: mockGetBestMove,
-            startAnalysis: jest.fn(),
-            stopAnalysis: jest.fn(),
-            setConfig: jest.fn(),
-          },
+          info: { principalVariations: pvs },
         }),
       );
 
-      renderBotController({ playAs: "white" });
+      for (let i = 0; i < 5; i++) {
+        onMoveComplete.mockClear();
+        jest.clearAllTimers();
 
-      act(() => {
-        jest.runAllTimers();
-      });
+        renderBotController({ playAs: "white", randomness: 0 });
 
-      await waitFor(() => {
-        expect(onMoveComplete).toHaveBeenCalledWith({
-          san: "Nf3",
-          uci: "g1f3",
+        act(() => {
+          jest.runAllTimers();
         });
-      });
+
+        await waitFor(() => {
+          expect(onMoveComplete).toHaveBeenCalledWith({
+            san: "e4",
+            uci: "e2e4",
+          });
+        });
+      }
+    });
+
+    it("with randomness>0, can select different moves", async () => {
+      const pvs = [
+        createPV(1, "e4", "e2e4", 50),
+        createPV(2, "d4", "d2d4", 45),
+        createPV(3, "c4", "c2c4", 40),
+        createPV(4, "Nf3", "g1f3", 35),
+        createPV(5, "c3", "c2c3", 30),
+      ];
+
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          info: { principalVariations: pvs },
+        }),
+      );
+
+      const selectedMoves = new Set<string>();
+      const iterations = 50;
+
+      for (let i = 0; i < iterations; i++) {
+        onMoveComplete.mockClear();
+
+        const { unmount } = renderBotController({
+          playAs: "white",
+          randomness: 5,
+          minDelayMs: 0,
+          maxDelayMs: 0,
+        });
+
+        act(() => {
+          jest.runAllTimers();
+        });
+
+        await waitFor(() => {
+          expect(onMoveComplete).toHaveBeenCalled();
+        });
+
+        const call = onMoveComplete.mock.calls[0];
+        if (call) {
+          selectedMoves.add(call[0].san);
+        }
+
+        unmount();
+      }
+
+      expect(selectedMoves.size).toBeGreaterThan(1);
     });
   });
 });

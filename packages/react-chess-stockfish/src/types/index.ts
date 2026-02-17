@@ -21,9 +21,12 @@ export interface StockfishConfig {
   skillLevel?: number;
   depth?: number;
   multiPV?: number;
+  uciElo?: number;
+  limitStrength?: boolean;
 }
 
 export interface AnalysisInfo {
+  analyzedFen: string;
   evaluation: Evaluation | null;
   normalizedEvaluation: number;
   bestLine: PrincipalVariation | null;

@@ -11,6 +11,7 @@ import type { AnalysisInfo, AnalysisMethods } from "../../types";
 
 // Mock context value for testing
 const mockInfo: AnalysisInfo = {
+  analyzedFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   evaluation: { type: "cp", value: 123 },
   normalizedEvaluation: 0.12,
   bestLine: null,
