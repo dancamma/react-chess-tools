@@ -2,14 +2,12 @@ import { useEffect, useRef } from "react";
 import type { Color } from "chess.js";
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
 import { useStockfish } from "@react-chess-tools/react-chess-stockfish";
-import type { PlayAsColor, BotMove, RandomnessLevel } from "../../../types";
-import { selectMoveWithRandomness } from "../../../utils/randomness";
+import type { PlayAsColor, BotMove } from "../../../types";
+
+const MOVE_DELAY_MS = 500;
 
 interface BotControllerProps {
   playAs: PlayAsColor;
-  randomness: RandomnessLevel;
-  minDelayMs: number;
-  maxDelayMs: number;
   onThinkingChange: (isThinking: boolean) => void;
   onMoveComplete: (move: BotMove) => void;
   onBotMoveStart?: () => void;
@@ -22,9 +20,6 @@ function playAsToColor(playAs: PlayAsColor): Color {
 
 export function BotController({
   playAs,
-  randomness,
-  minDelayMs,
-  maxDelayMs,
   onThinkingChange,
   onMoveComplete,
   onBotMoveStart,
@@ -35,9 +30,9 @@ export function BotController({
 
   const positionFenRef = useRef<string | null>(null);
   const hasMovedForPositionRef = useRef(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const currentFenRef = useRef(currentFen);
   const analysisFenRef = useRef<string | null>(null);
+  const prevFenRef = useRef(currentFen);
 
   const onThinkingChangeRef = useRef(onThinkingChange);
   const onMoveCompleteRef = useRef(onMoveComplete);
@@ -56,41 +51,25 @@ export function BotController({
   }, [currentFen]);
 
   useEffect(() => {
-    if (!timeoutRef.current) {
+    if (prevFenRef.current !== currentFen) {
       hasMovedForPositionRef.current = false;
       positionFenRef.current = null;
     }
+    prevFenRef.current = currentFen;
   }, [currentFen]);
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
-  }, []);
 
   useEffect(() => {
     const botColor = playAsToColor(playAs);
     const isBotTurn = gameInfo.turn === botColor;
     const isGameOver = gameInfo.isGameOver;
     const hasResults = engineInfo.hasResults;
+    const isEngineDone = !engineInfo.isEngineThinking && hasResults;
     const hasAlreadyMoved = hasMovedForPositionRef.current;
 
-    if (
-      !isBotTurn ||
-      isGameOver ||
-      !hasResults ||
-      hasAlreadyMoved ||
-      timeoutRef.current
-    ) {
+    if (!isBotTurn || isGameOver || !isEngineDone || hasAlreadyMoved) {
       return;
     }
 
-    // Guard against stale results from a different position
-    // Compare only position and turn (first 2 fields of FEN) to avoid mismatches
-    // from en passant/castling normalization or move counter differences
     const analyzedFen = engineInfo.analyzedFen;
     if (!analyzedFen) {
       return;
@@ -108,46 +87,42 @@ export function BotController({
     onThinkingChangeRef.current(true);
     onBotMoveStartRef.current?.();
 
-    const effectiveMin = Math.min(minDelayMs, maxDelayMs);
-    const effectiveMax = Math.max(minDelayMs, maxDelayMs);
-    const delay =
-      Math.floor(Math.random() * (effectiveMax - effectiveMin + 1)) +
-      effectiveMin;
+    if (currentFenRef.current !== positionFenRef.current) {
+      hasMovedForPositionRef.current = false;
+      positionFenRef.current = null;
+      analysisFenRef.current = null;
+      onThinkingChangeRef.current(false);
+      return;
+    }
 
-    timeoutRef.current = setTimeout(() => {
-      timeoutRef.current = null;
+    if (analysisFenRef.current !== currentFenRef.current) {
+      hasMovedForPositionRef.current = false;
+      positionFenRef.current = null;
+      analysisFenRef.current = null;
+      onThinkingChangeRef.current(false);
+      return;
+    }
 
+    const selectedMove = engineInfo.principalVariations[0]?.moves[0] ?? null;
+
+    if (!selectedMove) {
+      const error = new Error(
+        "No valid move found from engine analysis. " +
+          "This may indicate an engine error or invalid position.",
+      );
+      console.warn("[ChessBot]", error.message);
+      onErrorRef.current(error);
+      onThinkingChangeRef.current(false);
+      hasMovedForPositionRef.current = false;
+      return;
+    }
+
+    const delayTimeoutId = setTimeout(() => {
       if (currentFenRef.current !== positionFenRef.current) {
         hasMovedForPositionRef.current = false;
         positionFenRef.current = null;
         analysisFenRef.current = null;
         onThinkingChangeRef.current(false);
-        return;
-      }
-
-      if (analysisFenRef.current !== currentFenRef.current) {
-        hasMovedForPositionRef.current = false;
-        positionFenRef.current = null;
-        analysisFenRef.current = null;
-        onThinkingChangeRef.current(false);
-        return;
-      }
-
-      const selectedMove = selectMoveWithRandomness(
-        engineInfo.principalVariations,
-        randomness,
-        gameInfo.turn,
-      );
-
-      if (!selectedMove) {
-        const error = new Error(
-          "No valid move found from engine analysis. " +
-            "This may indicate an engine error or invalid position.",
-        );
-        console.warn("[ChessBot]", error.message);
-        onErrorRef.current(error);
-        onThinkingChangeRef.current(false);
-        hasMovedForPositionRef.current = false;
         return;
       }
 
@@ -169,18 +144,24 @@ export function BotController({
       } finally {
         onThinkingChangeRef.current(false);
       }
-    }, delay);
+    }, MOVE_DELAY_MS);
+
+    return () => {
+      clearTimeout(delayTimeoutId);
+      hasMovedForPositionRef.current = false;
+      positionFenRef.current = null;
+      analysisFenRef.current = null;
+    };
   }, [
     playAs,
     currentFen,
     gameInfo.turn,
     gameInfo.isGameOver,
     engineInfo.hasResults,
+    engineInfo.isEngineThinking,
     engineInfo.principalVariations,
+    engineInfo.analyzedFen,
     methods,
-    minDelayMs,
-    maxDelayMs,
-    randomness,
   ]);
 
   return null;

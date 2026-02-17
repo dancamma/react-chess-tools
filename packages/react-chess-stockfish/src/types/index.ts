@@ -21,8 +21,7 @@ export interface StockfishConfig {
   skillLevel?: number;
   depth?: number;
   multiPV?: number;
-  uciElo?: number;
-  limitStrength?: boolean;
+  moveTime?: number;
 }
 
 export interface AnalysisInfo {

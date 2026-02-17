@@ -1,12 +1,11 @@
 # @react-chess-tools/react-chess-bot
 
-A React component that adds CPU opponents to chess games built with `react-chess-game`. This package bridges `react-chess-stockfish` and `react-chess-game` to provide automated chess bot play.
+A React component that adds CPU opponents to chess games built with `react-chess-game`. Uses the same difficulty calibration as Lichess.org for authentic bot strength levels.
 
 ## Features
 
+- **Lichess-Aligned Difficulty**: 8 difficulty levels matching Lichess Stockfish calibration
 - **Easy Integration**: Works seamlessly with `react-chess-game`
-- **Configurable Difficulty**: Stockfish skill level from 0-20
-- **Natural Play Feel**: Random move delay for human-like timing
 - **Event Callbacks**: Hooks for bot thinking, move completion, and errors
 - **CPU vs CPU**: Support for two bots playing each other
 - **Accessible**: ARIA live region announcements for screen readers
@@ -52,8 +51,8 @@ import { Chessboard } from "react-chessboard";
 function HumanVsCpu() {
   return (
     <ChessGame.Root>
-      {/* Bot plays black */}
-      <ChessBot.Root playAs="black" skillLevel={10} workerPath="/stockfish.js">
+      {/* Bot plays black at difficulty 5 */}
+      <ChessBot.Root playAs="black" difficulty={5} workerPath="/stockfish.js">
         <ChessGame.Board>
           {(boardProps) => <Chessboard {...boardProps} />}
         </ChessGame.Board>
@@ -69,8 +68,8 @@ function HumanVsCpu() {
 function HumanPlaysBlack() {
   return (
     <ChessGame.Root orientation="b">
-      {/* Bot plays white */}
-      <ChessBot.Root playAs="white" skillLevel={15} workerPath="/stockfish.js">
+      {/* Bot plays white at difficulty 7 */}
+      <ChessBot.Root playAs="white" difficulty={7} workerPath="/stockfish.js">
         <ChessGame.Board>
           {(boardProps) => <Chessboard {...boardProps} />}
         </ChessGame.Board>
@@ -86,14 +85,10 @@ function HumanPlaysBlack() {
 function CpuVsCpu() {
   return (
     <ChessGame.Root>
-      {/* White bot */}
-      <ChessBot.Root playAs="white" skillLevel={10} workerPath="/stockfish.js">
-        {/* Black bot */}
-        <ChessBot.Root
-          playAs="black"
-          skillLevel={15}
-          workerPath="/stockfish.js"
-        >
+      {/* White bot - difficulty 8 (strongest) */}
+      <ChessBot.Root playAs="white" difficulty={8} workerPath="/stockfish.js">
+        {/* Black bot - difficulty 3 */}
+        <ChessBot.Root playAs="black" difficulty={3} workerPath="/stockfish.js">
           <ChessGame.Board>
             {(boardProps) => <Chessboard {...boardProps} />}
           </ChessGame.Board>
@@ -104,6 +99,23 @@ function CpuVsCpu() {
 }
 ```
 
+## Difficulty Levels
+
+The bot uses the same calibration as Lichess.org, combining Stockfish Skill Level, search depth, and move time:
+
+| Level | Skill Level | Depth | Move Time | Approximate Strength |
+| ----- | ----------- | ----- | --------- | -------------------- |
+| 1     | -9          | 5     | 50ms      | Beginner             |
+| 2     | -5          | 5     | 100ms     | ~1100 Elo            |
+| 3     | -1          | 5     | 150ms     | ~1400 Elo            |
+| 4     | 3           | 5     | 200ms     | ~1700 Elo            |
+| 5     | 7           | 5     | 300ms     | ~2000 Elo (default)  |
+| 6     | 11          | 8     | 400ms     | ~2300 Elo            |
+| 7     | 16          | 13    | 500ms     | ~2600 Elo            |
+| 8     | 20          | 22    | 1000ms    | ~2900 Elo (max)      |
+
+The strength variation is achieved through Stockfish's internal Skill Level UCI option, which applies a randomized bias to move scores for weaker play.
+
 ## API Reference
 
 ### ChessBot.Root
@@ -112,18 +124,15 @@ The main provider component that enables bot play.
 
 #### Props
 
-| Prop                | Type                      | Default    | Description                                                     |
-| ------------------- | ------------------------- | ---------- | --------------------------------------------------------------- |
-| `playAs`            | `"white"` \| `"black"`    | _required_ | The color the bot plays as                                      |
-| `skillLevel`        | `number`                  | `10`       | Stockfish skill level (0-20). Values outside range are clamped. |
-| `minDelayMs`        | `number`                  | `0`        | Minimum delay before making a move (milliseconds)               |
-| `maxDelayMs`        | `number`                  | `1000`     | Maximum delay before making a move (milliseconds)               |
-| `workerPath`        | `string`                  | _required_ | Path to the Stockfish worker JS file                            |
-| `asChild`           | `boolean`                 | `false`    | Render as the child element for composition                     |
-| `onBotMoveStart`    | `() => void`              | -          | Called when the bot starts thinking (before delay)              |
-| `onBotMoveComplete` | `(move: BotMove) => void` | -          | Called when the bot successfully makes a move                   |
-| `onBotError`        | `(error: Error) => void`  | -          | Called when an error occurs                                     |
-| `children`          | `ReactNode`               | -          | React components to render                                      |
+| Prop                | Type                      | Default    | Description                                   |
+| ------------------- | ------------------------- | ---------- | --------------------------------------------- |
+| `playAs`            | `"white"` \| `"black"`    | _required_ | The color the bot plays as                    |
+| `difficulty`        | `1` \| `2` \| ... \| `8`  | `5`        | Bot difficulty level (Lichess calibration)    |
+| `workerPath`        | `string`                  | _required_ | Path to the Stockfish worker JS file          |
+| `onBotMoveStart`    | `() => void`              | -          | Called when the bot starts thinking           |
+| `onBotMoveComplete` | `(move: BotMove) => void` | -          | Called when the bot successfully makes a move |
+| `onBotError`        | `(error: Error) => void`  | -          | Called when an error occurs                   |
+| `children`          | `ReactNode`               | -          | React components to render                    |
 
 ### useChessBotContext
 
@@ -133,11 +142,13 @@ Hook to access the bot state from within a `ChessBot.Root` provider.
 import { useChessBotContext } from "@react-chess-tools/react-chess-bot";
 
 function BotStatus() {
-  const { playAs, isThinking, lastMove, error } = useChessBotContext();
+  const { playAs, difficulty, isThinking, lastMove, error } =
+    useChessBotContext();
 
   return (
     <div>
       <p>Bot plays: {playAs}</p>
+      <p>Difficulty: {difficulty}</p>
       <p>Thinking: {isThinking ? "Yes" : "No"}</p>
       {lastMove && <p>Last move: {lastMove.san}</p>}
       {error && <p>Error: {error.message}</p>}
@@ -151,6 +162,7 @@ function BotStatus() {
 | Property     | Type                   | Description                           |
 | ------------ | ---------------------- | ------------------------------------- |
 | `playAs`     | `"white"` \| `"black"` | The color the bot plays as            |
+| `difficulty` | `1-8`                  | Current difficulty level              |
 | `isThinking` | `boolean`              | Whether the bot is currently thinking |
 | `lastMove`   | `BotMove \| null`      | The last move the bot made            |
 | `error`      | `Error \| null`        | Any error that occurred               |
@@ -163,12 +175,21 @@ import type {
   BotMove,
   ChessBotContextValue,
   RootProps,
+  DifficultyLevel,
+  DifficultyConfig,
 } from "@react-chess-tools/react-chess-bot";
 
 // BotMove contains the move in both SAN and UCI notation
 interface BotMove {
   san: string; // e.g., "e4", "Nxf7+"
   uci: string; // e.g., "e2e4", "g1f3"
+}
+
+// Difficulty configuration (Lichess calibration)
+interface DifficultyConfig {
+  depth: number; // Search depth limit
+  skillLevel: number; // Stockfish Skill Level (-9 to 20)
+  moveTime: number; // Thinking time in milliseconds
 }
 ```
 
@@ -178,6 +199,7 @@ The `ChessBot.Root` component adds data attributes for CSS styling:
 
 - `data-thinking="true|false"` - Whether the bot is currently thinking
 - `data-color="white|black"` - The color the bot plays as
+- `data-difficulty="1-8"` - Current difficulty level
 
 ### Example CSS
 
@@ -239,31 +261,11 @@ function GameWithCallbacks() {
     <ChessGame.Root>
       <ChessBot.Root
         playAs="black"
+        difficulty={6}
         workerPath="/stockfish.js"
         onBotMoveStart={handleBotMoveStart}
         onBotMoveComplete={handleBotMoveComplete}
         onBotError={handleBotError}
-      >
-        <ChessGame.Board>
-          {(boardProps) => <Chessboard {...boardProps} />}
-        </ChessGame.Board>
-      </ChessBot.Root>
-    </ChessGame.Root>
-  );
-}
-```
-
-### With Custom Delay
-
-```tsx
-function GameWithDelay() {
-  return (
-    <ChessGame.Root>
-      <ChessBot.Root
-        playAs="black"
-        workerPath="/stockfish.js"
-        minDelayMs={500} // Minimum 500ms delay
-        maxDelayMs={2000} // Maximum 2 second delay
       >
         <ChessGame.Board>
           {(boardProps) => <Chessboard {...boardProps} />}

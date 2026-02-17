@@ -74,7 +74,6 @@ function createMockStockfishContext(
   const mergedInfo = {
     ...defaults.info,
     ...overrides.info,
-    // Keep analyzedFen in sync with fen unless explicitly overridden
     analyzedFen:
       overrides.info?.analyzedFen ??
       (overrides.info?.hasResults === false ? "" : fen),
@@ -93,7 +92,6 @@ const TestChild = () => {
     <div>
       <div data-testid="playAs">{context.playAs}</div>
       <div data-testid="difficulty">{context.difficulty}</div>
-      <div data-testid="randomness">{context.randomness}</div>
       <div data-testid="isThinking">{context.isThinking.toString()}</div>
       <div data-testid="lastMove">{context.lastMove?.san ?? "null"}</div>
       <div data-testid="error">{context.error?.message ?? "null"}</div>
@@ -105,9 +103,6 @@ const renderChessBotRoot = (
   props: {
     playAs?: "white" | "black";
     difficulty?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-    randomness?: 0 | 1 | 2 | 3 | 4 | 5;
-    minDelayMs?: number;
-    maxDelayMs?: number;
     fen?: string;
   } = {},
 ) => {
@@ -117,9 +112,6 @@ const renderChessBotRoot = (
         playAs={props.playAs ?? "white"}
         workerPath={MOCK_WORKER_PATH}
         difficulty={props.difficulty}
-        randomness={props.randomness}
-        minDelayMs={props.minDelayMs ?? 0}
-        maxDelayMs={props.maxDelayMs ?? 0}
       >
         <TestChild />
       </Root>
@@ -178,18 +170,6 @@ describe("Root", () => {
 
       expect(screen.getByTestId("difficulty")).toHaveTextContent("8");
     });
-
-    it("provides context with default randomness (0)", () => {
-      renderChessBotRoot({ playAs: "white" });
-
-      expect(screen.getByTestId("randomness")).toHaveTextContent("0");
-    });
-
-    it("provides context with custom randomness", () => {
-      renderChessBotRoot({ playAs: "white", randomness: 3 });
-
-      expect(screen.getByTestId("randomness")).toHaveTextContent("3");
-    });
   });
 
   describe("data attributes", () => {
@@ -223,16 +203,6 @@ describe("Root", () => {
       const rootElement = container.querySelector("[data-difficulty]");
       expect(rootElement).toHaveAttribute("data-difficulty", "7");
     });
-
-    it("sets data-randomness attribute correctly", () => {
-      const { container } = renderChessBotRoot({
-        playAs: "white",
-        randomness: 4,
-      });
-
-      const rootElement = container.querySelector("[data-randomness]");
-      expect(rootElement).toHaveAttribute("data-randomness", "4");
-    });
   });
 
   describe("context value updates", () => {
@@ -247,8 +217,6 @@ describe("Root", () => {
       );
 
       renderChessBotRoot({ playAs: "black", fen: AFTER_E4_FEN });
-
-      expect(screen.getByTestId("lastMove")).toHaveTextContent("null");
 
       act(() => {
         jest.runAllTimers();

@@ -68,7 +68,6 @@ function createMockStockfishContext(
   const mergedInfo = {
     ...defaults.info,
     ...overrides.info,
-    // Keep analyzedFen in sync with fen unless explicitly overridden
     analyzedFen:
       overrides.info?.analyzedFen ??
       (overrides.info?.hasResults === false ? "" : fen),
@@ -105,9 +104,6 @@ describe("BotController", () => {
   const renderBotController = (
     props: {
       playAs?: "white" | "black";
-      randomness?: 0 | 1 | 2 | 3 | 4 | 5;
-      minDelayMs?: number;
-      maxDelayMs?: number;
       fen?: string;
     } = {},
   ) => {
@@ -115,9 +111,6 @@ describe("BotController", () => {
       <ChessGame.Root fen={props.fen}>
         <BotController
           playAs={props.playAs ?? "white"}
-          randomness={props.randomness ?? 0}
-          minDelayMs={props.minDelayMs ?? 0}
-          maxDelayMs={props.maxDelayMs ?? 0}
           onThinkingChange={onThinkingChange}
           onMoveComplete={onMoveComplete}
           onBotMoveStart={onBotMoveStart}
@@ -195,6 +188,82 @@ describe("BotController", () => {
     });
   });
 
+  describe("engine thinking state", () => {
+    it("does NOT move while engine is still thinking", () => {
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          info: {
+            hasResults: true,
+            status: "analyzing",
+            isEngineThinking: true,
+          },
+        }),
+      );
+
+      renderBotController({ playAs: "white" });
+
+      act(() => {
+        jest.runAllTimers();
+      });
+
+      expect(onMoveComplete).not.toHaveBeenCalled();
+      expect(onBotMoveStart).not.toHaveBeenCalled();
+    });
+
+    it("moves only when engine is done thinking and has results", async () => {
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          info: {
+            hasResults: true,
+            status: "analyzing",
+            isEngineThinking: true,
+          },
+        }),
+      );
+
+      const { rerender } = renderBotController({ playAs: "white" });
+
+      act(() => {
+        jest.runAllTimers();
+      });
+
+      expect(onMoveComplete).not.toHaveBeenCalled();
+
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          info: {
+            hasResults: true,
+            status: "ready",
+            isEngineThinking: false,
+          },
+        }),
+      );
+
+      rerender(
+        <ChessGame.Root>
+          <BotController
+            playAs="white"
+            onThinkingChange={onThinkingChange}
+            onMoveComplete={onMoveComplete}
+            onBotMoveStart={onBotMoveStart}
+            onError={onError}
+          />
+        </ChessGame.Root>,
+      );
+
+      act(() => {
+        jest.runAllTimers();
+      });
+
+      await waitFor(() => {
+        expect(onMoveComplete).toHaveBeenCalledWith({
+          san: "e4",
+          uci: "e2e4",
+        });
+      });
+    });
+  });
+
   describe("hasResults waiting", () => {
     it("does NOT move when hasResults is false", () => {
       mockedUseStockfish.mockReturnValue(
@@ -235,9 +304,6 @@ describe("BotController", () => {
         <ChessGame.Root>
           <BotController
             playAs="white"
-            randomness={0}
-            minDelayMs={0}
-            maxDelayMs={0}
             onThinkingChange={onThinkingChange}
             onMoveComplete={onMoveComplete}
             onBotMoveStart={onBotMoveStart}
@@ -255,41 +321,6 @@ describe("BotController", () => {
   });
 
   describe("race condition handling", () => {
-    it("aborts move if FEN changes during delay", async () => {
-      const { rerender } = renderBotController({
-        playAs: "white",
-        minDelayMs: 100,
-        maxDelayMs: 100,
-      });
-
-      expect(onBotMoveStart).toHaveBeenCalled();
-      expect(onThinkingChange).toHaveBeenCalledWith(true);
-
-      rerender(
-        <ChessGame.Root fen={AFTER_E4_FEN}>
-          <BotController
-            playAs="white"
-            randomness={0}
-            minDelayMs={100}
-            maxDelayMs={100}
-            onThinkingChange={onThinkingChange}
-            onMoveComplete={onMoveComplete}
-            onBotMoveStart={onBotMoveStart}
-            onError={onError}
-          />
-        </ChessGame.Root>,
-      );
-
-      act(() => {
-        jest.advanceTimersByTime(100);
-      });
-
-      await waitFor(() => {
-        expect(onMoveComplete).not.toHaveBeenCalled();
-        expect(onThinkingChange).toHaveBeenLastCalledWith(false);
-      });
-    });
-
     it("does NOT use stale results when analyzedFen does not match currentFen", async () => {
       const staleFen = START_FEN;
       const currentFen = AFTER_E4_FEN;
@@ -299,6 +330,7 @@ describe("BotController", () => {
           fen: currentFen,
           info: {
             hasResults: true,
+            isEngineThinking: false,
             analyzedFen: staleFen,
             principalVariations: [createPV(1, "e4", "e2e4", 50)],
           },
@@ -367,66 +399,8 @@ describe("BotController", () => {
     });
   });
 
-  describe("delay", () => {
-    it("respects minDelayMs and maxDelayMs range", async () => {
-      renderBotController({
-        playAs: "white",
-        minDelayMs: 500,
-        maxDelayMs: 1000,
-      });
-
-      expect(onMoveComplete).not.toHaveBeenCalled();
-      expect(onBotMoveStart).toHaveBeenCalled();
-
-      act(() => {
-        jest.advanceTimersByTime(400);
-      });
-
-      expect(onMoveComplete).not.toHaveBeenCalled();
-
-      act(() => {
-        jest.advanceTimersByTime(1000);
-      });
-
-      await waitFor(() => {
-        expect(onMoveComplete).toHaveBeenCalled();
-      });
-    });
-
-    it("fires onBotMoveStart before delay", () => {
-      renderBotController({
-        playAs: "white",
-        minDelayMs: 1000,
-        maxDelayMs: 1000,
-      });
-
-      expect(onBotMoveStart).toHaveBeenCalled();
-      expect(onThinkingChange).toHaveBeenCalledWith(true);
-    });
-  });
-
-  describe("cleanup", () => {
-    it("clears timeout on unmount", () => {
-      const { unmount } = renderBotController({
-        playAs: "white",
-        minDelayMs: 1000,
-        maxDelayMs: 1000,
-      });
-
-      expect(onThinkingChange).toHaveBeenCalledWith(true);
-
-      unmount();
-
-      act(() => {
-        jest.runAllTimers();
-      });
-
-      expect(onThinkingChange).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe("randomness", () => {
-    it("with randomness=0, always selects first move", async () => {
+  describe("move selection", () => {
+    it("always selects first move from first PV", async () => {
       const pvs = [
         createPV(1, "e4", "e2e4", 100),
         createPV(2, "d4", "d2d4", 80),
@@ -443,7 +417,7 @@ describe("BotController", () => {
         onMoveComplete.mockClear();
         jest.clearAllTimers();
 
-        renderBotController({ playAs: "white", randomness: 0 });
+        renderBotController({ playAs: "white" });
 
         act(() => {
           jest.runAllTimers();
@@ -456,53 +430,6 @@ describe("BotController", () => {
           });
         });
       }
-    });
-
-    it("with randomness>0, can select different moves", async () => {
-      const pvs = [
-        createPV(1, "e4", "e2e4", 50),
-        createPV(2, "d4", "d2d4", 45),
-        createPV(3, "c4", "c2c4", 40),
-        createPV(4, "Nf3", "g1f3", 35),
-        createPV(5, "c3", "c2c3", 30),
-      ];
-
-      mockedUseStockfish.mockReturnValue(
-        createMockStockfishContext({
-          info: { principalVariations: pvs },
-        }),
-      );
-
-      const selectedMoves = new Set<string>();
-      const iterations = 50;
-
-      for (let i = 0; i < iterations; i++) {
-        onMoveComplete.mockClear();
-
-        const { unmount } = renderBotController({
-          playAs: "white",
-          randomness: 5,
-          minDelayMs: 0,
-          maxDelayMs: 0,
-        });
-
-        act(() => {
-          jest.runAllTimers();
-        });
-
-        await waitFor(() => {
-          expect(onMoveComplete).toHaveBeenCalled();
-        });
-
-        const call = onMoveComplete.mock.calls[0];
-        if (call) {
-          selectedMoves.add(call[0].san);
-        }
-
-        unmount();
-      }
-
-      expect(selectedMoves.size).toBeGreaterThan(1);
     });
   });
 });

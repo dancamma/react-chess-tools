@@ -6,7 +6,6 @@ export type {
   PlayAsColor,
   BotMove,
   DifficultyLevel,
-  RandomnessLevel,
   DifficultyConfig,
 } from "./types";
 

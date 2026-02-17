@@ -7,7 +7,7 @@ import { useChessBotContext } from "../../hooks";
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
 import { useStockfish } from "@react-chess-tools/react-chess-stockfish";
 import { DIFFICULTY_PRESETS } from "../../utils/difficulty";
-import type { DifficultyLevel, RandomnessLevel, BotMove } from "../../types";
+import type { DifficultyLevel, BotMove } from "../../types";
 import {
   StoryHeader,
   StoryContainer,
@@ -56,12 +56,10 @@ function BotInfoPanel({
   const evaluation = engine.info.evaluation;
   const { isGameOver, isCheckmate, isDraw, turn } = game.info;
 
-  // Derive result from game state
   const getResultText = () => {
     if (!isGameOver) return null;
     if (isDraw) return "½-½ Draw";
     if (isCheckmate) {
-      // The side that just moved (opposite of current turn) wins
       return turn === "w" ? "0-1 Black wins" : "1-0 White wins";
     }
     return "Game Over";
@@ -137,12 +135,16 @@ function BotInfoPanel({
         <div className="flex items-center gap-2">
           <span className="text-text-secondary">Difficulty:</span>
           <span className="font-semibold text-text">
-            {bot.difficulty} ({preset.elo} ELO)
+            Level {bot.difficulty}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-text-secondary">Randomness:</span>
-          <span className="font-semibold text-text">{bot.randomness}</span>
+          <span className="text-text-secondary">Skill Level:</span>
+          <span className="font-semibold text-text">{preset.skillLevel}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-text-secondary">Move Time:</span>
+          <span className="font-semibold text-text">{preset.moveTime}ms</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-text-secondary">Depth:</span>
@@ -182,17 +184,13 @@ function BotInfoPanel({
   );
 }
 
-/**
- * Info panel for BotArena - doesn't require ChessBotContext
- * Shows game state and move log only
- */
 function ArenaGameInfo({
   whiteConfig,
   blackConfig,
   moveLog,
 }: {
-  whiteConfig: { difficulty: DifficultyLevel; randomness: RandomnessLevel };
-  blackConfig: { difficulty: DifficultyLevel; randomness: RandomnessLevel };
+  whiteConfig: { difficulty: DifficultyLevel };
+  blackConfig: { difficulty: DifficultyLevel };
   moveLog: MoveLogEntry[];
 }) {
   const game = useChessGameContext();
@@ -263,8 +261,7 @@ function ArenaGameInfo({
             </span>
           </div>
           <div className="text-size-xs text-text-secondary">
-            ELO: {whitePreset.elo} | Depth: {whitePreset.depth} | Rand:{" "}
-            {whiteConfig.randomness}
+            Skill: {whitePreset.skillLevel} | Time: {whitePreset.moveTime}ms
           </div>
         </div>
         <div className="flex flex-col gap-1">
@@ -275,8 +272,7 @@ function ArenaGameInfo({
             </span>
           </div>
           <div className="text-size-xs text-text-secondary">
-            ELO: {blackPreset.elo} | Depth: {blackPreset.depth} | Rand:{" "}
-            {blackConfig.randomness}
+            Skill: {blackPreset.skillLevel} | Time: {blackPreset.moveTime}ms
           </div>
         </div>
       </div>
@@ -303,9 +299,6 @@ function ArenaGameInfo({
   );
 }
 
-/**
- * Dropdown selector for difficulty level using exported DIFFICULTY_PRESETS
- */
 function DifficultySelector({
   value,
   onChange,
@@ -327,7 +320,7 @@ function DifficultySelector({
           const config = DIFFICULTY_PRESETS[level];
           return (
             <option key={level} value={level}>
-              Level {level} (ELO {config.elo})
+              Level {level} (Skill {config.skillLevel})
             </option>
           );
         })}
@@ -336,56 +329,11 @@ function DifficultySelector({
   );
 }
 
-/**
- * Dropdown selector for randomness level
- */
-function RandomnessSelector({
-  value,
-  onChange,
-  label,
-}: {
-  value: RandomnessLevel;
-  onChange: (level: RandomnessLevel) => void;
-  label: string;
-}) {
-  const randomnessLevels: RandomnessLevel[] = [0, 1, 2, 3, 4, 5];
-  const descriptions: Record<RandomnessLevel, string> = {
-    0: "Deterministic",
-    1: "Slight variation",
-    2: "Some variety",
-    3: "Noticeable variety",
-    4: "High variety",
-    5: "Maximum variety",
-  };
-
-  return (
-    <div className="flex flex-col gap-2">
-      <label className="text-size-sm font-medium text-text">{label}</label>
-      <select
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value) as RandomnessLevel)}
-        className="px-3 py-2 bg-surface-alt border border-border rounded-md text-text text-size-sm focus:outline-none focus:ring-2 focus:ring-primary"
-      >
-        {randomnessLevels.map((level) => (
-          <option key={level} value={level}>
-            {level} - {descriptions[level]}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-/**
- * Card showing current bot configuration
- */
 function BotConfigCard({
   difficulty,
-  randomness,
   color,
 }: {
   difficulty: DifficultyLevel;
-  randomness: RandomnessLevel;
   color: "white" | "black";
 }) {
   const config = DIFFICULTY_PRESETS[difficulty];
@@ -396,12 +344,9 @@ function BotConfigCard({
         <span className="font-semibold text-text">Level {difficulty}</span>
       </div>
       <div className="text-size-xs text-text-secondary space-y-0.5">
-        <div>ELO: {config.elo}</div>
+        <div>Skill Level: {config.skillLevel}</div>
         <div>Depth: {config.depth}</div>
-        <div>Randomness: {randomness}</div>
-        {config.description && (
-          <div className="text-text-muted italic">{config.description}</div>
-        )}
+        <div>Move Time: {config.moveTime}ms</div>
       </div>
     </div>
   );
@@ -423,11 +368,23 @@ const meta = {
 The \`ChessBot\` component provides a chess AI opponent using Stockfish.
 
 ## Features
-- 8 difficulty levels (ELO 800-2900)
-- Adjustable randomness for more human-like play
-- Configurable move delay
+- 8 difficulty levels (Lichess calibration)
+- Skill Level -9 to 20
+- Configurable move time (50ms to 1000ms)
 - Event callbacks for monitoring bot behavior
 - Works with \`ChessGame\` and \`ChessClock\` components
+
+## Difficulty Levels (Lichess Calibration)
+| Level | Skill | Depth | Move Time |
+|-------|-------|-------|-----------|
+| 1     | 0     | 5     | 50ms      |
+| 2     | 3     | 5     | 100ms     |
+| 3     | 6     | 5     | 150ms     |
+| 4     | 9     | 5     | 200ms     |
+| 5     | 12    | 8     | 300ms     |
+| 6     | 15    | 10    | 500ms     |
+| 7     | 18    | 15    | 700ms     |
+| 8     | 20    | 22    | 1000ms    |
 
 ## Usage
 \`\`\`tsx
@@ -435,7 +392,6 @@ The \`ChessBot\` component provides a chess AI opponent using Stockfish.
   <ChessBot.Root
     playAs="black"
     difficulty={5}
-    randomness={0}
     workerPath="/stockfish.js"
   >
     <ChessGame.Board />
@@ -454,27 +410,12 @@ The \`ChessBot\` component provides a chess AI opponent using Stockfish.
     },
     difficulty: {
       control: { type: "range", min: 1, max: 8, step: 1 },
-      description: "Difficulty level (1-8)",
-    },
-    randomness: {
-      control: { type: "range", min: 0, max: 5, step: 1 },
-      description: "Randomness level (0=deterministic, 5=variable)",
-    },
-    minDelayMs: {
-      control: { type: "number" },
-      description: "Minimum delay before bot moves (ms)",
-    },
-    maxDelayMs: {
-      control: { type: "number" },
-      description: "Maximum delay before bot moves (ms)",
+      description: "Difficulty level (1-8, Lichess calibration)",
     },
   },
   args: {
     playAs: "black",
     difficulty: 5,
-    randomness: 0,
-    minDelayMs: 0,
-    maxDelayMs: 1000,
     workerPath: WORKER_PATH,
   },
 } satisfies Meta<typeof ChessBot.Root>;
@@ -486,17 +427,10 @@ type Story = StoryObj<typeof meta>;
 // STORIES
 // =============================================================================
 
-/**
- * Quick experimentation with Storybook controls.
- * Adjust difficulty, randomness, and delay to see how the bot behaves.
- */
 export const Playground: Story = {
   args: {
     playAs: "black",
     difficulty: 5,
-    randomness: 0,
-    minDelayMs: 0,
-    maxDelayMs: 1000,
     workerPath: WORKER_PATH,
   },
   render: (args) => (
@@ -507,8 +441,7 @@ export const Playground: Story = {
           subtitle="Experiment with bot settings using Storybook controls"
         />
         <InfoBox>
-          Use the <strong>Controls</strong> panel below to adjust difficulty,
-          randomness, and move delay.
+          Use the <strong>Controls</strong> panel below to adjust difficulty.
         </InfoBox>
         <BoardWrapper>
           <ChessBot.Root {...args}>
@@ -521,10 +454,6 @@ export const Playground: Story = {
   ),
 };
 
-/**
- * Human plays white against a bot playing black.
- * Make your move and watch the bot respond.
- */
 export const HumanVsBot: Story = {
   render: () => (
     <ChessGame.Root>
@@ -535,12 +464,7 @@ export const HumanVsBot: Story = {
         />
         <InfoBox>Make your move as white and watch the bot respond!</InfoBox>
         <BoardWrapper>
-          <ChessBot.Root
-            playAs="black"
-            difficulty={5}
-            randomness={0}
-            workerPath={WORKER_PATH}
-          >
+          <ChessBot.Root playAs="black" difficulty={5} workerPath={WORKER_PATH}>
             <ChessGame.Board />
             <BotInfoPanel />
           </ChessBot.Root>
@@ -550,10 +474,6 @@ export const HumanVsBot: Story = {
   ),
 };
 
-/**
- * Bot plays white against a human playing black.
- * The bot makes the first move, then it's your turn.
- */
 export const BotVsHuman: Story = {
   render: () => (
     <ChessGame.Root orientation="b">
@@ -564,12 +484,7 @@ export const BotVsHuman: Story = {
         />
         <InfoBox>The bot will open. Then it's your turn to respond!</InfoBox>
         <BoardWrapper>
-          <ChessBot.Root
-            playAs="white"
-            difficulty={5}
-            randomness={0}
-            workerPath={WORKER_PATH}
-          >
+          <ChessBot.Root playAs="white" difficulty={5} workerPath={WORKER_PATH}>
             <ChessGame.Board />
             <BotInfoPanel />
           </ChessBot.Root>
@@ -579,16 +494,10 @@ export const BotVsHuman: Story = {
   ),
 };
 
-/**
- * Two configurable bots play against each other.
- * Adjust difficulty (using exported DIFFICULTY_PRESETS) and randomness for each side.
- */
 export const BotArena: Story = {
   render: () => {
     const [whiteDifficulty, setWhiteDifficulty] = useState<DifficultyLevel>(5);
-    const [whiteRandomness, setWhiteRandomness] = useState<RandomnessLevel>(1);
     const [blackDifficulty, setBlackDifficulty] = useState<DifficultyLevel>(3);
-    const [blackRandomness, setBlackRandomness] = useState<RandomnessLevel>(2);
     const [moveLog, setMoveLog] = useState<MoveLogEntry[]>([]);
     const [gameKey, setGameKey] = useState(0);
 
@@ -622,24 +531,14 @@ export const BotArena: Story = {
               <h4 className="text-size-sm font-semibold text-text mb-3 flex items-center gap-2">
                 <span>⚪</span> White Bot
               </h4>
-              <div className="flex flex-col gap-3">
-                <DifficultySelector
-                  label="Difficulty"
-                  value={whiteDifficulty}
-                  onChange={(level) => {
-                    setWhiteDifficulty(level);
-                    resetGame();
-                  }}
-                />
-                <RandomnessSelector
-                  label="Randomness"
-                  value={whiteRandomness}
-                  onChange={(level) => {
-                    setWhiteRandomness(level);
-                    resetGame();
-                  }}
-                />
-              </div>
+              <DifficultySelector
+                label="Difficulty"
+                value={whiteDifficulty}
+                onChange={(level) => {
+                  setWhiteDifficulty(level);
+                  resetGame();
+                }}
+              />
             </div>
 
             {/* Black Bot Config */}
@@ -647,39 +546,21 @@ export const BotArena: Story = {
               <h4 className="text-size-sm font-semibold text-text mb-3 flex items-center gap-2">
                 <span>⚫</span> Black Bot
               </h4>
-              <div className="flex flex-col gap-3">
-                <DifficultySelector
-                  label="Difficulty"
-                  value={blackDifficulty}
-                  onChange={(level) => {
-                    setBlackDifficulty(level);
-                    resetGame();
-                  }}
-                />
-                <RandomnessSelector
-                  label="Randomness"
-                  value={blackRandomness}
-                  onChange={(level) => {
-                    setBlackRandomness(level);
-                    resetGame();
-                  }}
-                />
-              </div>
+              <DifficultySelector
+                label="Difficulty"
+                value={blackDifficulty}
+                onChange={(level) => {
+                  setBlackDifficulty(level);
+                  resetGame();
+                }}
+              />
             </div>
           </div>
 
           {/* Config Cards */}
           <div className="flex gap-4 mb-4">
-            <BotConfigCard
-              difficulty={whiteDifficulty}
-              randomness={whiteRandomness}
-              color="white"
-            />
-            <BotConfigCard
-              difficulty={blackDifficulty}
-              randomness={blackRandomness}
-              color="black"
-            />
+            <BotConfigCard difficulty={whiteDifficulty} color="white" />
+            <BotConfigCard difficulty={blackDifficulty} color="black" />
           </div>
 
           {/* Board with nested bots */}
@@ -687,33 +568,20 @@ export const BotArena: Story = {
             <ChessBot.Root
               playAs="white"
               difficulty={whiteDifficulty}
-              randomness={whiteRandomness}
-              minDelayMs={200}
-              maxDelayMs={600}
               workerPath={WORKER_PATH}
               onBotMoveComplete={(move: BotMove) => addMove(move.san)}
             >
               <ChessBot.Root
                 playAs="black"
                 difficulty={blackDifficulty}
-                randomness={blackRandomness}
-                minDelayMs={200}
-                maxDelayMs={600}
                 workerPath={WORKER_PATH}
                 onBotMoveComplete={(move: BotMove) => addMove(move.san)}
               >
                 <ChessGame.Board />
               </ChessBot.Root>
-              {/* Info Panel - inside ChessBot.Root to access Stockfish context */}
               <ArenaGameInfo
-                whiteConfig={{
-                  difficulty: whiteDifficulty,
-                  randomness: whiteRandomness,
-                }}
-                blackConfig={{
-                  difficulty: blackDifficulty,
-                  randomness: blackRandomness,
-                }}
+                whiteConfig={{ difficulty: whiteDifficulty }}
+                blackConfig={{ difficulty: blackDifficulty }}
                 moveLog={moveLog}
               />
             </ChessBot.Root>
@@ -734,10 +602,6 @@ export const BotArena: Story = {
   },
 };
 
-/**
- * Bot integrated with a chess clock.
- * Each side has limited time to make moves.
- */
 export const WithClock: Story = {
   render: () => (
     <ChessGame.Root timeControl={{ time: "5+3" }}>
@@ -762,12 +626,7 @@ export const WithClock: Story = {
         </ClockPairContainer>
 
         <BoardWrapper>
-          <ChessBot.Root
-            playAs="black"
-            difficulty={4}
-            randomness={1}
-            workerPath={WORKER_PATH}
-          >
+          <ChessBot.Root playAs="black" difficulty={4} workerPath={WORKER_PATH}>
             <ChessGame.Board />
             <BotInfoPanel />
           </ChessBot.Root>
@@ -777,10 +636,6 @@ export const WithClock: Story = {
   ),
 };
 
-/**
- * Monitor all bot events in real-time.
- * Useful for debugging and understanding bot behavior.
- */
 export const EventMonitor: Story = {
   render: () => {
     const [logs, setLogs] = useState<string[]>([]);
@@ -804,7 +659,6 @@ export const EventMonitor: Story = {
             <ChessBot.Root
               playAs="black"
               difficulty={5}
-              randomness={0}
               workerPath={WORKER_PATH}
               onBotMoveStart={() => addLog("🤔 Bot started thinking...")}
               onBotMoveComplete={(move: BotMove) =>

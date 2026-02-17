@@ -211,12 +211,17 @@ export function parseUciInfoLine(line: string): ParsedInfo | null {
  * Build the UCI "go" command parameters from a StockfishConfig.
  *
  * @param config - The Stockfish configuration
- * @returns The go command parameter string (e.g., "depth 20" or "infinite")
+ * @returns The go command parameter string (e.g., "movetime 1000", "depth 20" or "infinite")
  */
 export function buildUciGoCommand(config: StockfishConfig): string {
-  const { depth } = config;
+  const { depth, moveTime } = config;
 
-  // If depth is specified, use it instead of infinite
+  // movetime has highest priority (limits search time in milliseconds)
+  if (moveTime !== undefined && moveTime > 0) {
+    return `movetime ${moveTime}`;
+  }
+
+  // depth is next priority
   if (depth !== undefined && depth > 0) {
     return `depth ${depth}`;
   }

@@ -6,16 +6,16 @@ describe("DIFFICULTY_PRESETS", () => {
     expect(Object.keys(DIFFICULTY_PRESETS)).toHaveLength(8);
   });
 
-  it("should have correct presets for each level", () => {
+  it("should have correct presets for each level (Stockfish 0-20 skill range)", () => {
     const expectedPresets: Record<DifficultyLevel, DifficultyConfig> = {
-      1: { depth: 2, elo: 800, description: "Principiante" },
-      2: { depth: 4, elo: 1100, description: "" },
-      3: { depth: 6, elo: 1400, description: "" },
-      4: { depth: 8, elo: 1700, description: "" },
-      5: { depth: 10, elo: 2000, description: "Intermedio" },
-      6: { depth: 13, elo: 2300, description: "" },
-      7: { depth: 16, elo: 2600, description: "" },
-      8: { depth: 20, elo: 2900, description: "Gran Maestro" },
+      1: { depth: 5, skillLevel: 0, moveTime: 50 },
+      2: { depth: 5, skillLevel: 3, moveTime: 100 },
+      3: { depth: 5, skillLevel: 6, moveTime: 150 },
+      4: { depth: 5, skillLevel: 9, moveTime: 200 },
+      5: { depth: 8, skillLevel: 12, moveTime: 300 },
+      6: { depth: 10, skillLevel: 15, moveTime: 500 },
+      7: { depth: 15, skillLevel: 18, moveTime: 700 },
+      8: { depth: 22, skillLevel: 20, moveTime: 1000 },
     };
 
     expect(DIFFICULTY_PRESETS[1]).toEqual(expectedPresets[1]);
@@ -28,44 +28,71 @@ describe("DIFFICULTY_PRESETS", () => {
     expect(DIFFICULTY_PRESETS[8]).toEqual(expectedPresets[8]);
   });
 
-  it("should have increasing depth with level", () => {
-    expect(DIFFICULTY_PRESETS[1].depth).toBeLessThan(
-      DIFFICULTY_PRESETS[2].depth,
+  it("should have increasing skillLevel with level", () => {
+    expect(DIFFICULTY_PRESETS[1].skillLevel).toBeLessThan(
+      DIFFICULTY_PRESETS[2].skillLevel,
     );
-    expect(DIFFICULTY_PRESETS[2].depth).toBeLessThan(
-      DIFFICULTY_PRESETS[3].depth,
+    expect(DIFFICULTY_PRESETS[2].skillLevel).toBeLessThan(
+      DIFFICULTY_PRESETS[3].skillLevel,
     );
-    expect(DIFFICULTY_PRESETS[3].depth).toBeLessThan(
-      DIFFICULTY_PRESETS[4].depth,
+    expect(DIFFICULTY_PRESETS[3].skillLevel).toBeLessThan(
+      DIFFICULTY_PRESETS[4].skillLevel,
     );
-    expect(DIFFICULTY_PRESETS[4].depth).toBeLessThan(
-      DIFFICULTY_PRESETS[5].depth,
+    expect(DIFFICULTY_PRESETS[4].skillLevel).toBeLessThan(
+      DIFFICULTY_PRESETS[5].skillLevel,
     );
-    expect(DIFFICULTY_PRESETS[5].depth).toBeLessThan(
-      DIFFICULTY_PRESETS[6].depth,
+    expect(DIFFICULTY_PRESETS[5].skillLevel).toBeLessThan(
+      DIFFICULTY_PRESETS[6].skillLevel,
     );
-    expect(DIFFICULTY_PRESETS[6].depth).toBeLessThan(
-      DIFFICULTY_PRESETS[7].depth,
+    expect(DIFFICULTY_PRESETS[6].skillLevel).toBeLessThan(
+      DIFFICULTY_PRESETS[7].skillLevel,
     );
-    expect(DIFFICULTY_PRESETS[7].depth).toBeLessThan(
-      DIFFICULTY_PRESETS[8].depth,
+    expect(DIFFICULTY_PRESETS[7].skillLevel).toBeLessThan(
+      DIFFICULTY_PRESETS[8].skillLevel,
     );
   });
 
-  it("should have increasing ELO with level", () => {
-    expect(DIFFICULTY_PRESETS[1].elo).toBeLessThan(DIFFICULTY_PRESETS[2].elo);
-    expect(DIFFICULTY_PRESETS[2].elo).toBeLessThan(DIFFICULTY_PRESETS[3].elo);
-    expect(DIFFICULTY_PRESETS[3].elo).toBeLessThan(DIFFICULTY_PRESETS[4].elo);
-    expect(DIFFICULTY_PRESETS[4].elo).toBeLessThan(DIFFICULTY_PRESETS[5].elo);
-    expect(DIFFICULTY_PRESETS[5].elo).toBeLessThan(DIFFICULTY_PRESETS[6].elo);
-    expect(DIFFICULTY_PRESETS[6].elo).toBeLessThan(DIFFICULTY_PRESETS[7].elo);
-    expect(DIFFICULTY_PRESETS[7].elo).toBeLessThan(DIFFICULTY_PRESETS[8].elo);
+  it("should have increasing moveTime with level", () => {
+    expect(DIFFICULTY_PRESETS[1].moveTime).toBeLessThan(
+      DIFFICULTY_PRESETS[2].moveTime,
+    );
+    expect(DIFFICULTY_PRESETS[2].moveTime).toBeLessThan(
+      DIFFICULTY_PRESETS[3].moveTime,
+    );
+    expect(DIFFICULTY_PRESETS[3].moveTime).toBeLessThan(
+      DIFFICULTY_PRESETS[4].moveTime,
+    );
+    expect(DIFFICULTY_PRESETS[4].moveTime).toBeLessThan(
+      DIFFICULTY_PRESETS[5].moveTime,
+    );
+    expect(DIFFICULTY_PRESETS[5].moveTime).toBeLessThan(
+      DIFFICULTY_PRESETS[6].moveTime,
+    );
+    expect(DIFFICULTY_PRESETS[6].moveTime).toBeLessThan(
+      DIFFICULTY_PRESETS[7].moveTime,
+    );
+    expect(DIFFICULTY_PRESETS[7].moveTime).toBeLessThan(
+      DIFFICULTY_PRESETS[8].moveTime,
+    );
   });
 
-  it("should have descriptions for key levels", () => {
-    expect(DIFFICULTY_PRESETS[1].description).toBe("Principiante");
-    expect(DIFFICULTY_PRESETS[5].description).toBe("Intermedio");
-    expect(DIFFICULTY_PRESETS[8].description).toBe("Gran Maestro");
+  it("should use skill level 0 for level 1 (weakest)", () => {
+    expect(DIFFICULTY_PRESETS[1].skillLevel).toBe(0);
+  });
+
+  it("should use skill level 20 for level 8 (strongest)", () => {
+    expect(DIFFICULTY_PRESETS[8].skillLevel).toBe(20);
+  });
+
+  it("should have all skill levels within Stockfish range (0-20)", () => {
+    for (let level = 1; level <= 8; level++) {
+      expect(
+        DIFFICULTY_PRESETS[level as DifficultyLevel].skillLevel,
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        DIFFICULTY_PRESETS[level as DifficultyLevel].skillLevel,
+      ).toBeLessThanOrEqual(20);
+    }
   });
 });
 
@@ -73,27 +100,27 @@ describe("getDifficultyConfig", () => {
   it("should return correct config for level 1", () => {
     const config = getDifficultyConfig(1);
     expect(config).toEqual({
-      depth: 2,
-      elo: 800,
-      description: "Principiante",
+      depth: 5,
+      skillLevel: 0,
+      moveTime: 50,
     });
   });
 
   it("should return correct config for level 5 (default)", () => {
     const config = getDifficultyConfig(5);
     expect(config).toEqual({
-      depth: 10,
-      elo: 2000,
-      description: "Intermedio",
+      depth: 8,
+      skillLevel: 12,
+      moveTime: 300,
     });
   });
 
   it("should return correct config for level 8 (max)", () => {
     const config = getDifficultyConfig(8);
     expect(config).toEqual({
-      depth: 20,
-      elo: 2900,
-      description: "Gran Maestro",
+      depth: 22,
+      skillLevel: 20,
+      moveTime: 1000,
     });
   });
 

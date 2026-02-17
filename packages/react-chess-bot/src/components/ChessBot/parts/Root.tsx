@@ -9,21 +9,12 @@ import type {
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
 import { ChessBotContext } from "../../../hooks/useChessBotContext";
 import { BotController } from "./BotController";
-import type {
-  PlayAsColor,
-  BotMove,
-  DifficultyLevel,
-  RandomnessLevel,
-} from "../../../types";
+import type { PlayAsColor, BotMove, DifficultyLevel } from "../../../types";
 import { DIFFICULTY_PRESETS } from "../../../utils/difficulty";
-import { getMultiPVCount } from "../../../utils/randomness";
 
 export interface RootProps {
   playAs: PlayAsColor;
   difficulty?: DifficultyLevel;
-  randomness?: RandomnessLevel;
-  minDelayMs?: number;
-  maxDelayMs?: number;
   workerPath: string;
   onBotMoveStart?: () => void;
   onBotMoveComplete?: (move: BotMove) => void;
@@ -34,9 +25,6 @@ export interface RootProps {
 export function Root({
   playAs,
   difficulty = 5,
-  randomness = 0,
-  minDelayMs = 0,
-  maxDelayMs = 1000,
   workerPath,
   onBotMoveStart,
   onBotMoveComplete,
@@ -59,15 +47,16 @@ export function Root({
     }
   }
 
+  const preset = DIFFICULTY_PRESETS[difficulty];
+
   const config = useMemo<StockfishConfig>(() => {
-    const preset = DIFFICULTY_PRESETS[difficulty];
     return {
       depth: preset.depth,
-      uciElo: preset.elo,
-      limitStrength: true,
-      multiPV: getMultiPVCount(randomness),
+      skillLevel: preset.skillLevel,
+      moveTime: preset.moveTime,
+      multiPV: 1,
     };
-  }, [difficulty, randomness]);
+  }, [preset]);
 
   const workerOptions = useMemo<WorkerOptions>(
     () => ({ workerPath }),
@@ -78,12 +67,11 @@ export function Root({
     () => ({
       playAs,
       difficulty,
-      randomness,
       isThinking,
       lastMove,
       error,
     }),
-    [playAs, difficulty, randomness, isThinking, lastMove, error],
+    [playAs, difficulty, isThinking, lastMove, error],
   );
 
   const handleError = (err: Error) => {
@@ -118,7 +106,6 @@ export function Root({
         data-thinking={isThinking ? "true" : "false"}
         data-color={playAs}
         data-difficulty={difficulty}
-        data-randomness={randomness}
       >
         <ChessStockfish.Root
           fen={currentFen}
@@ -128,9 +115,6 @@ export function Root({
         >
           <BotController
             playAs={playAs}
-            randomness={randomness}
-            minDelayMs={minDelayMs}
-            maxDelayMs={maxDelayMs}
             onThinkingChange={setIsThinking}
             onMoveComplete={handleMoveComplete}
             onBotMoveStart={onBotMoveStart}
