@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 import { ChessClock } from "@react-chess-tools/react-chess-clock";
 import { ChessBot } from "./index";
-import { useChessBotContext } from "../../hooks";
+import { useChessBotContext, useBotTournament } from "../../hooks";
+import type { GameResult, MatchupResult } from "../../hooks";
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
 import { useStockfish } from "@react-chess-tools/react-chess-stockfish";
 import { DIFFICULTY_PRESETS } from "../../utils/difficulty";
@@ -697,6 +698,355 @@ export const EventMonitor: Story = {
           </div>
         </StoryContainer>
       </ChessGame.Root>
+    );
+  },
+};
+
+// =============================================================================
+// BOT TOURNAMENT STORY
+// =============================================================================
+
+const LEVELS: DifficultyLevel[] = [1, 2, 3, 4, 5, 6, 7, 8];
+
+function ResultCell({ result }: { result: MatchupResult | null }) {
+  if (result === null) {
+    return (
+      <td className="px-2 py-1.5 text-center text-size-xs bg-surface-alt text-text-muted">
+        —
+      </td>
+    );
+  }
+
+  if (result.total === 0) {
+    return (
+      <td className="px-2 py-1.5 text-center text-size-xs bg-surface-alt text-text-muted">
+        0/0/0
+      </td>
+    );
+  }
+
+  const winRate =
+    result.total > 0 ? (result.whiteWins / result.total) * 100 : 0;
+  let bgColor = "bg-surface-alt";
+  if (winRate >= 60) bgColor = "bg-success/20";
+  else if (winRate >= 40) bgColor = "bg-warning/10";
+  else if (winRate > 0) bgColor = "bg-danger/10";
+
+  return (
+    <td
+      className={`px-2 py-1.5 text-center text-size-xs ${bgColor} text-text font-mono`}
+    >
+      <span className="text-success">{result.whiteWins}</span>
+      <span className="text-text-muted">/</span>
+      <span className="text-warning">{result.draws}</span>
+      <span className="text-text-muted">/</span>
+      <span className="text-danger">{result.blackWins}</span>
+    </td>
+  );
+}
+
+function TotalCell({ result }: { result: MatchupResult }) {
+  if (result.total === 0) {
+    return (
+      <td className="px-2 py-1.5 text-center text-size-xs bg-surface text-text-muted font-semibold">
+        0/0/0
+      </td>
+    );
+  }
+
+  const winRate =
+    result.total > 0 ? (result.whiteWins / result.total) * 100 : 0;
+  let bgColor = "bg-surface";
+  if (winRate >= 60) bgColor = "bg-success/30";
+  else if (winRate >= 40) bgColor = "bg-warning/20";
+  else if (winRate > 0) bgColor = "bg-danger/20";
+
+  return (
+    <td
+      className={`px-2 py-1.5 text-center text-size-xs ${bgColor} text-text font-mono font-semibold`}
+    >
+      <span className="text-success">{result.whiteWins}</span>
+      <span className="text-text-muted">/</span>
+      <span className="text-warning">{result.draws}</span>
+      <span className="text-text-muted">/</span>
+      <span className="text-danger">{result.blackWins}</span>
+    </td>
+  );
+}
+
+function TournamentMatrix({
+  results,
+  getTotalForRow,
+}: {
+  results: Map<string, MatchupResult>;
+  getTotalForRow: (row: DifficultyLevel) => MatchupResult;
+}) {
+  const getResult = (white: DifficultyLevel, black: DifficultyLevel) => {
+    const key = `${white}-${black}`;
+    return results.get(key) || null;
+  };
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="border-collapse border border-border text-text">
+        <thead>
+          <tr className="bg-surface-alt">
+            <th className="px-2 py-2 text-size-xs font-semibold border border-border">
+              Lvl \ vs
+            </th>
+            {LEVELS.map((level) => (
+              <th
+                key={level}
+                className="px-2 py-2 text-size-xs font-semibold border border-border min-w-[60px]"
+              >
+                L{level}
+              </th>
+            ))}
+            <th className="px-2 py-2 text-size-xs font-semibold border border-border bg-surface">
+              TOTAL
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {LEVELS.map((row) => (
+            <tr key={row}>
+              <td className="px-2 py-1.5 text-size-xs font-semibold border border-border bg-surface-alt">
+                L{row}
+              </td>
+              {LEVELS.map((col) => (
+                <ResultCell
+                  key={`${row}-${col}`}
+                  result={row === col ? null : getResult(row, col)}
+                />
+              ))}
+              <TotalCell result={getTotalForRow(row)} />
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function TournamentGameRunner({
+  slotId,
+  whiteLevel,
+  blackLevel,
+  onGameEnd,
+  gameKey,
+}: {
+  slotId: number;
+  whiteLevel: DifficultyLevel;
+  blackLevel: DifficultyLevel;
+  onGameEnd: (slotId: number, result: GameResult) => void;
+  gameKey: number;
+}) {
+  const { info } = useChessGameContext();
+  const hasReportedRef = useRef(false);
+  const prevGameOverRef = useRef(false);
+
+  useEffect(() => {
+    hasReportedRef.current = false;
+    prevGameOverRef.current = false;
+  }, [gameKey]);
+
+  useEffect(() => {
+    if (
+      info.isGameOver &&
+      !prevGameOverRef.current &&
+      !hasReportedRef.current
+    ) {
+      hasReportedRef.current = true;
+
+      let result: GameResult;
+      if (info.isDraw) {
+        result = "draw";
+      } else if (info.isCheckmate) {
+        result = info.turn === "w" ? "black-wins" : "white-wins";
+      } else {
+        result = "draw";
+      }
+
+      setTimeout(() => onGameEnd(slotId, result), 100);
+    }
+    prevGameOverRef.current = info.isGameOver;
+  }, [
+    info.isGameOver,
+    info.isDraw,
+    info.isCheckmate,
+    info.turn,
+    onGameEnd,
+    slotId,
+  ]);
+
+  return (
+    <ChessBot.Root
+      playAs="white"
+      difficulty={whiteLevel}
+      moveDelayMs={0}
+      workerPath={WORKER_PATH}
+    >
+      <ChessBot.Root
+        playAs="black"
+        difficulty={blackLevel}
+        moveDelayMs={0}
+        workerPath={WORKER_PATH}
+      >
+        {null}
+      </ChessBot.Root>
+    </ChessBot.Root>
+  );
+}
+
+export const BotTournament: Story = {
+  render: () => {
+    const {
+      state,
+      actions: { start, stop, reset, recordResult },
+      helpers: { getResultsMatrix, getTotalForRow },
+    } = useBotTournament({ concurrency: 4 });
+
+    const handleGameEnd = useCallback(
+      (slotId: number, result: GameResult) => {
+        const slot = state.activeSlots.find((s) => s.slotId === slotId);
+        if (slot) {
+          recordResult(slotId, slot.matchup.white, slot.matchup.black, result);
+        }
+      },
+      [state.activeSlots, recordResult],
+    );
+
+    const matrix = getResultsMatrix();
+
+    return (
+      <StoryContainer>
+        <StoryHeader
+          title="Bot Tournament"
+          subtitle="Automatic difficulty calibration test — bots play each other continuously in parallel"
+        />
+
+        <InfoBox>
+          Running <strong>4 games in parallel</strong>. Click{" "}
+          <strong>Start</strong> to begin. Results show Wins/Draws/Losses from
+          the row level's perspective (playing as white).
+        </InfoBox>
+
+        {/* Controls */}
+        <div className="flex items-center gap-4 mb-4">
+          {!state.isRunning ? (
+            <button
+              onClick={start}
+              className="px-4 py-2 bg-success text-white rounded-md font-semibold hover:bg-success/90 transition-colors"
+            >
+              ▶ Start
+            </button>
+          ) : (
+            <button
+              onClick={stop}
+              className="px-4 py-2 bg-danger text-white rounded-md font-semibold hover:bg-danger/90 transition-colors"
+            >
+              ⏹ Stop
+            </button>
+          )}
+          <button
+            onClick={reset}
+            className="px-4 py-2 bg-surface-alt border border-border rounded-md text-text hover:bg-surface transition-colors"
+          >
+            ↺ Reset
+          </button>
+
+          <div className="ml-auto flex items-center gap-4 text-size-sm text-text-secondary">
+            <span>
+              Games: <strong className="text-text">{state.totalGames}</strong>
+            </span>
+            <span>
+              Active:{" "}
+              <strong className="text-text">{state.activeSlots.length}</strong>
+            </span>
+            {state.lastResult && (
+              <span>
+                Last:{" "}
+                <strong
+                  className={
+                    state.lastResult === "white-wins"
+                      ? "text-success"
+                      : state.lastResult === "black-wins"
+                        ? "text-danger"
+                        : "text-warning"
+                  }
+                >
+                  {state.lastResult === "white-wins"
+                    ? "1-0"
+                    : state.lastResult === "black-wins"
+                      ? "0-1"
+                      : "½-½"}
+                </strong>
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Active Games */}
+        {state.isRunning && state.activeSlots.length > 0 && (
+          <div className="mb-4 p-3 bg-surface-alt rounded-lg">
+            <div className="text-size-xs text-text-secondary mb-2">
+              Now playing:
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {state.activeSlots.map((slot) => (
+                <span
+                  key={slot.slotId}
+                  className="px-2 py-1 bg-surface rounded text-size-xs font-mono"
+                >
+                  L{slot.matchup.white} vs L{slot.matchup.black}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Matrix */}
+        <div className="p-4 bg-surface-alt rounded-lg">
+          <TournamentMatrix
+            results={state.results}
+            getTotalForRow={getTotalForRow}
+          />
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-6 mt-3 text-size-xs text-text-secondary">
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-3 bg-success/20 rounded-sm"></span>
+            High win rate (≥60%)
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-3 bg-warning/10 rounded-sm"></span>
+            Balanced (40-60%)
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-3 h-3 bg-danger/10 rounded-sm"></span>
+            Low win rate (&lt;40%)
+          </span>
+          <span className="ml-auto font-mono">
+            Format: <span className="text-success">W</span>/
+            <span className="text-warning">D</span>/
+            <span className="text-danger">L</span>
+          </span>
+        </div>
+
+        {/* Parallel game runners */}
+        {state.activeSlots.map((slot) => (
+          <ChessGame.Root key={slot.gameKey}>
+            <TournamentGameRunner
+              slotId={slot.slotId}
+              whiteLevel={slot.matchup.white}
+              blackLevel={slot.matchup.black}
+              onGameEnd={handleGameEnd}
+              gameKey={slot.gameKey}
+            />
+          </ChessGame.Root>
+        ))}
+      </StoryContainer>
     );
   },
 };

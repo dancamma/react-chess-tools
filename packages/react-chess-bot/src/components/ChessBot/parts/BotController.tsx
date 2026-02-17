@@ -4,10 +4,11 @@ import { useChessGameContext } from "@react-chess-tools/react-chess-game";
 import { useStockfish } from "@react-chess-tools/react-chess-stockfish";
 import type { PlayAsColor, BotMove } from "../../../types";
 
-const MOVE_DELAY_MS = 500;
+const DEFAULT_MOVE_DELAY_MS = 500;
 
 interface BotControllerProps {
   playAs: PlayAsColor;
+  moveDelayMs?: number;
   onThinkingChange: (isThinking: boolean) => void;
   onMoveComplete: (move: BotMove) => void;
   onBotMoveStart?: () => void;
@@ -20,6 +21,7 @@ function playAsToColor(playAs: PlayAsColor): Color {
 
 export function BotController({
   playAs,
+  moveDelayMs = DEFAULT_MOVE_DELAY_MS,
   onThinkingChange,
   onMoveComplete,
   onBotMoveStart,
@@ -144,7 +146,7 @@ export function BotController({
       } finally {
         onThinkingChangeRef.current(false);
       }
-    }, MOVE_DELAY_MS);
+    }, moveDelayMs);
 
     return () => {
       clearTimeout(delayTimeoutId);
@@ -154,6 +156,7 @@ export function BotController({
     };
   }, [
     playAs,
+    moveDelayMs,
     currentFen,
     gameInfo.turn,
     gameInfo.isGameOver,

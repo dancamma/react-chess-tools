@@ -1,6 +1,13 @@
 export { ChessBot } from "./components/ChessBot";
-export { useChessBotContext, ChessBotContext } from "./hooks";
-export type { ChessBotContextValue } from "./hooks";
+export { useChessBotContext, ChessBotContext, useBotTournament } from "./hooks";
+export type {
+  ChessBotContextValue,
+  GameResult,
+  MatchupResult,
+  TournamentState,
+  UseBotTournamentOptions,
+  ActiveSlot,
+} from "./hooks";
 
 export type {
   PlayAsColor,

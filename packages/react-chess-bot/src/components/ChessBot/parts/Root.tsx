@@ -15,6 +15,7 @@ import { DIFFICULTY_PRESETS } from "../../../utils/difficulty";
 export interface RootProps {
   playAs: PlayAsColor;
   difficulty?: DifficultyLevel;
+  moveDelayMs?: number;
   workerPath: string;
   onBotMoveStart?: () => void;
   onBotMoveComplete?: (move: BotMove) => void;
@@ -25,6 +26,7 @@ export interface RootProps {
 export function Root({
   playAs,
   difficulty = 5,
+  moveDelayMs,
   workerPath,
   onBotMoveStart,
   onBotMoveComplete,
@@ -115,6 +117,7 @@ export function Root({
         >
           <BotController
             playAs={playAs}
+            moveDelayMs={moveDelayMs}
             onThinkingChange={setIsThinking}
             onMoveComplete={handleMoveComplete}
             onBotMoveStart={onBotMoveStart}
