@@ -2,12 +2,17 @@ import { useEffect, useRef } from "react";
 import type { Color } from "chess.js";
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
 import { useStockfish } from "@react-chess-tools/react-chess-stockfish";
-import type { PlayAsColor, BotMove } from "../../../types";
+import type { PlayAsColor, BotMove, DifficultyLevel } from "../../../types";
+import {
+  pickMoveWithRandomness,
+  DIFFICULTY_PRESETS,
+} from "../../../utils/difficulty";
 
 const DEFAULT_MOVE_DELAY_MS = 500;
 
 interface BotControllerProps {
   playAs: PlayAsColor;
+  difficulty: DifficultyLevel;
   moveDelayMs?: number;
   onThinkingChange: (isThinking: boolean) => void;
   onMoveComplete: (move: BotMove) => void;
@@ -21,6 +26,7 @@ function playAsToColor(playAs: PlayAsColor): Color {
 
 export function BotController({
   playAs,
+  difficulty,
   moveDelayMs = DEFAULT_MOVE_DELAY_MS,
   onThinkingChange,
   onMoveComplete,
@@ -29,6 +35,7 @@ export function BotController({
 }: BotControllerProps): null {
   const { currentFen, info: gameInfo, methods } = useChessGameContext();
   const { info: engineInfo } = useStockfish();
+  const skillLevel = DIFFICULTY_PRESETS[difficulty].skillLevel;
 
   const positionFenRef = useRef<string | null>(null);
   const hasMovedForPositionRef = useRef(false);
@@ -105,7 +112,10 @@ export function BotController({
       return;
     }
 
-    const selectedMove = engineInfo.principalVariations[0]?.moves[0] ?? null;
+    const selectedMove = pickMoveWithRandomness(
+      engineInfo.principalVariations,
+      skillLevel,
+    );
 
     if (!selectedMove) {
       const error = new Error(
@@ -156,6 +166,8 @@ export function BotController({
     };
   }, [
     playAs,
+    difficulty,
+    skillLevel,
     moveDelayMs,
     currentFen,
     gameInfo.turn,

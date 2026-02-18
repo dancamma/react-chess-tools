@@ -8,6 +8,7 @@ export interface DifficultyConfig {
   depth: number;
   skillLevel: number;
   moveTime: number;
+  multiPV: number;
 }
 
 export type BotMove = PVMove;

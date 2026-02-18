@@ -105,12 +105,14 @@ describe("BotController", () => {
     props: {
       playAs?: "white" | "black";
       fen?: string;
+      difficulty?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
     } = {},
   ) => {
     return render(
       <ChessGame.Root fen={props.fen}>
         <BotController
           playAs={props.playAs ?? "white"}
+          difficulty={props.difficulty ?? 5}
           onThinkingChange={onThinkingChange}
           onMoveComplete={onMoveComplete}
           onBotMoveStart={onBotMoveStart}
@@ -243,6 +245,7 @@ describe("BotController", () => {
         <ChessGame.Root>
           <BotController
             playAs="white"
+            difficulty={5}
             onThinkingChange={onThinkingChange}
             onMoveComplete={onMoveComplete}
             onBotMoveStart={onBotMoveStart}
@@ -304,6 +307,7 @@ describe("BotController", () => {
         <ChessGame.Root>
           <BotController
             playAs="white"
+            difficulty={5}
             onThinkingChange={onThinkingChange}
             onMoveComplete={onMoveComplete}
             onBotMoveStart={onBotMoveStart}
@@ -400,7 +404,7 @@ describe("BotController", () => {
   });
 
   describe("move selection", () => {
-    it("always selects first move from first PV", async () => {
+    it("at max difficulty (8), strongly favors best move from first PV", async () => {
       const pvs = [
         createPV(1, "e4", "e2e4", 100),
         createPV(2, "d4", "d2d4", 80),
@@ -413,23 +417,67 @@ describe("BotController", () => {
         }),
       );
 
-      for (let i = 0; i < 5; i++) {
+      let e4Count = 0;
+      const iterations = 20;
+
+      for (let i = 0; i < iterations; i++) {
         onMoveComplete.mockClear();
         jest.clearAllTimers();
 
-        renderBotController({ playAs: "white" });
+        renderBotController({ playAs: "white", difficulty: 8 });
 
         act(() => {
           jest.runAllTimers();
         });
 
         await waitFor(() => {
-          expect(onMoveComplete).toHaveBeenCalledWith({
-            san: "e4",
-            uci: "e2e4",
-          });
+          expect(onMoveComplete).toHaveBeenCalled();
         });
+
+        if (onMoveComplete.mock.calls[0][0].san === "e4") {
+          e4Count++;
+        }
       }
+
+      expect(e4Count).toBeGreaterThan(iterations * 0.5);
+    });
+
+    it("at low difficulty (1), may select from multiple PVs", async () => {
+      const pvs = [
+        createPV(1, "e4", "e2e4", 100),
+        createPV(2, "d4", "d2d4", 95),
+        createPV(3, "c4", "c2c4", 90),
+      ];
+
+      mockedUseStockfish.mockReturnValue(
+        createMockStockfishContext({
+          info: { principalVariations: pvs },
+        }),
+      );
+
+      const moveCounts: Record<string, number> = { e4: 0, d4: 0, c4: 0 };
+      const iterations = 30;
+
+      for (let i = 0; i < iterations; i++) {
+        onMoveComplete.mockClear();
+        jest.clearAllTimers();
+
+        renderBotController({ playAs: "white", difficulty: 1 });
+
+        act(() => {
+          jest.runAllTimers();
+        });
+
+        await waitFor(() => {
+          expect(onMoveComplete).toHaveBeenCalled();
+        });
+
+        const move = onMoveComplete.mock.calls[0][0].san;
+        moveCounts[move]++;
+      }
+
+      const nonE4Count = moveCounts.d4 + moveCounts.c4;
+      expect(nonE4Count).toBeGreaterThan(0);
     });
   });
 });

@@ -56,7 +56,7 @@ export function Root({
       depth: preset.depth,
       skillLevel: preset.skillLevel,
       moveTime: preset.moveTime,
-      multiPV: 1,
+      multiPV: preset.multiPV,
     };
   }, [preset]);
 
@@ -117,6 +117,7 @@ export function Root({
         >
           <BotController
             playAs={playAs}
+            difficulty={difficulty}
             moveDelayMs={moveDelayMs}
             onThinkingChange={setIsThinking}
             onMoveComplete={handleMoveComplete}
