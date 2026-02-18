@@ -21,7 +21,8 @@ export function configCompareEqual(
   return (
     a.skillLevel === b.skillLevel &&
     a.depth === b.depth &&
-    a.multiPV === b.multiPV
+    a.multiPV === b.multiPV &&
+    a.moveTime === b.moveTime
   );
 }
 

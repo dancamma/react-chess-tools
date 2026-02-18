@@ -880,13 +880,14 @@ export class StockfishEngine {
     // Multi PV
     this.applyUciOption("MultiPV", "multiPV", config.multiPV, 1, 500);
 
-    // Note: depth is handled in the go command, not as a setoption
+    // Note: depth and moveTime are handled in the go command, not as setoption
     this.appliedConfig.depth = config.depth;
+    this.appliedConfig.moveTime = config.moveTime;
   }
 
   private applyUciOption(
     uciName: string,
-    key: keyof StockfishConfig,
+    key: "skillLevel" | "multiPV",
     value: number | undefined,
     min: number,
     max: number,

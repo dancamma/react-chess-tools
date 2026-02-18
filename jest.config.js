@@ -16,6 +16,10 @@ module.exports = {
       "<rootDir>/packages/react-chess-puzzle/src/index.ts",
     "^@react-chess-tools/react-chess-clock$":
       "<rootDir>/packages/react-chess-clock/src/index.ts",
+    "^@react-chess-tools/react-chess-stockfish$":
+      "<rootDir>/packages/react-chess-stockfish/src/index.ts",
+    "^@react-chess-tools/react-chess-bot$":
+      "<rootDir>/packages/react-chess-bot/src/index.ts",
   },
   collectCoverage: true,
   collectCoverageFrom: [
@@ -23,5 +27,8 @@ module.exports = {
     "!**/node_modules/**",
     "!**/dist/**",
     "!**/*.stories.{ts,tsx}",
+    "!**/*.stories.*.{ts,tsx}",
+    "!**/tsup.config.ts",
+    "!**/index.ts",
   ],
 };
