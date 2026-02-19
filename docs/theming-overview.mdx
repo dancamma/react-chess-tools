@@ -1,0 +1,264 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Theming/Overview" />
+
+# Theme System
+
+Customize the appearance of chess boards across all packages.
+
+## How Theming Works
+
+The theme system uses **deep partial objects** - you only specify the properties you want to change, and defaults are used for the rest.
+
+### Theme Structure
+
+```tsx
+interface Theme {
+  board: {
+    lightSquare: React.CSSProperties;
+    darkSquare: React.CSSProperties;
+  };
+  state: {
+    lastMove: string | React.CSSProperties;
+    check: string | React.CSSProperties;
+    activeSquare: string | React.CSSProperties;
+    dropSquare: string | React.CSSProperties;
+  };
+  indicators: {
+    move: string | React.CSSProperties;
+    capture: string | React.CSSProperties;
+  };
+}
+```
+
+### Theme Properties
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>board.lightSquare</code>
+      </td>
+      <td>Style for light squares</td>
+    </tr>
+    <tr>
+      <td>
+        <code>board.darkSquare</code>
+      </td>
+      <td>Style for dark squares</td>
+    </tr>
+    <tr>
+      <td>
+        <code>state.lastMove</code>
+      </td>
+      <td>Highlight for last move</td>
+    </tr>
+    <tr>
+      <td>
+        <code>state.check</code>
+      </td>
+      <td>Highlight for king in check</td>
+    </tr>
+    <tr>
+      <td>
+        <code>state.activeSquare</code>
+      </td>
+      <td>Highlight for selected piece square</td>
+    </tr>
+    <tr>
+      <td>
+        <code>state.dropSquare</code>
+      </td>
+      <td>Highlight for valid drop square</td>
+    </tr>
+    <tr>
+      <td>
+        <code>indicators.move</code>
+      </td>
+      <td>Small circle indicator for legal moves</td>
+    </tr>
+    <tr>
+      <td>
+        <code>indicators.capture</code>
+      </td>
+      <td>Ring indicator for captures</td>
+    </tr>
+  </tbody>
+</table>
+
+## Using Themes
+
+### Apply Full Theme
+
+```tsx
+import { themes } from "@react-chess-tools/react-chess-game";
+
+<ChessGame.Root theme={themes.lichess}>
+  <ChessGame.Board />
+</ChessGame.Root>;
+```
+
+### Partial Override
+
+Override only specific properties:
+
+```tsx
+<ChessGame.Root
+  theme={{
+    state: {
+      lastMove: "rgba(147, 112, 219, 0.5)", // Purple last move
+      check: "rgba(255, 165, 0, 0.6)", // Orange check
+    },
+  }}
+>
+  <ChessGame.Board />
+</ChessGame.Root>
+```
+
+### Merge with Preset
+
+Combine a preset with custom overrides:
+
+```tsx
+import { themes, mergeTheme } from "@react-chess-tools/react-chess-game";
+
+const customTheme = mergeTheme(themes.lichess, {
+  board: {
+    lightSquare: { backgroundColor: "#f0d9b5" },
+  },
+});
+
+<ChessGame.Root theme={customTheme}>
+  <ChessGame.Board />
+</ChessGame.Root>;
+```
+
+## Available Presets
+
+<table>
+  <thead>
+    <tr>
+      <th>Preset</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>themes.default</code>
+      </td>
+      <td>Classic brown board</td>
+    </tr>
+    <tr>
+      <td>
+        <code>themes.lichess</code>
+      </td>
+      <td>Green highlights, Lichess style</td>
+    </tr>
+    <tr>
+      <td>
+        <code>themes.chessCom</code>
+      </td>
+      <td>Green board, yellow highlights</td>
+    </tr>
+  </tbody>
+</table>
+
+See [Preset Gallery](?path=/story/theming-presets) for visual comparison.
+
+## Color Values
+
+Theme properties accept different formats:
+
+```tsx
+// String (backgroundColor shorthand)
+lastMove: 'rgba(255, 255, 0, 0.5)'
+
+// Style object (full control)
+lastMove: {
+  backgroundColor: 'rgba(255, 255, 0, 0.5)',
+  borderRadius: '4px',
+}
+
+// CSS color names
+check: 'red'
+
+// Hex colors
+lightSquare: { backgroundColor: '#f0d9b5' }
+```
+
+## Cross-Package Theming
+
+Both `react-chess-game` and `react-chess-puzzle` support the same theme system:
+
+```tsx
+// Works in both packages
+<ChessGame.Root theme={myTheme}>
+  <ChessGame.Board />
+</ChessGame.Root>
+
+<ChessPuzzle.Root puzzle={puzzle} theme={myTheme}>
+  <ChessPuzzle.Board />
+</ChessPuzzle.Root>
+```
+
+## Advanced: Custom Theme Hook
+
+Create reusable theme configurations:
+
+```tsx
+import {
+  themes,
+  mergeTheme,
+  type DeepPartial,
+  type Theme,
+} from "@react-chess-tools/react-chess-game";
+
+// Define your theme variants
+const myThemes = {
+  dark: mergeTheme(themes.default, {
+    board: {
+      lightSquare: { backgroundColor: "#769656" },
+      darkSquare: { backgroundColor: "#4a6741" },
+    },
+    state: {
+      lastMove: "rgba(255, 255, 255, 0.3)",
+    },
+  }),
+
+  ocean: {
+    board: {
+      lightSquare: { backgroundColor: "#e8f4f8" },
+      darkSquare: { backgroundColor: "#5da4c8" },
+    },
+    state: {
+      lastMove: "rgba(0, 100, 200, 0.4)",
+      check: "rgba(255, 50, 50, 0.6)",
+    },
+  },
+} as const;
+
+// Use in your app
+<ChessGame.Root theme={myThemes.dark}>
+  <ChessGame.Board />
+</ChessGame.Root>;
+```
+
+## CSS Custom Properties
+
+The board component also supports CSS styling through className and style props:
+
+```tsx
+<ChessGame.Board
+  className="rounded-lg shadow-xl"
+  style={{ border: "2px solid #333" }}
+/>
+```
+
+This applies to the board container, not individual squares. Use the theme for square-level customization.

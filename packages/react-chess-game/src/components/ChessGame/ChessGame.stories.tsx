@@ -21,7 +21,7 @@ import {
 } from "@story-helpers";
 
 const meta = {
-  title: "react-chess-game/Components/ChessGame",
+  title: "Packages/react-chess-game/ChessGame",
   component: ChessGame.Root,
   tags: ["components", "game", "board"],
   argTypes: {},

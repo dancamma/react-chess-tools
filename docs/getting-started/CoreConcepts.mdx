@@ -1,0 +1,309 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Getting Started/Core Concepts" />
+
+# Core Concepts
+
+Understanding the architecture behind react-chess-tools.
+
+## Compound Component Pattern
+
+react-chess-tools uses the **compound component pattern** (similar to Radix UI). Instead of a single component with many props, you compose your UI from multiple components that share state internally.
+
+### Why Compound Components?
+
+**Traditional approach** (single component with many props):
+
+```tsx
+// Hard to customize, props explosion
+<ChessBoard
+  showSounds
+  soundVolume={0.8}
+  showKeyboardControls
+  customShortcuts={{...}}
+  showClock
+  clockTime="5+3"
+  clockAutoStart
+  theme={{...}}
+  // ...many more props
+/>
+```
+
+**Compound component approach**:
+
+```tsx
+// Compose only what you need
+<ChessGame.Root timeControl={{ time: "5+3" }}>
+  <ChessGame.Clock.Display color="white" />
+  <ChessGame.Board />
+  <ChessGame.Sounds />
+  <ChessGame.KeyboardControls />
+</ChessGame.Root>
+```
+
+Benefits:
+
+- Only include features you use
+- Natural component composition
+- Easier to understand and customize
+- Better tree-shaking
+
+## Context-Based State
+
+Each package uses React Context to share state between components.
+
+### How It Works
+
+```
+ChessGame.Root (creates context)
+    │
+    ├── ChessGame.Board (consumes context)
+    ├── ChessGame.Sounds (consumes context)
+    └── ChessGame.KeyboardControls (consumes context)
+```
+
+The `Root` component creates and provides the context. Child components access it internally.
+
+### Accessing Context
+
+Use hooks to access game state in your components:
+
+```tsx
+import { useChessGameContext } from "@react-chess-tools/react-chess-game";
+
+function MoveCounter() {
+  const { game, history } = useChessGameContext();
+
+  return (
+    <div>
+      Moves: {history.length}
+      Turn: {game.turn() === "w" ? "White" : "Black"}
+    </div>
+  );
+}
+```
+
+## The asChild Pattern
+
+Many components support the `asChild` prop, allowing you to replace the default element with your own while preserving functionality.
+
+### Example: Custom Reset Button
+
+```tsx
+<ChessGame.Reset asChild>
+  <button className="my-custom-button">Start Over</button>
+</ChessGame.Reset>
+```
+
+The button renders as your custom element but still triggers the reset action.
+
+### When to Use asChild
+
+- Styling with CSS modules or Tailwind
+- Adding custom attributes
+- Integrating with other component libraries
+
+## Theme System
+
+The theme system uses **deep partial merging** - you only specify what you want to change.
+
+### Using Presets
+
+```tsx
+import { themes } from "@react-chess-tools/react-chess-game";
+
+<ChessGame.Root theme={themes.lichess}>
+  <ChessGame.Board />
+</ChessGame.Root>;
+```
+
+Available presets:
+
+- `themes.default` - Classic brown board
+- `themes.lichess` - Lichess-inspired green
+- `themes.chessCom` - Chess.com-inspired
+
+### Partial Overrides
+
+Override only specific colors:
+
+```tsx
+<ChessGame.Root
+  theme={{
+    state: {
+      lastMove: "rgba(147, 112, 219, 0.5)", // Purple highlight
+    },
+  }}
+>
+  <ChessGame.Board />
+</ChessGame.Root>
+```
+
+## Package Composition
+
+Packages are designed to work together. The key is understanding context nesting.
+
+### Game + Clock
+
+Clock is built into `react-chess-game`:
+
+```tsx
+<ChessGame.Root timeControl={{ time: "5+3" }}>
+  <ChessGame.Clock.Display color="white" />
+  <ChessGame.Clock.Display color="black" />
+  <ChessGame.Board />
+</ChessGame.Root>
+```
+
+### Game + Stockfish
+
+Stockfish wraps the game to sync FEN state:
+
+```tsx
+<ChessStockfish.Root fen={fen} onFenChange={setFen}>
+  <ChessGame.Root fen={fen} onMove={handleMove}>
+    <ChessStockfish.EvaluationBar />
+    <ChessGame.Board />
+    <ChessStockfish.EngineLines />
+  </ChessGame.Root>
+</ChessStockfish.Root>
+```
+
+### Puzzle + Sounds
+
+Puzzle extends Game, so you can use Game components inside:
+
+```tsx
+<ChessPuzzle.Root puzzle={puzzle}>
+  <ChessGame.Sounds />
+  <ChessPuzzle.Board />
+</ChessPuzzle.Root>
+```
+
+## Hooks Reference
+
+### useChessGameContext
+
+Access game state from child components.
+
+```tsx
+const {
+  game, // Current Chess.js instance
+  history, // Move history
+  methods, // { makeMove, undoMove, resetGame, setPosition }
+  isGameOver, // Boolean
+} = useChessGameContext();
+```
+
+### useChessPuzzleContext
+
+Access puzzle state from child components inside `ChessPuzzle.Root`.
+
+```tsx
+const {
+  puzzle, // Current puzzle data
+  status, // "idle" | "playing" | "solved" | "failed"
+  hint, // Current hint (if any)
+  nextMove, // Next expected move
+  isPlayerTurn, // Boolean
+  movesPlayed, // Number of moves played
+  totalMoves, // Total moves in puzzle
+  onHint, // Toggle hint visibility
+  resetPuzzle, // Reset to initial position
+  changePuzzle, // Load a different puzzle
+} = useChessPuzzleContext();
+```
+
+### useStockfish
+
+Access Stockfish analysis state and methods inside `ChessStockfish.Root`.
+
+```tsx
+const {
+  fen, // Current FEN being analyzed
+  info: {
+    evaluation, // { type: 'cp' | 'mate', value: number }
+    depth, // Search depth
+    lines, // Principal variation lines
+    status, // Analysis status
+  },
+  methods: {
+    startAnalysis, // Begin analysis
+    stopAnalysis, // Stop analysis
+    setConfig, // Update engine config
+  },
+} = useStockfish();
+```
+
+### useChessClock
+
+Create and manage a standalone chess clock (from `react-chess-clock`).
+
+```tsx
+const {
+  times,         // { white: number, black: number } in ms
+  initialTimes,  // Starting times
+  status,        // "idle" | "running" | "paused" | "finished"
+  activePlayer,  // "white" | "black" | null
+  timeout,       // Player who ran out of time, or null
+  info,          // Computed state (isRunning, isPaused, etc.)
+  methods: {
+    start,    // Start the clock
+    pause,    // Pause the clock
+    resume,   // Resume from pause
+    switch,   // Switch active player
+    reset,    // Reset to initial times
+    addTime,  // Add time to a player
+    setTime,  // Set exact time for a player
+  },
+} = useChessClock({
+  time: "5+3",           // Time control string or object
+  timingMethod: "fischer", // "fischer" | "delay" | "bronstein"
+  clockStart: "delayed",   // "delayed" | "immediate" | "manual"
+  onTimeout: (loser) => {}, // Callback when time runs out
+});
+```
+
+## Best Practices
+
+### 1. Minimal Root Configuration
+
+Keep `Root` props focused on state:
+
+```tsx
+// Good
+<ChessGame.Root fen={fen} onMove={handleMove} timeControl={{ time: "5+3" }}>
+
+// Avoid - styling belongs on child components
+<ChessGame.Root className="board" style={{ width: 400 }}>
+```
+
+### 2. Separate Concerns
+
+```tsx
+// Good - clear separation
+<ChessGame.Root>
+  <div className="board-container">
+    <ChessGame.Board className="my-board" />
+  </div>
+  <ChessGame.Sounds />
+</ChessGame.Root>
+```
+
+### 3. Context Boundary Awareness
+
+Components must be inside their provider:
+
+```tsx
+// Wrong - Reset outside Root context
+<ChessGame.Reset />
+<ChessGame.Root>
+  <ChessGame.Board />
+</ChessGame.Root>
+
+// Correct - Reset inside Root context
+<ChessGame.Root>
+  <ChessGame.Board />
+  <ChessGame.Reset />
+</ChessGame.Root>
+```

@@ -18,7 +18,7 @@ import {
 } from "@story-helpers";
 
 const meta = {
-  title: "react-chess-clock/Components/ChessClock",
+  title: "Packages/react-chess-clock/ChessClock",
   component: ChessClock.Root,
   tags: ["components", "clock", "timer"],
   argTypes: {},

@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 /* Tell Tailwind where to find class names */
+@source "../src/**/*.stories.tsx";
+@source "../docs/**/*.mdx";
 @source "../packages/**/*.stories.tsx";
 @source "../packages/**/*.mdx";
 @source "./*.tsx";

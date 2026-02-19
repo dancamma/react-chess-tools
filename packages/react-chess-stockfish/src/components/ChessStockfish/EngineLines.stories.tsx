@@ -21,7 +21,7 @@ const FEN = {
 };
 
 const meta = {
-  title: "React-Chess-Stockfish/Components/EngineLines",
+  title: "Packages/react-chess-stockfish/EngineLines",
   component: EngineLines,
   tags: ["components", "engine", "lines"],
   parameters: { layout: "centered" },

@@ -93,12 +93,13 @@ export const BoardWrapper = ({ children }: { children: React.ReactNode }) => (
 
 export const SecondaryBtn = ({
   children,
+  className,
   ...props
 }: {
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
   <button
-    className="px-3.5 py-1.5 text-size-sm font-medium font-sans border rounded border-border bg-surface text-text"
+    className={`px-3.5 py-1.5 text-size-sm font-medium font-sans border rounded border-border bg-surface text-text${className ? ` ${className}` : ""}`}
     {...props}
   >
     {children}
@@ -107,12 +108,13 @@ export const SecondaryBtn = ({
 
 export const PrimaryBtn = ({
   children,
+  className,
   ...props
 }: {
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
   <button
-    className="px-3.5 py-1.5 text-size-sm font-medium font-sans border rounded bg-accent border-accent text-white"
+    className={`px-3.5 py-1.5 text-size-sm font-medium font-sans border rounded bg-accent border-accent text-white${className ? ` ${className}` : ""}`}
     {...props}
   >
     {children}
@@ -121,12 +123,13 @@ export const PrimaryBtn = ({
 
 export const SuccessBtn = ({
   children,
+  className,
   ...props
 }: {
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
   <button
-    className="py-2.5 px-5 text-size-sm font-semibold cursor-pointer border-none rounded-md bg-btn-green text-white shadow-md"
+    className={`py-2.5 px-5 text-size-sm font-semibold cursor-pointer border-none rounded-md bg-btn-green text-white shadow-md${className ? ` ${className}` : ""}`}
     {...props}
   >
     {children}
@@ -135,12 +138,13 @@ export const SuccessBtn = ({
 
 export const HintBtn = ({
   children,
+  className,
   ...props
 }: {
   children: React.ReactNode;
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
   <button
-    className="py-2 px-4 text-size-sm font-medium cursor-pointer border border-dashed border-text-muted rounded-md bg-transparent text-text-muted"
+    className={`py-2 px-4 text-size-sm font-medium cursor-pointer border border-dashed border-text-muted rounded-md bg-transparent text-text-muted${className ? ` ${className}` : ""}`}
     {...props}
   >
     {children}

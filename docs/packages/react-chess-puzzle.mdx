@@ -1,0 +1,294 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as PuzzleStories from "../../packages/react-chess-puzzle/src/components/ChessPuzzle/ChessPuzzle.stories";
+
+<Meta title="Packages/react-chess-puzzle/Overview" />
+
+# react-chess-puzzle
+
+Interactive chess puzzle component for building puzzle experiences.
+
+## When to Use
+
+Use `react-chess-puzzle` when you need:
+
+- Interactive puzzle solving
+- Move validation against expected solution
+- Hint system for stuck players
+- Success/failure callbacks
+- Puzzle progression (multiple puzzles)
+
+## Installation
+
+```bash
+npm install @react-chess-tools/react-chess-puzzle
+```
+
+Note: This package depends on `react-chess-game` and will use its components for board rendering.
+
+## Quick Start
+
+```tsx
+import { ChessPuzzle } from "@react-chess-tools/react-chess-puzzle";
+
+function App() {
+  const puzzle = {
+    fen: "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
+    moves: ["h5f7"], // Solution: Qxf7#
+    makeFirstMove: false,
+  };
+
+  return (
+    <ChessPuzzle.Root puzzle={puzzle}>
+      <ChessPuzzle.Board />
+      <ChessPuzzle.Reset>Retry</ChessPuzzle.Reset>
+    </ChessPuzzle.Root>
+  );
+}
+```
+
+## Puzzle Format
+
+```tsx
+interface Puzzle {
+  // Starting position in FEN notation
+  fen: string;
+
+  // Expected move sequence in UCI format (e.g., "e2e4")
+  moves: string[];
+
+  // If true, opponent's first move plays automatically
+  makeFirstMove?: boolean;
+}
+```
+
+### Move Format
+
+Moves use UCI notation (from-square + to-square):
+
+- `e2e4` - Pawn to e4
+- `g1f3` - Knight to f3
+- `e7e8q` - Promotion to queen
+
+## Components
+
+### ChessPuzzle.Root
+
+The context provider that manages puzzle state.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>puzzle</code>
+      </td>
+      <td>
+        <code>Puzzle</code>
+      </td>
+      <td>required</td>
+      <td>Puzzle configuration</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onSolve</code>
+      </td>
+      <td>
+        <code>() =&gt; void</code>
+      </td>
+      <td>-</td>
+      <td>Called when puzzle is solved</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onFail</code>
+      </td>
+      <td>
+        <code>(move: string) =&gt; void</code>
+      </td>
+      <td>-</td>
+      <td>Called on wrong move</td>
+    </tr>
+    <tr>
+      <td>
+        <code>solveOnCheckmate</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>true</code>
+      </td>
+      <td>Accept any checkmate as solution</td>
+    </tr>
+    <tr>
+      <td>
+        <code>theme</code>
+      </td>
+      <td>
+        <code>Partial&lt;Theme&gt;</code>
+      </td>
+      <td>default</td>
+      <td>Theme customization</td>
+    </tr>
+  </tbody>
+</table>
+
+### ChessPuzzle.Board
+
+The visual chess board. Same props as `ChessGame.Board`.
+
+### ChessPuzzle.Reset
+
+Reset button component.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>puzzle</code>
+      </td>
+      <td>
+        <code>Puzzle</code>
+      </td>
+      <td>Load a different puzzle</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onReset</code>
+      </td>
+      <td>
+        <code>() =&gt; void</code>
+      </td>
+      <td>Callback after reset</td>
+    </tr>
+    <tr>
+      <td>
+        <code>asChild</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>Use custom element</td>
+    </tr>
+  </tbody>
+</table>
+
+### ChessPuzzle.Hint
+
+Reveals the next correct move.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>asChild</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>Use custom element</td>
+    </tr>
+  </tbody>
+</table>
+
+## Hooks
+
+### useChessPuzzleContext
+
+Access puzzle state from child components.
+
+```tsx
+import { useChessPuzzleContext } from "@react-chess-tools/react-chess-puzzle";
+
+function PuzzleStatus() {
+  const { solved, failed, currentMoveIndex, totalMoves, hintUsed } =
+    useChessPuzzleContext();
+
+  return (
+    <div>
+      {solved && <p>Puzzle solved!</p>}
+      {failed && <p>Wrong move - try again!</p>}
+      <p>
+        Progress: {currentMoveIndex} / {totalMoves}
+      </p>
+    </div>
+  );
+}
+```
+
+## Using with ChessGame Components
+
+Since ChessPuzzle extends ChessGame, you can use ChessGame components inside:
+
+```tsx
+<ChessPuzzle.Root puzzle={puzzle}>
+  {/* Add sounds */}
+  <ChessGame.Sounds />
+
+  {/* Add keyboard controls */}
+  <ChessGame.KeyboardControls />
+
+  {/* The puzzle board */}
+  <ChessPuzzle.Board />
+
+  {/* Puzzle controls */}
+  <ChessPuzzle.Reset>Retry</ChessPuzzle.Reset>
+  <ChessPuzzle.Hint>Hint</ChessPuzzle.Hint>
+</ChessPuzzle.Root>
+```
+
+## Checkmate Behavior
+
+### solveOnCheckmate: true (default)
+
+Any checkmate move solves the puzzle, even if not in the expected sequence:
+
+```tsx
+// Puzzle expects Ra8#
+const puzzle = {
+  fen: "...",
+  moves: ["a7a8"],
+};
+
+// Player plays Qc8# instead - still counts as solved!
+```
+
+### solveOnCheckmate: false
+
+Only the exact move sequence is accepted:
+
+```tsx
+<ChessPuzzle.Root puzzle={puzzle} solveOnCheckmate={false}>
+  <ChessPuzzle.Board />
+</ChessPuzzle.Root>
+```
+
+## Examples
+
+<Canvas of={PuzzleStories.Example} />
+
+## Dependencies
+
+- `react-chess-game` - Core game functionality
+- `chess.js` - Chess logic engine

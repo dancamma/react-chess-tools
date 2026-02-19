@@ -23,7 +23,7 @@ const FEN = {
 };
 
 const meta = {
-  title: "React-Chess-Stockfish/Components/EvaluationBar",
+  title: "Packages/react-chess-stockfish/EvaluationBar",
   component: ChessStockfish.EvaluationBar,
   tags: ["components", "evaluation", "bar"],
   parameters: { layout: "centered" },

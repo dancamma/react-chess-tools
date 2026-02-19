@@ -10,6 +10,15 @@ const require = createRequire(import.meta.url);
 
 const config: StorybookConfig = {
   stories: [
+    // Introduction (first for default view)
+    "../docs/getting-started/Introduction.mdx",
+    // MDX Documentation
+    "../docs/**/*.mdx",
+    // Use Cases
+    "../src/stories/use-cases/**/*.stories.@(js|jsx|ts|tsx)",
+    // Theming
+    "../src/stories/theming/**/*.stories.@(js|jsx|ts|tsx)",
+    // Package Stories
     "../packages/**/*.mdx",
     "../packages/**/*.stories.@(js|jsx|ts|tsx)",
   ],

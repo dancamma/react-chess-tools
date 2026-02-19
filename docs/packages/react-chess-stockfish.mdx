@@ -1,0 +1,468 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as ChessStockfishStories from "../../packages/react-chess-stockfish/src/components/ChessStockfish/ChessStockfish.stories";
+import * as EvaluationBarStories from "../../packages/react-chess-stockfish/src/components/ChessStockfish/EvaluationBar.stories";
+import * as EngineLinesStories from "../../packages/react-chess-stockfish/src/components/ChessStockfish/EngineLines.stories";
+
+<Meta title="Packages/react-chess-stockfish/Overview" />
+
+# react-chess-stockfish
+
+Stockfish chess engine integration with evaluation bar and principal variation lines.
+
+## When to Use
+
+Use `react-chess-stockfish` when you need:
+
+- Real-time position evaluation
+- Engine analysis lines (PV)
+- Evaluation bar visualization
+- Building chess analysis tools
+- Computer opponent features
+
+## Installation
+
+```bash
+npm install @react-chess-tools/react-chess-stockfish
+```
+
+## Stockfish Setup
+
+The engine runs in a WebWorker. Download the required files and place them in your public directory:
+
+```
+public/
+├── stockfish.js      // Worker script
+└── stockfish.wasm    // WebAssembly binary
+```
+
+Download from [stockfish.js releases](https://github.com/nmrugg/stockfish.js/releases).
+
+## Quick Start
+
+```tsx
+import { ChessStockfish } from "@react-chess-tools/react-chess-stockfish";
+
+function App() {
+  const [fen, setFen] = useState(STARTING_FEN);
+
+  return (
+    <ChessStockfish.Root
+      fen={fen}
+      onFenChange={setFen}
+      workerOptions={{ workerPath: "/stockfish.js" }}
+    >
+      <ChessStockfish.EvaluationBar showEvaluation />
+      <ChessGame.Board fen={fen} onMove={(_, game) => setFen(game.fen())} />
+      <ChessStockfish.EngineLines maxLines={3} />
+    </ChessStockfish.Root>
+  );
+}
+```
+
+## Components
+
+### ChessStockfish.Root
+
+The context provider that manages engine state.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>fen</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>required</td>
+      <td>Position to analyze</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onFenChange</code>
+      </td>
+      <td>
+        <code>(fen: string) =&gt; void</code>
+      </td>
+      <td>-</td>
+      <td>Called when FEN changes</td>
+    </tr>
+    <tr>
+      <td>
+        <code>workerOptions</code>
+      </td>
+      <td>
+        <code>WorkerOptions</code>
+      </td>
+      <td>required</td>
+      <td>Worker configuration</td>
+    </tr>
+    <tr>
+      <td>
+        <code>depth</code>
+      </td>
+      <td>
+        <code>number</code>
+      </td>
+      <td>
+        <code>20</code>
+      </td>
+      <td>Search depth</td>
+    </tr>
+    <tr>
+      <td>
+        <code>maxLines</code>
+      </td>
+      <td>
+        <code>number</code>
+      </td>
+      <td>
+        <code>1</code>
+      </td>
+      <td>Number of PV lines</td>
+    </tr>
+    <tr>
+      <td>
+        <code>autoAnalyze</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>true</code>
+      </td>
+      <td>Auto-analyze on FEN change</td>
+    </tr>
+  </tbody>
+</table>
+
+#### WorkerOptions
+
+```tsx
+interface WorkerOptions {
+  workerPath: string; // Path to stockfish.js
+  stockfishWasmPath?: string; // Custom WASM path
+}
+```
+
+### ChessStockfish.EvaluationBar
+
+Visual evaluation bar showing who's ahead.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>showEvaluation</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>false</code>
+      </td>
+      <td>Show numerical eval</td>
+    </tr>
+    <tr>
+      <td>
+        <code>height</code>
+      </td>
+      <td>
+        <code>number</code>
+      </td>
+      <td>
+        <code>320</code>
+      </td>
+      <td>Bar height in px</td>
+    </tr>
+    <tr>
+      <td>
+        <code>width</code>
+      </td>
+      <td>
+        <code>number</code>
+      </td>
+      <td>
+        <code>20</code>
+      </td>
+      <td>Bar width in px</td>
+    </tr>
+    <tr>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>-</td>
+      <td>CSS class</td>
+    </tr>
+  </tbody>
+</table>
+
+The evaluation is normalized to a -1 to +1 range for the bar position:
+
+- `+1` = White is winning (bar full white)
+- `-1` = Black is winning (bar full black)
+- `0` = Position is equal
+
+### ChessStockfish.EngineLines
+
+Shows principal variation lines from the engine.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>maxLines</code>
+      </td>
+      <td>
+        <code>number</code>
+      </td>
+      <td>
+        <code>3</code>
+      </td>
+      <td>Number of lines to show</td>
+    </tr>
+    <tr>
+      <td>
+        <code>showDepth</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>true</code>
+      </td>
+      <td>Show search depth</td>
+    </tr>
+    <tr>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>-</td>
+      <td>CSS class</td>
+    </tr>
+  </tbody>
+</table>
+
+Each line shows:
+
+1. Move sequence in algebraic notation
+2. Evaluation in centipawns (or mate)
+3. Search depth
+
+### ChessStockfish.Status
+
+Shows engine status.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>CSS class</td>
+    </tr>
+  </tbody>
+</table>
+
+Shows: `idle` | `analyzing` | `error`
+
+## Hooks
+
+### useChessStockfish
+
+Create and manage engine state outside of the component tree.
+
+```tsx
+import { useChessStockfish } from "@react-chess-tools/react-chess-stockfish";
+
+function AnalysisPanel() {
+  const {
+    evaluation,
+    lines,
+    depth,
+    isAnalyzing,
+    setFen,
+    setDepth,
+    stopAnalysis,
+  } = useChessStockfish({
+    workerOptions: { workerPath: "/stockfish.js" },
+  });
+
+  return (
+    <div>
+      <p>Evaluation: {evaluation / 100}</p>
+      <p>Analyzing: {isAnalyzing ? "Yes" : "No"}</p>
+      <div>
+        {lines.map((line, i) => (
+          <div key={i}>
+            {line.evaluation > 0 ? "+" : ""}
+            {line.evaluation / 100}: {line.moves.join(" ")}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+### useChessStockfishContext
+
+Access engine state from child components.
+
+```tsx
+import { useChessStockfishContext } from "@react-chess-tools/react-chess-stockfish";
+
+function EvalDisplay() {
+  const { evaluation, depth, isAnalyzing } = useChessStockfishContext();
+
+  return (
+    <div>
+      <span>
+        {evaluation > 0 ? "+" : ""}
+        {(evaluation / 100).toFixed(1)}
+      </span>
+      <span>Depth: {depth}</span>
+      {isAnalyzing && <span>Analyzing...</span>}
+    </div>
+  );
+}
+```
+
+## Integration with react-chess-game
+
+The Stockfish component wraps the game component to share FEN state:
+
+```tsx
+function AnalysisBoard() {
+  const [fen, setFen] = useState(STARTING_FEN);
+
+  return (
+    <ChessStockfish.Root
+      fen={fen}
+      onFenChange={setFen}
+      workerOptions={{ workerPath: "/stockfish.js" }}
+    >
+      <ChessStockfish.EvaluationBar showEvaluation />
+      <ChessGame.Root fen={fen} onMove={(move, game) => setFen(game.fen())}>
+        <ChessGame.Board />
+      </ChessGame.Root>
+      <ChessStockfish.EngineLines maxLines={3} />
+    </ChessStockfish.Root>
+  );
+}
+```
+
+## Evaluation Format
+
+Evaluations are in centipawns (100 = 1 pawn advantage):
+
+<table>
+  <thead>
+    <tr>
+      <th>Value</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>+100</code>
+      </td>
+      <td>White up 1 pawn</td>
+    </tr>
+    <tr>
+      <td>
+        <code>-100</code>
+      </td>
+      <td>Black up 1 pawn</td>
+    </tr>
+    <tr>
+      <td>
+        <code>+300</code>
+      </td>
+      <td>White up ~3 pawns (a piece)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>+5000</code>
+      </td>
+      <td>Large advantage (near winning)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>M5</code>
+      </td>
+      <td>Mate in 5 moves</td>
+    </tr>
+  </tbody>
+</table>
+
+## Performance Considerations
+
+- Higher depth = longer analysis time
+- Use `depth: 15-20` for interactive analysis
+- Use `depth: 25+` for deep analysis
+- Analysis runs in a WebWorker (doesn't block UI)
+
+## Examples
+
+### Full Layout
+
+<Canvas of={ChessStockfishStories.FullLayout} />
+
+### Evaluation Bar
+
+<Canvas of={EvaluationBarStories.Vertical} />
+
+### Engine Lines
+
+<Canvas of={EngineLinesStories.Basic} />
+
+## Browser Support
+
+Requires WebAssembly support:
+
+- Chrome 57+
+- Firefox 52+
+- Safari 11+
+- Edge 16+

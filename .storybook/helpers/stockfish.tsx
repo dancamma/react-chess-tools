@@ -169,9 +169,8 @@ export function EngineStatus() {
   );
 }
 
-type EvaluationBarProps = Omit<
-  React.ComponentProps<typeof ChessStockfish.EvaluationBar>,
-  "orientation"
+type EvaluationBarProps = React.ComponentProps<
+  typeof ChessStockfish.EvaluationBar
 >;
 
 export const VerticalEvalBar = (props: EvaluationBarProps) => (

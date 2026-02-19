@@ -29,7 +29,7 @@ const puzzles = [
 ];
 
 const meta = {
-  title: "react-chess-puzzle/Components/Puzzle",
+  title: "Packages/react-chess-puzzle/ChessPuzzle",
   component: ChessPuzzle.Root,
   tags: ["components", "puzzle"],
   argTypes: {

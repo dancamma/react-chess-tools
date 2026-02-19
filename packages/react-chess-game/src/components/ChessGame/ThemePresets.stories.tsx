@@ -4,7 +4,7 @@ import { ChessGame } from "./index";
 import { themes } from "../../theme";
 
 const meta = {
-  title: "react-chess-game/Theme/Presets",
+  title: "Packages/react-chess-game/Theming/Presets",
   component: ChessGame.Root,
   tags: ["theme", "presets"],
   decorators: [
