@@ -125,7 +125,7 @@ const myTheme = mergeTheme(themes.${baseThemeKey}, ${JSON.stringify(customOverri
             <h3 className="text-size-sm font-semibold text-text">Preview</h3>
             <BoardWrapper>
               <ChessGame.Root theme={customTheme} fen={fen}>
-                <ChessGame.Board boardWidth={320} />
+                <ChessGame.Board />
               </ChessGame.Root>
             </BoardWrapper>
           </div>
@@ -276,7 +276,7 @@ export const PresetComparer: StoryObj = {
         {/* Board preview */}
         <BoardWrapper>
           <ChessGame.Root theme={themes[selectedPreset]} fen={fen}>
-            <ChessGame.Board boardWidth={400} />
+            <ChessGame.Board />
             <ChessGame.Sounds />
           </ChessGame.Root>
         </BoardWrapper>
@@ -317,7 +317,7 @@ const ThemeCard = ({
     </div>
     <BoardWrapper>
       <ChessGame.Root theme={theme} fen={fen}>
-        <ChessGame.Board boardWidth={240} />
+        <ChessGame.Board />
       </ChessGame.Root>
     </BoardWrapper>
   </div>

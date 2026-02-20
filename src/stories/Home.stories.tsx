@@ -149,7 +149,7 @@ export const Landing: StoryObj = {
 
                 {/* Board */}
                 <BoardWrapper>
-                  <ChessGame.Board boardWidth={400} />
+                  <ChessGame.Board />
                 </BoardWrapper>
                 <ChessGame.Sounds />
                 <ChessGame.KeyboardControls />

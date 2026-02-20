@@ -86,7 +86,7 @@ export const GameWithAnalysis: StoryObj = {
               onMove={(move, game) => setFen(game.fen())}
             >
               <div className="flex gap-4 items-start">
-                <ChessGame.Board boardWidth={360} />
+                <ChessGame.Board />
                 <div className="flex flex-col gap-2 min-w-[200px]">
                   <ChessStockfish.EngineLines maxLines={3} />
                 </div>
@@ -132,7 +132,7 @@ export const FullFeaturedGame: StoryObj = {
                 <div className="px-3 py-1 bg-dark-bg text-white text-size-sm font-mono rounded text-center">
                   <ChessGame.Clock.Display color="black" />
                 </div>
-                <ChessGame.Board boardWidth={320} />
+                <ChessGame.Board />
                 <div className="px-3 py-1 bg-dark-bg text-white text-size-sm font-mono rounded text-center">
                   <ChessGame.Clock.Display color="white" />
                 </div>

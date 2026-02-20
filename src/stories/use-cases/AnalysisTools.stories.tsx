@@ -52,41 +52,6 @@ function AnalysisStatus() {
   );
 }
 
-// Evaluation bar component
-function EvalBar() {
-  const { info } = useStockfish();
-  const evalValue = info.evaluation?.value || 0;
-  const evalType = info.evaluation?.type || "cp";
-
-  let normalizedEval = evalValue;
-  if (evalType === "mate") {
-    normalizedEval = evalValue > 0 ? 1000 : -1000;
-  }
-
-  const clampedEval = Math.max(-1000, Math.min(1000, normalizedEval));
-  const percentage = ((clampedEval + 1000) / 2000) * 100;
-
-  const displayValue =
-    evalType === "mate"
-      ? `M${Math.abs(evalValue)}`
-      : (evalValue / 100).toFixed(1);
-
-  return (
-    <div className="flex flex-col items-center gap-1">
-      <div className="relative w-[24px] h-[300px] bg-dark-bg border border-dark-border rounded overflow-hidden">
-        <div
-          className="absolute bottom-0 left-0 right-0 bg-white transition-all duration-500"
-          style={{ height: `${percentage}%` }}
-        />
-      </div>
-      <span className="text-size-xs font-mono text-text">
-        {evalValue >= 0 ? "+" : ""}
-        {displayValue}
-      </span>
-    </div>
-  );
-}
-
 export const PositionAnalysis: StoryObj = {
   render: () => {
     const [fen, setFen] = React.useState(POSITIONS.italian);
@@ -124,8 +89,12 @@ export const PositionAnalysis: StoryObj = {
               onMove={(move, game) => setFen(game.fen())}
             >
               <div className="flex gap-4 items-start">
-                <EvalBar />
-                <ChessGame.Board boardWidth={320} />
+                <ChessStockfish.EvaluationBar
+                  height={300}
+                  width={24}
+                  showLabel
+                />
+                <ChessGame.Board />
                 <ChessStockfish.EngineLines maxLines={3} />
               </div>
             </ChessGame.Root>
@@ -176,7 +145,7 @@ export const EngineEvaluation: StoryObj = {
               onMove={(move, game) => setFen(game.fen())}
             >
               <div className="flex gap-4 items-start">
-                <ChessGame.Board boardWidth={300} />
+                <ChessGame.Board />
                 <div className="flex flex-col gap-2">
                   <h4 className="text-size-xs font-semibold text-text-muted uppercase">
                     Top {multiPV} Lines
@@ -214,7 +183,7 @@ export const GameReview: StoryObj = {
               onMove={(move, game) => setFen(game.fen())}
             >
               <div className="flex flex-col gap-2">
-                <ChessGame.Board boardWidth={360} />
+                <ChessGame.Board />
                 <div className="flex gap-2 justify-center">
                   <ChessGame.Reset />
                 </div>
@@ -225,7 +194,11 @@ export const GameReview: StoryObj = {
                 <h4 className="text-size-xs font-semibold text-text-muted uppercase">
                   Analysis
                 </h4>
-                <EvalBar />
+                <ChessStockfish.EvaluationBar
+                  height={200}
+                  width={24}
+                  showLabel
+                />
                 <ChessStockfish.EngineLines maxLines={2} />
               </div>
             </ChessGame.Root>

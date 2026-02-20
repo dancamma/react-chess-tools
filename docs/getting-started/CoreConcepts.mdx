@@ -276,9 +276,16 @@ Keep `Root` props focused on state:
   <ChessGame.Board />
 </ChessGame.Root>
 
-// Avoid - don't put styling logic in Root
+// Avoid - boardWidth is not a valid prop, use CSS for sizing
 <ChessGame.Root>
   <ChessGame.Board boardWidth={400} />
+</ChessGame.Root>
+
+// Better - size the board using CSS
+<ChessGame.Root>
+  <div style={{ width: "400px" }}>
+    <ChessGame.Board />
+  </div>
 </ChessGame.Root>
 ```
 
