@@ -217,11 +217,11 @@ import {
   themes,
   mergeTheme,
   type DeepPartial,
-  type Theme,
+  type ChessGameTheme,
 } from "@react-chess-tools/react-chess-game";
 
 // Define your theme variants
-const myThemes = {
+const myThemes: Record<string, DeepPartial<ChessGameTheme>> = {
   dark: mergeTheme(themes.default, {
     board: {
       lightSquare: { backgroundColor: "#769656" },
@@ -242,7 +242,7 @@ const myThemes = {
       check: "rgba(255, 50, 50, 0.6)",
     },
   },
-} as const;
+};
 
 // Use in your app
 <ChessGame.Root theme={myThemes.dark}>

@@ -8,6 +8,12 @@ const meta = {
   title: "Theming/Presets",
   parameters: {
     layout: "centered",
+    docs: {
+      description: {
+        component:
+          "Compare available theme presets side by side. Click on any board to interact with it.",
+      },
+    },
   },
 } satisfies Meta;
 
@@ -35,7 +41,7 @@ const ThemeCard = ({
     </div>
     <BoardWrapper>
       <ChessGame.Root theme={theme} fen={fen}>
-        <ChessGame.Board boardWidth={240} />
+        <ChessGame.Board />
       </ChessGame.Root>
     </BoardWrapper>
   </div>
