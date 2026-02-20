@@ -41,6 +41,7 @@ Download from [stockfish.js releases](https://github.com/nmrugg/stockfish.js/rel
 
 ```tsx
 import { ChessStockfish } from "@react-chess-tools/react-chess-stockfish";
+import { ChessGame } from "@react-chess-tools/react-chess-game";
 
 function App() {
   const [fen, setFen] = useState(STARTING_FEN);
@@ -52,7 +53,9 @@ function App() {
       workerOptions={{ workerPath: "/stockfish.js" }}
     >
       <ChessStockfish.EvaluationBar showEvaluation />
-      <ChessGame.Board fen={fen} onMove={(_, game) => setFen(game.fen())} />
+      <ChessGame.Root fen={fen} onMove={(_, game) => setFen(game.fen())}>
+        <ChessGame.Board />
+      </ChessGame.Root>
       <ChessStockfish.EngineLines maxLines={3} />
     </ChessStockfish.Root>
   );

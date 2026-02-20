@@ -263,7 +263,7 @@ export const PresetComparer: StoryObj = {
 
 export const Examples: StoryObj = {
   render: () => {
-    const darkTheme = {
+    const darkTheme: DeepPartial<ChessGameTheme> = {
       board: {
         lightSquare: { backgroundColor: "#769656" },
         darkSquare: { backgroundColor: "#4a6741" },
@@ -280,7 +280,7 @@ export const Examples: StoryObj = {
       },
     };
 
-    const oceanTheme = {
+    const oceanTheme: DeepPartial<ChessGameTheme> = {
       board: {
         lightSquare: { backgroundColor: "#e8f4f8" },
         darkSquare: { backgroundColor: "#5da4c8" },
@@ -297,7 +297,7 @@ export const Examples: StoryObj = {
       },
     };
 
-    const purpleTheme = {
+    const purpleTheme: DeepPartial<ChessGameTheme> = {
       board: {
         lightSquare: { backgroundColor: "#e8e0f0" },
         darkSquare: { backgroundColor: "#8b5cf6" },
@@ -314,7 +314,7 @@ export const Examples: StoryObj = {
       },
     };
 
-    const warmTheme = {
+    const warmTheme: DeepPartial<ChessGameTheme> = {
       board: {
         lightSquare: { backgroundColor: "#f5deb3" },
         darkSquare: { backgroundColor: "#b8860b" },

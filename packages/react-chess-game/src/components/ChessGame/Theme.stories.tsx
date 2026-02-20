@@ -34,8 +34,12 @@ export const Playground = () => {
 
   const updateTheme = (path: string[], value: string) => {
     setTheme((prev) => {
-      const newTheme = JSON.parse(JSON.stringify(prev));
-      let current: Record<string, unknown> = newTheme;
+      // Deep clone the theme object for mutation
+      const newTheme = JSON.parse(JSON.stringify(prev)) as ChessGameTheme;
+      let current: Record<string, unknown> = newTheme as unknown as Record<
+        string,
+        unknown
+      >;
       for (let i = 0; i < path.length - 1; i++) {
         current = current[path[i]] as Record<string, unknown>;
       }
