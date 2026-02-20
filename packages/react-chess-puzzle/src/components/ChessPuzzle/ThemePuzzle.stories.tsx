@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { ChessPuzzle } from "./index";
 import { defaultPuzzleTheme } from "../../theme/defaults";
 import type { ChessPuzzleTheme } from "../../theme/types";
+import { ColorInput } from "@story-helpers";
 
 const meta = {
   title: "Packages/react-chess-puzzle/Theming/Playground",
@@ -25,56 +26,9 @@ const samplePuzzle = {
   makeFirstMove: false,
 };
 
-// Color picker component
-const ColorInput: React.FC<{
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}> = ({ label, value, onChange }) => {
-  const rgbaToHex = (rgba: string): string => {
-    const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-    if (match) {
-      const r = parseInt(match[1]).toString(16).padStart(2, "0");
-      const g = parseInt(match[2]).toString(16).padStart(2, "0");
-      const b = parseInt(match[3]).toString(16).padStart(2, "0");
-      return `#${r}${g}${b}`;
-    }
-    return value.startsWith("#") ? value : "#000000";
-  };
-
-  const hexToRgba = (hex: string, alpha: number = 0.5): string => {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      <label className="text-size-xs text-text-secondary min-w-[100px]">
-        {label}
-      </label>
-      <input
-        type="color"
-        value={rgbaToHex(value)}
-        onChange={(e) => onChange(hexToRgba(e.target.value))}
-        className="w-8 h-8 rounded border border-border cursor-pointer"
-      />
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="flex-1 px-2 py-1 text-size-xs font-mono border border-border rounded bg-surface text-text"
-        placeholder="rgba(0, 0, 0, 0.5)"
-      />
-    </div>
-  );
-};
-
 export const PuzzlePlayground = () => {
   const [theme, setTheme] = useState<ChessPuzzleTheme>(defaultPuzzleTheme);
   const [copied, setCopied] = useState(false);
-  const [puzzleKey, setPuzzleKey] = useState(0);
 
   const updatePuzzleColor = (
     key: keyof ChessPuzzleTheme["puzzle"],
@@ -99,10 +53,6 @@ export const PuzzlePlayground = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const resetPuzzle = () => {
-    setPuzzleKey((k) => k + 1);
-  };
-
   return (
     <div className="flex flex-col gap-6 font-sans">
       {/* Top row: Preview + Controls */}
@@ -111,11 +61,7 @@ export const PuzzlePlayground = () => {
         <div className="flex flex-col gap-2">
           <h3 className="text-size-sm font-semibold text-text">Preview</h3>
           <div className="max-w-story-lg">
-            <ChessPuzzle.Root
-              key={puzzleKey}
-              puzzle={samplePuzzle}
-              theme={theme}
-            >
+            <ChessPuzzle.Root puzzle={samplePuzzle} theme={theme}>
               <ChessPuzzle.Board />
               <div className="mt-2 flex gap-2">
                 <ChessPuzzle.Hint asChild>

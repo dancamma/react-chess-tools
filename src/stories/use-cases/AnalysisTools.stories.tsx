@@ -5,7 +5,11 @@ import {
   ChessStockfish,
   useStockfish,
 } from "@react-chess-tools/react-chess-stockfish";
-import { StoryHeader, BoardWrapper } from "@story-helpers";
+import {
+  StoryHeader,
+  BoardWrapper,
+  STOCKFISH_WORKER_PATH,
+} from "@story-helpers";
 
 const meta = {
   title: "Use Cases/Build Analysis Tools",
@@ -81,7 +85,7 @@ export const PositionAnalysis: StoryObj = {
           <ChessStockfish.Root
             fen={fen}
             onFenChange={setFen}
-            workerOptions={{ workerPath: "/stockfish.js" }}
+            workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
             config={{ multiPV: 3 }}
           >
             <ChessGame.Root
@@ -137,7 +141,7 @@ export const EngineEvaluation: StoryObj = {
           <ChessStockfish.Root
             fen={fen}
             onFenChange={setFen}
-            workerOptions={{ workerPath: "/stockfish.js" }}
+            workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
             config={{ multiPV }}
           >
             <ChessGame.Root
@@ -175,7 +179,7 @@ export const GameReview: StoryObj = {
           <ChessStockfish.Root
             fen={fen}
             onFenChange={setFen}
-            workerOptions={{ workerPath: "/stockfish.js" }}
+            workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
             config={{ multiPV: 2 }}
           >
             <ChessGame.Root

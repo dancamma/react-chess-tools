@@ -2,7 +2,11 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import React from "react";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 import { ChessStockfish } from "@react-chess-tools/react-chess-stockfish";
-import { StoryHeader, BoardWrapper } from "@story-helpers";
+import {
+  StoryHeader,
+  BoardWrapper,
+  STOCKFISH_WORKER_PATH,
+} from "@story-helpers";
 
 const meta = {
   title: "Use Cases/Build a Chess Game",
@@ -79,7 +83,7 @@ export const GameWithAnalysis: StoryObj = {
           <ChessStockfish.Root
             fen={fen}
             onFenChange={setFen}
-            workerOptions={{ workerPath: "/stockfish.js" }}
+            workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
           >
             <ChessGame.Root
               fen={fen}
@@ -118,7 +122,7 @@ export const FullFeaturedGame: StoryObj = {
         <ChessStockfish.Root
           fen={fen}
           onFenChange={setFen}
-          workerOptions={{ workerPath: "/stockfish.js" }}
+          workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
           config={{ multiPV: 2 }}
         >
           <ChessGame.Root

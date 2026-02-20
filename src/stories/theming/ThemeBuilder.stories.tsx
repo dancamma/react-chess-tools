@@ -7,7 +7,7 @@ import {
   type DeepPartial,
   type ChessGameTheme,
 } from "@react-chess-tools/react-chess-game";
-import { StoryHeader, BoardWrapper } from "@story-helpers";
+import { StoryHeader, BoardWrapper, ColorInput } from "@story-helpers";
 
 const meta = {
   title: "Theming/Theme Builder",
@@ -18,56 +18,18 @@ const meta = {
 
 export default meta;
 
-// Color picker component with validation
-const ColorInput = ({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) => {
-  const [error, setError] = React.useState(false);
-
-  const validateColor = (color: string): boolean => {
-    // Allow hex colors, rgb/rgba, and named colors
-    const hexPattern = /^#([0-9A-Fa-f]{3}){1,2}$/;
-    const rgbPattern =
-      /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*(0|1|0?\.\d+))?\s*\)$/;
-    return hexPattern.test(color) || rgbPattern.test(color) || color === "";
-  };
-
-  const handleChange = (newValue: string) => {
-    const isValid = validateColor(newValue) || newValue === "";
-    setError(!isValid && newValue.length > 2);
-    if (isValid) {
-      onChange(newValue);
-    }
-  };
-
-  return (
-    <div className="flex items-center gap-2">
-      <label className="text-size-xs text-text-secondary min-w-[100px]">
-        {label}
-      </label>
-      <input
-        type="color"
-        value={value.startsWith("#") ? value : "#000000"}
-        onChange={(e) => handleChange(e.target.value)}
-        className="w-8 h-8 rounded border border-border cursor-pointer"
-      />
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => handleChange(e.target.value)}
-        className={`flex-1 px-2 py-1 text-size-xs font-mono border rounded bg-surface text-text ${
-          error ? "border-danger" : "border-border"
-        }`}
-        placeholder="#ffffff or rgba(...)"
-      />
-    </div>
-  );
+// Helper to safely extract background color from theme square
+const getSquareColor = (square: unknown, fallback: string): string => {
+  if (
+    square &&
+    typeof square === "object" &&
+    square !== null &&
+    "backgroundColor" in square &&
+    typeof (square as { backgroundColor: unknown }).backgroundColor === "string"
+  ) {
+    return (square as { backgroundColor: string }).backgroundColor;
+  }
+  return fallback;
 };
 
 export const Builder: StoryObj = {
@@ -197,12 +159,10 @@ const myTheme = mergeTheme(themes.${baseThemeKey}, ${JSON.stringify(customOverri
                       setBaseThemeKey(key as keyof typeof themes);
                       const t = themes[key as keyof typeof themes];
                       setLightSquare(
-                        ((t.board?.lightSquare as React.CSSProperties)
-                          ?.backgroundColor as string) || "#f0d9b5",
+                        getSquareColor(t.board?.lightSquare, "#f0d9b5"),
                       );
                       setDarkSquare(
-                        ((t.board?.darkSquare as React.CSSProperties)
-                          ?.backgroundColor as string) || "#b58863",
+                        getSquareColor(t.board?.darkSquare, "#b58863"),
                       );
                     }}
                     className={`px-2 py-1 text-size-xs rounded bg-surface border border-border hover:bg-surface-alt ${

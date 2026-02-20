@@ -1,5 +1,8 @@
 import React from "react";
 
+// Stockfish worker path (centralized for maintainability)
+export const STOCKFISH_WORKER_PATH = "/stockfish.js";
+
 export const CLOCK_WHITE_CLASS =
   "py-2.5 px-5 text-2xl font-semibold font-mono rounded-sm text-center min-w-[100px] bg-surface border-2 border-text text-text";
 
@@ -164,3 +167,75 @@ export const InfoBox = ({
     {children}
   </div>
 );
+
+// Shared color input component for theme playgrounds
+export const ColorInput = ({
+  label,
+  value,
+  onChange,
+  placeholder = "#ffffff or rgba(...)",
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}) => {
+  const [error, setError] = React.useState(false);
+
+  const validateColor = (color: string): boolean => {
+    const hexPattern = /^#([0-9A-Fa-f]{3}){1,2}$/;
+    const rgbPattern =
+      /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*(0|1|0?\.\d+))?\s*\)$/;
+    return hexPattern.test(color) || rgbPattern.test(color) || color === "";
+  };
+
+  const handleChange = (newValue: string) => {
+    const isValid = validateColor(newValue) || newValue === "";
+    setError(!isValid && newValue.length > 2);
+    if (isValid) {
+      onChange(newValue);
+    }
+  };
+
+  // Extract hex from rgba for color picker
+  const rgbaToHex = (rgba: string): string => {
+    const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+      const r = parseInt(match[1]).toString(16).padStart(2, "0");
+      const g = parseInt(match[2]).toString(16).padStart(2, "0");
+      const b = parseInt(match[3]).toString(16).padStart(2, "0");
+      return `#${r}${g}${b}`;
+    }
+    return rgba.startsWith("#") ? rgba : "#000000";
+  };
+
+  const hexToRgba = (hex: string, alpha: number = 0.5): string => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <label className="text-size-xs text-text-secondary min-w-[100px]">
+        {label}
+      </label>
+      <input
+        type="color"
+        value={rgbaToHex(value)}
+        onChange={(e) => handleChange(hexToRgba(e.target.value))}
+        className="w-8 h-8 rounded border border-border cursor-pointer"
+      />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => handleChange(e.target.value)}
+        className={`flex-1 px-2 py-1 text-size-xs font-mono border rounded bg-surface text-text ${
+          error ? "border-danger" : "border-border"
+        }`}
+        placeholder={placeholder}
+      />
+    </div>
+  );
+};

@@ -5,7 +5,7 @@ import {
   ChessStockfish,
   useStockfish,
 } from "@react-chess-tools/react-chess-stockfish";
-import { BoardWrapper } from "@story-helpers";
+import { BoardWrapper, STOCKFISH_WORKER_PATH } from "@story-helpers";
 
 const meta = {
   title: "Home",
@@ -21,9 +21,6 @@ const meta = {
 } satisfies Meta;
 
 export default meta;
-
-// Worker path for Stockfish
-const WORKER_PATH = "/stockfish.js";
 
 // Storybook navigation paths (centralized for maintainability)
 const STORY_PATHS = {
@@ -124,7 +121,7 @@ export const Landing: StoryObj = {
         <ChessStockfish.Root
           fen={fen}
           onFenChange={setFen}
-          workerOptions={{ workerPath: WORKER_PATH }}
+          workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
           config={{ multiPV: 3 }}
         >
           <ChessGame.Root
