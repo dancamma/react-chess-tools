@@ -273,9 +273,13 @@ Keep `Root` props focused on state:
 ```tsx
 // Good
 <ChessGame.Root fen={fen} onMove={handleMove} timeControl={{ time: "5+3" }}>
+  <ChessGame.Board />
+</ChessGame.Root>
 
-// Avoid - styling belongs on child components
-<ChessGame.Root className="board" style={{ width: 400 }}>
+// Avoid - don't put styling logic in Root
+<ChessGame.Root>
+  <ChessGame.Board boardWidth={400} />
+</ChessGame.Root>
 ```
 
 ### 2. Separate Concerns

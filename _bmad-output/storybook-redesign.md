@@ -367,7 +367,7 @@ Individual stories for each component:
 - [x] Build `Home.stories.tsx` with full integration
 - [x] Design responsive layout for board + analysis panels
 - [x] Add CTA buttons linking to Use Cases
-- [x] Configure as default Storybook landing
+- [x] Configure as default Storybook landing (Home.stories.tsx is first in main.ts)
 
 ### Phase 3: Getting Started Docs
 

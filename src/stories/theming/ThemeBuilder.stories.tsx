@@ -49,7 +49,7 @@ const ColorInput = ({
 
 export const Builder: StoryObj = {
   render: () => {
-    const [_baseTheme, _setBaseTheme] =
+    const [baseTheme, setBaseTheme] =
       React.useState<keyof typeof themes>("default");
 
     // Custom colors
@@ -168,6 +168,7 @@ const myTheme: DeepPartial<Theme> = ${JSON.stringify(customTheme, null, 2)};
                   <button
                     key={key}
                     onClick={() => {
+                      setBaseTheme(key as keyof typeof themes);
                       const t = themes[key as keyof typeof themes];
                       setLightSquare(
                         ((t.board?.lightSquare as React.CSSProperties)
@@ -178,7 +179,9 @@ const myTheme: DeepPartial<Theme> = ${JSON.stringify(customTheme, null, 2)};
                           ?.backgroundColor as string) || "#b58863",
                       );
                     }}
-                    className="px-2 py-1 text-size-xs rounded bg-surface border border-border hover:bg-surface-alt"
+                    className={`px-2 py-1 text-size-xs rounded bg-surface border border-border hover:bg-surface-alt ${
+                      baseTheme === key ? "ring-2 ring-accent" : ""
+                    }`}
                   >
                     {key}
                   </button>
