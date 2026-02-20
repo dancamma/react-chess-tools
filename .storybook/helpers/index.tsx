@@ -1,4 +1,5 @@
 import React from "react";
+import { ChessGame } from "@react-chess-tools/react-chess-game";
 
 // Stockfish worker path (centralized for maintainability)
 export const STOCKFISH_WORKER_PATH = "/stockfish.js";
@@ -190,7 +191,7 @@ export const ColorInput = ({
   };
 
   const handleChange = (newValue: string) => {
-    const isValid = validateColor(newValue) || newValue === "";
+    const isValid = validateColor(newValue);
     setError(!isValid && newValue.length > 2);
     if (isValid) {
       onChange(newValue);
@@ -239,3 +240,41 @@ export const ColorInput = ({
     </div>
   );
 };
+
+// Shared ThemeCard component for theme galleries
+export const ThemeCard = ({
+  title,
+  description,
+  theme,
+  fen = POSITION_WITH_MOVE,
+}: {
+  title: string;
+  description: string;
+  theme: object;
+  fen?: string;
+}) => (
+  <div className="flex flex-col items-center gap-3 p-4 bg-surface rounded-lg border border-border">
+    <div className="text-center">
+      <h3 className="text-size-md font-semibold text-text mb-1">{title}</h3>
+      <p className="text-size-xs text-text-muted m-0">{description}</p>
+    </div>
+    <BoardWrapper>
+      <ChessGame.Root theme={theme} fen={fen}>
+        <ChessGame.Board />
+      </ChessGame.Root>
+    </BoardWrapper>
+  </div>
+);
+
+// Common FEN positions for reuse across stories
+export const FEN_POSITIONS = {
+  starting: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  italian: "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
+  sicilian: "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
+  withMove: "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2",
+  scholarMate:
+    "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
+} as const;
+
+// Position with a move played (for showing lastMove highlight)
+export const POSITION_WITH_MOVE = FEN_POSITIONS.withMove;

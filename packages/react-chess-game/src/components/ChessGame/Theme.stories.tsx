@@ -20,32 +20,12 @@ const meta = {
 
 export default meta;
 
-// Background color picker (for board squares - uses hex only)
-const BgColorInput: React.FC<{
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}> = ({ label, value, onChange }) => {
-  return (
-    <div className="flex items-center gap-2">
-      <label className="text-size-xs text-text-secondary min-w-[100px]">
-        {label}
-      </label>
-      <input
-        type="color"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-8 h-8 rounded border border-border cursor-pointer"
-      />
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="flex-1 px-2 py-1 text-size-xs font-mono border border-border rounded bg-surface text-text"
-        placeholder="#ffffff"
-      />
-    </div>
-  );
+// Helper to safely extract background color from theme square
+const getBackgroundColor = (value: string | React.CSSProperties): string => {
+  if (typeof value === "string") {
+    return value;
+  }
+  return (value?.backgroundColor as string) || "#f0d9b5";
 };
 
 export const Playground = () => {
@@ -133,20 +113,14 @@ export const Playground = () => {
               Board Squares
             </h4>
             <div className="space-y-2">
-              <BgColorInput
+              <ColorInput
                 label="Light Square"
-                value={
-                  (theme.board.lightSquare as { backgroundColor: string })
-                    .backgroundColor
-                }
+                value={getBackgroundColor(theme.board.lightSquare)}
                 onChange={(v) => updateTheme(["board", "lightSquare"], v)}
               />
-              <BgColorInput
+              <ColorInput
                 label="Dark Square"
-                value={
-                  (theme.board.darkSquare as { backgroundColor: string })
-                    .backgroundColor
-                }
+                value={getBackgroundColor(theme.board.darkSquare)}
                 onChange={(v) => updateTheme(["board", "darkSquare"], v)}
               />
             </div>

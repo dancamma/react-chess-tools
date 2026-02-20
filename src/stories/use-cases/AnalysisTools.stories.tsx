@@ -1,15 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import React from "react";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
-import {
-  ChessStockfish,
-  useStockfish,
-} from "@react-chess-tools/react-chess-stockfish";
+import { ChessStockfish } from "@react-chess-tools/react-chess-stockfish";
 import {
   StoryHeader,
   BoardWrapper,
   STOCKFISH_WORKER_PATH,
+  FEN_POSITIONS,
 } from "@story-helpers";
+import { EngineStatus } from "@story-helpers/stockfish";
 
 const meta = {
   title: "Use Cases/Build Analysis Tools",
@@ -20,45 +19,9 @@ const meta = {
 
 export default meta;
 
-// FEN positions for analysis
-const POSITIONS = {
-  starting: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  italian: "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3",
-  sicilian: "rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2",
-  endgame: "8/8/8/4k3/8/4K3/4P3/8 w - - 0 1",
-};
-
-// Analysis status component
-function AnalysisStatus() {
-  const { info, methods } = useStockfish();
-  const bestMove = methods.getBestMove();
-
-  return (
-    <div className="p-3 bg-surface-alt rounded border border-border text-size-xs">
-      <div className="flex gap-4 mb-2">
-        <span className="text-text-secondary">Depth: {info.depth}</span>
-        <span className="text-text-secondary">
-          Status:{" "}
-          {info.isEngineThinking ? (
-            <span className="text-success">Analyzing</span>
-          ) : (
-            <span className="text-text-muted">Ready</span>
-          )}
-        </span>
-      </div>
-      {bestMove && (
-        <div className="text-text">
-          Best move:{" "}
-          <span className="font-bold text-accent">{bestMove.san}</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export const PositionAnalysis: StoryObj = {
   render: () => {
-    const [fen, setFen] = React.useState(POSITIONS.italian);
+    const [fen, setFen] = React.useState(FEN_POSITIONS.italian);
 
     return (
       <div className="flex flex-col gap-4 p-6 max-w-story-xl mx-auto">
@@ -67,7 +30,7 @@ export const PositionAnalysis: StoryObj = {
           subtitle="Analyze any position with Stockfish"
         />
         <div className="flex gap-2 flex-wrap mb-2">
-          {Object.entries(POSITIONS).map(([name, position]) => (
+          {Object.entries(FEN_POSITIONS).map(([name, position]) => (
             <button
               key={name}
               onClick={() => setFen(position)}
@@ -104,7 +67,7 @@ export const PositionAnalysis: StoryObj = {
             </ChessGame.Root>
           </ChessStockfish.Root>
         </BoardWrapper>
-        <AnalysisStatus />
+        <EngineStatus />
       </div>
     );
   },
@@ -112,7 +75,7 @@ export const PositionAnalysis: StoryObj = {
 
 export const EngineEvaluation: StoryObj = {
   render: () => {
-    const [fen, setFen] = React.useState(POSITIONS.sicilian);
+    const [fen, setFen] = React.useState(FEN_POSITIONS.sicilian);
     const [multiPV, setMultiPV] = React.useState(3);
 
     return (
@@ -167,7 +130,7 @@ export const EngineEvaluation: StoryObj = {
 
 export const GameReview: StoryObj = {
   render: () => {
-    const [fen, setFen] = React.useState(POSITIONS.starting);
+    const [fen, setFen] = React.useState(FEN_POSITIONS.starting);
 
     return (
       <div className="flex flex-col gap-4 p-6 max-w-story-xl mx-auto">

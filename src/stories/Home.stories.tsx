@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import React from "react";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
+import { ChessStockfish } from "@react-chess-tools/react-chess-stockfish";
 import {
-  ChessStockfish,
-  useStockfish,
-} from "@react-chess-tools/react-chess-stockfish";
-import { BoardWrapper, STOCKFISH_WORKER_PATH } from "@story-helpers";
+  BoardWrapper,
+  STOCKFISH_WORKER_PATH,
+  EngineStatus,
+} from "@story-helpers";
 
 const meta = {
   title: "Home",
@@ -28,33 +29,6 @@ const STORY_PATHS = {
   chessGame: "/story/packages-react-chess-game-chess-game--default",
   theming: "/docs/theming-overview--docs",
 } as const;
-
-// Engine status component
-function EngineStatus() {
-  const { info, methods } = useStockfish();
-  const bestMove = methods.getBestMove();
-
-  return (
-    <div className="font-mono text-size-xs text-text-secondary flex flex-col gap-1">
-      <div className="flex gap-3">
-        <span>depth: {info.depth}</span>
-        <span>
-          status:{" "}
-          {info.isEngineThinking ? (
-            <span className="text-success">analyzing</span>
-          ) : (
-            <span className="text-text-muted">ready</span>
-          )}
-        </span>
-      </div>
-      {bestMove && (
-        <span>
-          best: <span className="text-text font-semibold">{bestMove.san}</span>
-        </span>
-      )}
-    </div>
-  );
-}
 
 // Styled engine lines wrapper
 function StyledEngineLines({ maxLines = 3 }: { maxLines?: number }) {

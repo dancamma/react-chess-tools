@@ -4,8 +4,7 @@ import {
   ChessStockfish,
   useStockfish,
 } from "@react-chess-tools/react-chess-stockfish";
-
-const WORKER_PATH = "/stockfish.js";
+import { STOCKFISH_WORKER_PATH } from "./index";
 
 export const EVAL_BAR_CSS = `
   [data-stockfish-orientation="vertical"],
@@ -137,7 +136,7 @@ type RootProps = Omit<
 export function AnalysisRoot(props: RootProps) {
   return (
     <ChessStockfish.Root
-      workerOptions={{ workerPath: WORKER_PATH }}
+      workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
       {...props}
     />
   );
