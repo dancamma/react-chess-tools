@@ -194,6 +194,7 @@ const myTheme = mergeTheme(themes.${baseThemeKey}, ${JSON.stringify(customOverri
             <button
               onClick={() => navigator.clipboard.writeText(generatedCode)}
               className="absolute top-3 right-3 px-2 py-1 text-size-xs bg-accent text-white rounded hover:opacity-90"
+              aria-label="Copy generated theme code"
             >
               Copy
             </button>

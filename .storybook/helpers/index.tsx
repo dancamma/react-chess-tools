@@ -1,5 +1,8 @@
 import React from "react";
-import { ChessGame } from "@react-chess-tools/react-chess-game";
+import {
+  ChessGame,
+  type ChessGameTheme,
+} from "@react-chess-tools/react-chess-game";
 
 // Stockfish worker path (centralized for maintainability)
 export const STOCKFISH_WORKER_PATH = "/stockfish.js";
@@ -184,14 +187,16 @@ export const ColorInput = ({
   const [error, setError] = React.useState(false);
 
   const validateColor = (color: string): boolean => {
+    if (!color) return false; // Empty string is not valid
     const hexPattern = /^#([0-9A-Fa-f]{3}){1,2}$/;
     const rgbPattern =
       /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*(0|1|0?\.\d+))?\s*\)$/;
-    return hexPattern.test(color) || rgbPattern.test(color) || color === "";
+    return hexPattern.test(color) || rgbPattern.test(color);
   };
 
   const handleChange = (newValue: string) => {
     const isValid = validateColor(newValue);
+    // Show error for invalid colors that look like they're trying to be valid
     setError(!isValid && newValue.length > 2);
     if (isValid) {
       onChange(newValue);
@@ -250,7 +255,7 @@ export const ThemeCard = ({
 }: {
   title: string;
   description: string;
-  theme: object;
+  theme: ChessGameTheme;
   fen?: string;
 }) => (
   <div className="flex flex-col items-center gap-3 p-4 bg-surface rounded-lg border border-border">

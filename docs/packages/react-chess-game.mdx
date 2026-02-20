@@ -136,18 +136,6 @@ The visual chess board with pieces.
   <tbody>
     <tr>
       <td>
-        <code>boardWidth</code>
-      </td>
-      <td>
-        <code>number</code>
-      </td>
-      <td>
-        <code>480</code>
-      </td>
-      <td>Board width in pixels</td>
-    </tr>
-    <tr>
-      <td>
         <code>options</code>
       </td>
       <td>
@@ -164,7 +152,7 @@ The visual chess board with pieces.
         <code>string</code>
       </td>
       <td>-</td>
-      <td>CSS class</td>
+      <td>CSS class for styling</td>
     </tr>
     <tr>
       <td>
@@ -174,10 +162,12 @@ The visual chess board with pieces.
         <code>React.CSSProperties</code>
       </td>
       <td>-</td>
-      <td>Inline styles</td>
+      <td>Inline styles (use for sizing instead of boardWidth)</td>
     </tr>
   </tbody>
 </table>
+
+**Note:** For board sizing, use CSS (className, style, or a wrapper div) rather than a boardWidth prop. See [Core Concepts](?path=/docs/getting-started-core-concepts--docs) for best practices.
 
 ### ChessGame.Sounds
 

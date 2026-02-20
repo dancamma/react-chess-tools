@@ -179,6 +179,7 @@ export const Playground = () => {
           <button
             onClick={copyTheme}
             className={`absolute top-3 right-3 px-2 py-1 text-size-xs rounded ${copied ? "bg-success text-white" : "bg-accent text-white hover:opacity-90"}`}
+            aria-label="Copy theme code"
           >
             {copied ? "Copied!" : "Copy"}
           </button>

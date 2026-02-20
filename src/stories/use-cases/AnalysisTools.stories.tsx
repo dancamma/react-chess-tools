@@ -172,7 +172,7 @@ export const GameReview: StoryObj = {
           </ChessStockfish.Root>
         </BoardWrapper>
         <p className="text-size-xs text-text-muted text-center">
-          Use arrow keys to navigate. Engine evaluates each position.
+          Keyboard: Arrow keys for history, Home/End for start/end, F to flip
         </p>
       </div>
     );
