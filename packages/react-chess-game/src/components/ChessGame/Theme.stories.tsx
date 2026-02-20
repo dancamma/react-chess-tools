@@ -52,10 +52,20 @@ export const Playground = () => {
     });
   };
 
-  const themeCode = `const myTheme: PartialChessGameTheme = ${JSON.stringify(theme, null, 2)};`;
+  const themeCode = `const myTheme: ChessGameTheme = ${JSON.stringify(theme, null, 2)};`;
 
-  const copyTheme = () => {
-    navigator.clipboard.writeText(themeCode);
+  const copyTheme = async () => {
+    try {
+      await navigator.clipboard.writeText(themeCode);
+    } catch {
+      // Fallback for non-HTTPS or unsupported browsers
+      const textarea = document.createElement("textarea");
+      textarea.value = themeCode;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

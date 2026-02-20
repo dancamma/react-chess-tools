@@ -192,7 +192,19 @@ const myTheme = mergeTheme(themes.${baseThemeKey}, ${JSON.stringify(customOverri
               {generatedCode}
             </pre>
             <button
-              onClick={() => navigator.clipboard.writeText(generatedCode)}
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(generatedCode);
+                } catch {
+                  // Fallback for non-HTTPS or unsupported browsers
+                  const textarea = document.createElement("textarea");
+                  textarea.value = generatedCode;
+                  document.body.appendChild(textarea);
+                  textarea.select();
+                  document.execCommand("copy");
+                  document.body.removeChild(textarea);
+                }
+              }}
               className="absolute top-3 right-3 px-2 py-1 text-size-xs bg-accent text-white rounded hover:opacity-90"
               aria-label="Copy generated theme code"
             >

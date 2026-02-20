@@ -6,6 +6,10 @@ import {
 } from "@react-chess-tools/react-chess-stockfish";
 import { STOCKFISH_WORKER_PATH } from "./index";
 
+// TODO: Consider extracting these CSS strings to separate .css files for better
+// maintainability and to enable CSS linting. These are kept inline for now
+// to ensure styles are scoped to the story components.
+
 export const EVAL_BAR_CSS = `
   [data-stockfish-orientation="vertical"],
   [data-stockfish-orientation="horizontal"] {
