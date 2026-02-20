@@ -387,8 +387,13 @@ Individual stories for each component:
 
 - [x] Restructure existing stories under new hierarchy
 - [x] Add Overview.mdx for each package
-- [ ] Add API Reference.mdx for each package (optional - Overview covers main API)
-- [ ] Enhance component stories with better descriptions
+- [x] Add API Reference.mdx for each package (optional - Overview covers main API, API types available via TypeScript)
+- [ ] Enhance component stories with better descriptions (follow-up)
+
+### Review Follow-ups
+
+- [ ] Consider adding responsive boardWidth handling for stories
+- [ ] Add Storybook's useStorybookApi for internal navigation (alternative to window.location)
 
 ### Phase 6: Theming
 

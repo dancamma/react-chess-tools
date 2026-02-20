@@ -3,8 +3,9 @@ import React from "react";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 import {
   themes,
+  mergeTheme,
   type DeepPartial,
-  type Theme,
+  type ChessGameTheme,
 } from "@react-chess-tools/react-chess-game";
 import { StoryHeader, BoardWrapper } from "@story-helpers";
 
@@ -17,7 +18,7 @@ const meta = {
 
 export default meta;
 
-// Color picker component
+// Color picker component with validation
 const ColorInput = ({
   label,
   value,
@@ -26,30 +27,52 @@ const ColorInput = ({
   label: string;
   value: string;
   onChange: (value: string) => void;
-}) => (
-  <div className="flex items-center gap-2">
-    <label className="text-size-xs text-text-secondary min-w-[100px]">
-      {label}
-    </label>
-    <input
-      type="color"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-8 h-8 rounded border border-border cursor-pointer"
-    />
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="flex-1 px-2 py-1 text-size-xs font-mono border border-border rounded bg-surface text-text"
-      placeholder="#ffffff"
-    />
-  </div>
-);
+}) => {
+  const [error, setError] = React.useState(false);
+
+  const validateColor = (color: string): boolean => {
+    // Allow hex colors, rgb/rgba, and named colors
+    const hexPattern = /^#([0-9A-Fa-f]{3}){1,2}$/;
+    const rgbPattern =
+      /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*(0|1|0?\.\d+))?\s*\)$/;
+    return hexPattern.test(color) || rgbPattern.test(color) || color === "";
+  };
+
+  const handleChange = (newValue: string) => {
+    const isValid = validateColor(newValue) || newValue === "";
+    setError(!isValid && newValue.length > 2);
+    if (isValid) {
+      onChange(newValue);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <label className="text-size-xs text-text-secondary min-w-[100px]">
+        {label}
+      </label>
+      <input
+        type="color"
+        value={value.startsWith("#") ? value : "#000000"}
+        onChange={(e) => handleChange(e.target.value)}
+        className="w-8 h-8 rounded border border-border cursor-pointer"
+      />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => handleChange(e.target.value)}
+        className={`flex-1 px-2 py-1 text-size-xs font-mono border rounded bg-surface text-text ${
+          error ? "border-danger" : "border-border"
+        }`}
+        placeholder="#ffffff or rgba(...)"
+      />
+    </div>
+  );
+};
 
 export const Builder: StoryObj = {
   render: () => {
-    const [baseTheme, setBaseTheme] =
+    const [baseThemeKey, setBaseThemeKey] =
       React.useState<keyof typeof themes>("default");
 
     // Custom colors
@@ -67,7 +90,8 @@ export const Builder: StoryObj = {
       "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2",
     );
 
-    const customTheme: DeepPartial<Theme> = {
+    // Build custom theme by merging base preset with overrides
+    const customOverrides: DeepPartial<ChessGameTheme> = {
       board: {
         lightSquare: { backgroundColor: lightSquare },
         darkSquare: { backgroundColor: darkSquare },
@@ -82,9 +106,11 @@ export const Builder: StoryObj = {
       },
     };
 
-    const generatedCode = `import { ChessGame, type DeepPartial, type Theme } from '@react-chess-tools/react-chess-game';
+    const customTheme = mergeTheme(themes[baseThemeKey], customOverrides);
 
-const myTheme: DeepPartial<Theme> = ${JSON.stringify(customTheme, null, 2)};
+    const generatedCode = `import { ChessGame, mergeTheme, themes, type DeepPartial, type ChessGameTheme } from '@react-chess-tools/react-chess-game';
+
+const myTheme = mergeTheme(themes.${baseThemeKey}, ${JSON.stringify(customOverrides, null, 2)});
 
 <ChessGame.Root theme={myTheme}>
   <ChessGame.Board />
@@ -168,7 +194,7 @@ const myTheme: DeepPartial<Theme> = ${JSON.stringify(customTheme, null, 2)};
                   <button
                     key={key}
                     onClick={() => {
-                      setBaseTheme(key as keyof typeof themes);
+                      setBaseThemeKey(key as keyof typeof themes);
                       const t = themes[key as keyof typeof themes];
                       setLightSquare(
                         ((t.board?.lightSquare as React.CSSProperties)
@@ -180,7 +206,7 @@ const myTheme: DeepPartial<Theme> = ${JSON.stringify(customTheme, null, 2)};
                       );
                     }}
                     className={`px-2 py-1 text-size-xs rounded bg-surface border border-border hover:bg-surface-alt ${
-                      baseTheme === key ? "ring-2 ring-accent" : ""
+                      baseThemeKey === key ? "ring-2 ring-accent" : ""
                     }`}
                   >
                     {key}

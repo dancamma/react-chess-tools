@@ -5,11 +5,18 @@ import {
   ChessStockfish,
   useStockfish,
 } from "@react-chess-tools/react-chess-stockfish";
+import { BoardWrapper } from "@story-helpers";
 
 const meta = {
   title: "Home",
   parameters: {
     layout: "centered",
+    docs: {
+      description: {
+        component:
+          "Interactive landing page showcasing the full capabilities of react-chess-tools. Features a playable board with real-time Stockfish analysis, chess clocks, and sound effects.",
+      },
+    },
   },
 } satisfies Meta;
 
@@ -17,6 +24,13 @@ export default meta;
 
 // Worker path for Stockfish
 const WORKER_PATH = "/stockfish.js";
+
+// Storybook navigation paths (centralized for maintainability)
+const STORY_PATHS = {
+  quickStart: "/docs/getting-started-quick-start--docs",
+  chessGame: "/story/packages-react-chess-game-chess-game--default",
+  theming: "/docs/theming-overview--docs",
+} as const;
 
 // Engine status component
 function EngineStatus() {
@@ -45,72 +59,25 @@ function EngineStatus() {
   );
 }
 
-// Engine lines with styling
-function EngineLines({ maxLines = 3 }: { maxLines?: number }) {
-  const { info } = useStockfish();
-  const lines = info.lines?.slice(0, maxLines) || [];
-
+// Styled engine lines wrapper
+function StyledEngineLines({ maxLines = 3 }: { maxLines?: number }) {
   return (
-    <div className="flex flex-col min-w-[200px]">
-      {lines.length === 0 ? (
-        <div className="text-size-xs text-text-muted p-2">
-          Waiting for analysis...
-        </div>
-      ) : (
-        lines.map((line, index) => (
-          <div
-            key={index}
-            className="flex items-center gap-2 p-2 border-b border-border last:border-b-0"
-          >
-            <span className="text-size-xs font-semibold text-accent min-w-[40px]">
-              {line.evaluation?.type === "mate"
-                ? `M${line.evaluation.value}`
-                : line.evaluation?.value !== undefined
-                  ? (line.evaluation.value / 100).toFixed(2)
-                  : "0.00"}
-            </span>
-            <span className="text-size-xs text-text truncate">
-              {line.pv?.join(" ") || ""}
-            </span>
-          </div>
-        ))
-      )}
+    <div className="flex flex-col min-w-[200px] rounded overflow-hidden border border-border bg-surface">
+      <ChessStockfish.EngineLines maxLines={maxLines} />
     </div>
   );
 }
 
-// Evaluation bar
-function EvaluationBar() {
-  const { info } = useStockfish();
-  const evalValue = info.evaluation?.value || 0;
-  const evalType = info.evaluation?.type || "cp";
-
-  // Convert mate scores to extreme values
-  let normalizedEval = evalValue;
-  if (evalType === "mate") {
-    normalizedEval = evalValue > 0 ? 1000 : -1000;
-  }
-
-  // Clamp and convert to percentage (range: -10 to +10 pawns)
-  const clampedEval = Math.max(-1000, Math.min(1000, normalizedEval));
-  const percentage = ((clampedEval + 1000) / 2000) * 100;
-
-  const displayValue =
-    evalType === "mate"
-      ? `M${Math.abs(evalValue)}`
-      : (evalValue / 100).toFixed(1);
-
+// Styled evaluation bar wrapper
+function StyledEvaluationBar() {
   return (
-    <div className="relative w-[30px] h-[360px] bg-dark-bg border border-dark-border rounded overflow-hidden">
-      <div
-        className="absolute bottom-0 left-0 right-0 bg-white transition-all duration-500"
-        style={{ height: `${percentage}%` }}
+    <div className="rounded overflow-hidden">
+      <ChessStockfish.EvaluationBar
+        height={360}
+        width={30}
+        showLabel
+        labelPosition="center"
       />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-size-xs font-bold text-dark-bg writing-mode-vertical rotate-180">
-          {displayValue > 0 ? `+${displayValue}` : displayValue}
-        </span>
-      </div>
     </div>
   );
 }
@@ -118,14 +85,16 @@ function EvaluationBar() {
 // CTA Button component
 function CTAButton({
   children,
-  onClick,
+  href,
 }: {
   children: React.ReactNode;
-  onClick?: () => void;
+  href: string;
 }) {
   return (
     <button
-      onClick={onClick}
+      onClick={() => {
+        window.location.href = `?path=${href}`;
+      }}
       className="px-4 py-2 bg-accent text-white text-size-sm font-medium rounded hover:opacity-90 transition-opacity"
     >
       {children}
@@ -166,7 +135,7 @@ export const Landing: StoryObj = {
             <div className="flex flex-col lg:flex-row gap-4 items-start">
               {/* Left: Evaluation Bar */}
               <div className="hidden lg:block">
-                <EvaluationBar />
+                <StyledEvaluationBar />
               </div>
 
               {/* Center: Board and Clocks */}
@@ -179,7 +148,9 @@ export const Landing: StoryObj = {
                 </div>
 
                 {/* Board */}
-                <ChessGame.Board boardWidth={400} />
+                <BoardWrapper>
+                  <ChessGame.Board boardWidth={400} />
+                </BoardWrapper>
                 <ChessGame.Sounds />
                 <ChessGame.KeyboardControls />
 
@@ -197,7 +168,7 @@ export const Landing: StoryObj = {
                   <h3 className="text-size-xs font-semibold text-text-muted uppercase tracking-wide mb-2">
                     Engine Analysis
                   </h3>
-                  <EngineLines maxLines={3} />
+                  <StyledEngineLines maxLines={3} />
                   <div className="mt-2">
                     <EngineStatus />
                   </div>
@@ -209,29 +180,9 @@ export const Landing: StoryObj = {
 
         {/* CTA Buttons */}
         <div className="flex flex-wrap justify-center gap-3">
-          <CTAButton
-            onClick={() =>
-              (window.location.href =
-                "?path=/docs/getting-started-quick-start--docs")
-            }
-          >
-            Quick Start
-          </CTAButton>
-          <CTAButton
-            onClick={() =>
-              (window.location.href =
-                "?path=/story/packages-react-chess-game-chess-game--docs")
-            }
-          >
-            Explore Packages
-          </CTAButton>
-          <CTAButton
-            onClick={() =>
-              (window.location.href = "?path=/docs/theming-overview--docs")
-            }
-          >
-            View Themes
-          </CTAButton>
+          <CTAButton href={STORY_PATHS.quickStart}>Quick Start</CTAButton>
+          <CTAButton href={STORY_PATHS.chessGame}>Explore Packages</CTAButton>
+          <CTAButton href={STORY_PATHS.theming}>View Themes</CTAButton>
         </div>
 
         {/* Keyboard shortcuts hint */}
