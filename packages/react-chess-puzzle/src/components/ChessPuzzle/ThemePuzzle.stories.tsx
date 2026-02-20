@@ -116,7 +116,7 @@ export const PuzzlePlayground = () => {
               puzzle={samplePuzzle}
               theme={theme}
             >
-              <ChessPuzzle.Board boardWidth={320} />
+              <ChessPuzzle.Board />
               <div className="mt-2 flex gap-2">
                 <ChessPuzzle.Hint asChild>
                   <button className="py-1 px-3 text-size-xs border border-border rounded bg-surface hover:bg-surface-alt">
