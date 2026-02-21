@@ -63,11 +63,13 @@ interface Puzzle {
 
 ### Move Format
 
-Moves use UCI notation (from-square + to-square):
+Moves accept either **UCI** (from-square + to-square) or **SAN** (algebraic notation) — both are validated:
 
-- `e2e4` - Pawn to e4
-- `g1f3` - Knight to f3
-- `e7e8q` - Promotion to queen
+- `e2e4` or `e4` - Pawn to e4
+- `g1f3` or `Nf3` - Knight to f3
+- `e7e8q` or `e8=Q` - Promotion to queen
+
+UCI is the canonical format used by chess databases and the Lichess puzzle API. SAN is accepted as well, making it easy to supply moves from `chess.js` or similar libraries.
 
 ## Components
 

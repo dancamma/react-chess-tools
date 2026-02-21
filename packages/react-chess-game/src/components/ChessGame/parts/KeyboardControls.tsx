@@ -1,4 +1,4 @@
-import React from "react";
+import type { FC } from "react";
 import { ChessGameContextType } from "../../../hooks/useChessGameContext";
 import { useKeyboardControls } from "../../../hooks/useKeyboardControls";
 
@@ -29,9 +29,7 @@ type KeyboardControlsProps = {
   controls?: KeyboardControls;
 };
 
-export const KeyboardControls: React.FC<KeyboardControlsProps> = ({
-  controls,
-}) => {
+export const KeyboardControls: FC<KeyboardControlsProps> = ({ controls }) => {
   const keyboardControls = { ...defaultKeyboardControls, ...controls };
   useKeyboardControls(keyboardControls);
   return null;

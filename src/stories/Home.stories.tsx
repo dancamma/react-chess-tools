@@ -46,7 +46,12 @@ function CTAButton({
   return (
     <button
       onClick={() => {
-        window.location.href = `?path=${href}`;
+        // Target the parent frame (Storybook manager/shell) so the sidebar and
+        // URL bar update correctly. Setting window.location inside the story
+        // iframe only navigates the iframe itself, leaving the manager out of sync.
+        const target = window.parent !== window ? window.parent : window;
+        const base = target.location.href.split("?")[0];
+        target.location.href = `${base}?path=${href}`;
       }}
       className="px-4 py-2 bg-accent text-white text-size-sm font-medium rounded hover:opacity-90 transition-opacity"
     >

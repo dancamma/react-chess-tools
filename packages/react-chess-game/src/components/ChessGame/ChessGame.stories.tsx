@@ -109,11 +109,15 @@ export const WithKeyboardControls = () => (
   </StoryContainer>
 );
 
-const ClockDisplay = ({
-  label,
-  color: side,
-  ...props
-}: { label: string; color: "white" | "black" } & Record<string, unknown>) => (
+type ClockDisplayProps = {
+  label: string;
+  color: "white" | "black";
+} & Omit<
+  React.ComponentProps<typeof ChessGame.Clock.Display>,
+  "color" | "className"
+>;
+
+const ClockDisplay = ({ label, color: side, ...props }: ClockDisplayProps) => (
   <ClockDisplayWrapper label={label}>
     <ChessGame.Clock.Display
       color={side}

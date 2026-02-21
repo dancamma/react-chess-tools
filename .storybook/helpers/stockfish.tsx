@@ -6,6 +6,19 @@ import {
 } from "@react-chess-tools/react-chess-stockfish";
 import { STOCKFISH_WORKER_PATH } from "./index";
 
+// Injects a <style> tag into <head> exactly once per unique id across the lifetime
+// of the page. Using useInsertionEffect ensures the style is applied before paint
+// and avoids duplicating the same stylesheet on every component re-render.
+function useStyleOnce(id: string, css: string) {
+  React.useInsertionEffect(() => {
+    if (document.getElementById(id)) return;
+    const style = document.createElement("style");
+    style.id = id;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }, []);
+}
+
 // CSS styles for Stockfish components - kept inline to ensure styles are scoped to story components
 export const EVAL_BAR_CSS = `
   [data-stockfish-orientation="vertical"],
@@ -182,22 +195,19 @@ type EvaluationBarProps = React.ComponentProps<
   typeof ChessStockfish.EvaluationBar
 >;
 
-export const VerticalEvalBar = (props: EvaluationBarProps) => (
-  <ChessStockfish.EvaluationBar orientation="vertical" {...props}>
-    <style>{EVAL_BAR_CSS}</style>
-  </ChessStockfish.EvaluationBar>
-);
+export const VerticalEvalBar = (props: EvaluationBarProps) => {
+  useStyleOnce("rct-eval-bar-css", EVAL_BAR_CSS);
+  return <ChessStockfish.EvaluationBar orientation="vertical" {...props} />;
+};
 
-export const HorizontalEvalBar = (props: EvaluationBarProps) => (
-  <ChessStockfish.EvaluationBar orientation="horizontal" {...props}>
-    <style>{EVAL_BAR_CSS}</style>
-  </ChessStockfish.EvaluationBar>
-);
+export const HorizontalEvalBar = (props: EvaluationBarProps) => {
+  useStyleOnce("rct-eval-bar-css", EVAL_BAR_CSS);
+  return <ChessStockfish.EvaluationBar orientation="horizontal" {...props} />;
+};
 
 export const StyledEngineLines = (
   props: React.ComponentProps<typeof ChessStockfish.EngineLines>,
-) => (
-  <ChessStockfish.EngineLines {...props}>
-    <style>{ENGINE_LINES_CSS}</style>
-  </ChessStockfish.EngineLines>
-);
+) => {
+  useStyleOnce("rct-engine-lines-css", ENGINE_LINES_CSS);
+  return <ChessStockfish.EngineLines {...props} />;
+};

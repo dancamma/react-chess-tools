@@ -66,9 +66,9 @@ export const PositionAnalysis: StoryObj = {
                 <ChessStockfish.EngineLines maxLines={3} />
               </div>
             </ChessGame.Root>
+            <EngineStatus />
           </ChessStockfish.Root>
         </BoardWrapper>
-        <EngineStatus />
       </div>
     );
   },
