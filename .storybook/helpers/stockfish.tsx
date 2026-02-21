@@ -162,7 +162,7 @@ export function EngineStatus() {
 
   const statusDisplay = () => {
     if (info.status === "initializing") {
-      return <span className="text-warning">initializing...</span>;
+      return <span className="text-warn">initializing...</span>;
     }
     if (info.status === "error") {
       return <span className="text-danger">error</span>;

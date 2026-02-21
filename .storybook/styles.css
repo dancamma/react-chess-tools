@@ -6,6 +6,7 @@
 @source "../packages/**/*.stories.tsx";
 @source "../packages/**/*.mdx";
 @source "./*.tsx";
+@source "./helpers/**/*.tsx";
 
 @theme {
   /* Story Container Themes (choose one via class) */

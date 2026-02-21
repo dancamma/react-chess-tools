@@ -151,25 +151,27 @@ export const GameReview: StoryObj = {
               fen={fen}
               onMove={(_move, game) => setFen(game.fen())}
             >
-              <div className="flex flex-col gap-2">
-                <ChessGame.Board />
-                <div className="flex gap-2 justify-center">
-                  <ChessGame.Reset />
+              <div className="flex gap-4 items-start">
+                <div className="flex flex-col gap-2">
+                  <ChessGame.Board />
+                  <div className="flex gap-2 justify-center">
+                    <ChessGame.Reset />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 min-w-[200px]">
+                  <h4 className="text-size-xs font-semibold text-text-muted uppercase">
+                    Analysis
+                  </h4>
+                  <ChessStockfish.EvaluationBar
+                    height={200}
+                    width={24}
+                    showLabel
+                  />
+                  <ChessStockfish.EngineLines maxLines={2} />
                 </div>
               </div>
               <ChessGame.Sounds />
               <ChessGame.KeyboardControls />
-              <div className="flex flex-col gap-2 min-w-[200px]">
-                <h4 className="text-size-xs font-semibold text-text-muted uppercase">
-                  Analysis
-                </h4>
-                <ChessStockfish.EvaluationBar
-                  height={200}
-                  width={24}
-                  showLabel
-                />
-                <ChessStockfish.EngineLines maxLines={2} />
-              </div>
             </ChessGame.Root>
           </ChessStockfish.Root>
         </BoardWrapper>

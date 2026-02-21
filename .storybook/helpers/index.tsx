@@ -187,11 +187,16 @@ export const ColorInput = ({
   const [error, setError] = React.useState(false);
 
   const validateColor = (color: string): boolean => {
-    if (!color) return false; // Empty string is not valid
+    if (!color) return false;
     const hexPattern = /^#([0-9A-Fa-f]{3,4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
     const rgbPattern =
       /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*(0|1|0?\.\d+))?\s*\)$/;
-    return hexPattern.test(color) || rgbPattern.test(color);
+    const namedColorPattern = /^[a-z]+$/i;
+    return (
+      hexPattern.test(color) ||
+      rgbPattern.test(color) ||
+      namedColorPattern.test(color)
+    );
   };
 
   const handleChange = (newValue: string) => {

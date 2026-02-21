@@ -50,8 +50,9 @@ function CTAButton({
         // URL bar update correctly. Setting window.location inside the story
         // iframe only navigates the iframe itself, leaving the manager out of sync.
         const target = window.parent !== window ? window.parent : window;
-        const base = target.location.href.split("?")[0];
-        target.location.href = `${base}?path=${href}`;
+        const url = new URL(target.location.href);
+        url.searchParams.set("path", href);
+        target.location.href = url.toString();
       }}
       className="px-4 py-2 bg-accent text-white text-size-sm font-medium rounded hover:opacity-90 transition-opacity"
     >
@@ -68,7 +69,7 @@ export const Landing: StoryObj = {
       <div className="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center">
-          <h1 className="text-size-2xl font-bold text-text mb-2">
+          <h1 className="text-size-lg font-bold text-text mb-2">
             react-chess-tools
           </h1>
           <p className="text-size-md text-text-secondary">
