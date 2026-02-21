@@ -4,7 +4,6 @@ import { ChessGame } from "@react-chess-tools/react-chess-game";
 import {
   themes,
   mergeTheme,
-  defaultGameTheme,
   type DeepPartial,
   type ChessGameTheme,
 } from "@react-chess-tools/react-chess-game";

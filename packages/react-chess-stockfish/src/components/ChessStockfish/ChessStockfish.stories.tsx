@@ -10,15 +10,7 @@ import {
   EVAL_BAR_CLASS,
   HORIZONTAL_BAR_CLASS,
 } from "@story-helpers/stockfish";
-import { StoryHeader, StoryContainer } from "@story-helpers";
-
-// Common FEN positions - keep consistent with @story-helpers FEN_POSITIONS
-const FEN = {
-  starting: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  italian:
-    "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
-  whiteWinning: "3rkb1r/p2nqppp/5n2/1B2p1B1/4P3/1Q6/PPP2PPP/2KR3R w k - 0 1",
-};
+import { StoryHeader, StoryContainer, FEN_POSITIONS } from "@story-helpers";
 
 const meta = {
   title: "Packages/react-chess-stockfish/ChessStockfish",
@@ -26,7 +18,7 @@ const meta = {
   tags: ["components", "stockfish", "analysis"],
   parameters: { layout: "centered" },
   args: {
-    fen: FEN.starting,
+    fen: FEN_POSITIONS.starting,
     workerOptions: { workerPath: "/stockfish.js" },
     children: null,
   },
@@ -37,12 +29,12 @@ type Story = StoryObj<typeof meta>;
 
 export const FullLayout: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.starting} config={{ multiPV: 3 }}>
+    <AnalysisRoot fen={FEN_POSITIONS.starting} config={{ multiPV: 3 }}>
       <StoryContainer>
         <StoryHeader
           title="Full layout"
           subtitle="Evaluation bar and engine lines combined"
-          fen={FEN.starting}
+          fen={FEN_POSITIONS.starting}
         />
         <div className="grid grid-cols-[30px_minmax(0,1fr)] gap-3 items-start w-full">
           <VerticalEvalBar showEvaluation className={EVAL_BAR_CLASS} />
@@ -56,12 +48,12 @@ export const FullLayout: Story = {
 
 export const EvalBarOnly: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.italian}>
+    <AnalysisRoot fen={FEN_POSITIONS.italian}>
       <StoryContainer className="w-board-preview max-w-full">
         <StoryHeader
           title="Evaluation bar only"
           subtitle="Just the evaluation bar without engine lines"
-          fen={FEN.italian}
+          fen={FEN_POSITIONS.italian}
         />
         <VerticalEvalBar showEvaluation className={EVAL_BAR_CLASS} />
         <EngineStatus />
@@ -72,12 +64,12 @@ export const EvalBarOnly: Story = {
 
 export const EngineLinesOnly: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.italian} config={{ multiPV: 3 }}>
+    <AnalysisRoot fen={FEN_POSITIONS.italian} config={{ multiPV: 3 }}>
       <StoryContainer>
         <StoryHeader
           title="Engine lines only"
           subtitle="Just the principal variations without evaluation bar"
-          fen={FEN.italian}
+          fen={FEN_POSITIONS.italian}
         />
         <StyledEngineLines maxLines={3} />
         <EngineStatus />
@@ -88,12 +80,12 @@ export const EngineLinesOnly: Story = {
 
 export const HorizontalLayout: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.whiteWinning} config={{ multiPV: 2 }}>
+    <AnalysisRoot fen={FEN_POSITIONS.whiteWinning} config={{ multiPV: 2 }}>
       <StoryContainer className="w-story max-w-full">
         <StoryHeader
           title="Horizontal layout"
           subtitle="Horizontal evaluation bar with lines"
-          fen={FEN.whiteWinning}
+          fen={FEN_POSITIONS.whiteWinning}
         />
         <HorizontalEvalBar showEvaluation className={HORIZONTAL_BAR_CLASS} />
         <StyledEngineLines maxLines={2} />
@@ -105,12 +97,12 @@ export const HorizontalLayout: Story = {
 
 export const StatusIndicator: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.starting}>
+    <AnalysisRoot fen={FEN_POSITIONS.starting}>
       <StoryContainer className="w-board-preview max-w-full">
         <StoryHeader
           title="Status indicator"
           subtitle="Shows engine state (idle, analyzing, error)"
-          fen={FEN.starting}
+          fen={FEN_POSITIONS.starting}
         />
         <EngineStatus />
         <p className="text-size-xs text-text-muted m-0 leading-relaxed">
