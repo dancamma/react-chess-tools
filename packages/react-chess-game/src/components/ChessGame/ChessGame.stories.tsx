@@ -205,7 +205,7 @@ export const WithServerControlledClock = () => {
       timeControl={{
         time: { baseTime: 30, increment: 2 },
         clockStart: "immediate",
-        onTimeout: (loser) => console.log(`Server: ${loser} flagged`),
+        onTimeout: () => {},
       }}
       autoSwitchOnMove={false}
     >

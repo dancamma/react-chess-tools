@@ -8,6 +8,7 @@ import {
   STOCKFISH_WORKER_PATH,
   FEN_POSITIONS,
 } from "@story-helpers";
+import { StyledEngineLines } from "@story-helpers/stockfish";
 
 const meta = {
   title: "Use Cases/Build a Chess Game",
@@ -88,7 +89,7 @@ export const GameWithAnalysis: StoryObj = {
               <div className="flex gap-4 items-start">
                 <ChessGame.Board />
                 <div className="flex flex-col gap-2 min-w-[200px]">
-                  <ChessStockfish.EngineLines maxLines={3} />
+                  <StyledEngineLines maxLines={3} />
                 </div>
               </div>
               <ChessGame.Sounds />
@@ -137,7 +138,7 @@ export const FullFeaturedGame: StoryObj = {
 
               {/* Right: Analysis */}
               <div className="flex flex-col gap-2 min-w-[180px]">
-                <ChessStockfish.EngineLines maxLines={2} />
+                <StyledEngineLines maxLines={2} />
               </div>
             </div>
 

@@ -7,8 +7,13 @@ import {
   BoardWrapper,
   STOCKFISH_WORKER_PATH,
   FEN_POSITIONS,
+  SecondaryBtn,
 } from "@story-helpers";
-import { EngineStatus } from "@story-helpers/stockfish";
+import {
+  EngineStatus,
+  VerticalEvalBar,
+  StyledEngineLines,
+} from "@story-helpers/stockfish";
 
 const meta = {
   title: "Use Cases/Build Analysis Tools",
@@ -56,13 +61,9 @@ export const PositionAnalysis: StoryObj = {
               onMove={(_move, game) => setFen(game.fen())}
             >
               <div className="flex gap-4 items-start">
-                <ChessStockfish.EvaluationBar
-                  height={300}
-                  width={24}
-                  showEvaluation
-                />
+                <VerticalEvalBar height={300} width={24} showEvaluation />
                 <ChessGame.Board />
-                <ChessStockfish.EngineLines maxLines={3} />
+                <StyledEngineLines maxLines={3} />
               </div>
             </ChessGame.Root>
             <EngineStatus />
@@ -117,7 +118,7 @@ export const EngineEvaluation: StoryObj = {
                   <h4 className="text-size-xs font-semibold text-text-muted uppercase">
                     Top {multiPV} Lines
                   </h4>
-                  <ChessStockfish.EngineLines maxLines={multiPV} />
+                  <StyledEngineLines maxLines={multiPV} />
                 </div>
               </div>
             </ChessGame.Root>
@@ -152,19 +153,17 @@ export const GameReview: StoryObj = {
                 <div className="flex flex-col gap-2">
                   <ChessGame.Board />
                   <div className="flex gap-2 justify-center">
-                    <ChessGame.Reset />
+                    <ChessGame.Reset asChild>
+                      <SecondaryBtn>Reset</SecondaryBtn>
+                    </ChessGame.Reset>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 min-w-[200px]">
                   <h4 className="text-size-xs font-semibold text-text-muted uppercase">
                     Analysis
                   </h4>
-                  <ChessStockfish.EvaluationBar
-                    height={200}
-                    width={24}
-                    showEvaluation
-                  />
-                  <ChessStockfish.EngineLines maxLines={2} />
+                  <VerticalEvalBar height={200} width={24} showEvaluation />
+                  <StyledEngineLines maxLines={2} />
                 </div>
               </div>
               <ChessGame.Sounds />

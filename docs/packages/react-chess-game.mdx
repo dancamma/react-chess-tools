@@ -112,7 +112,7 @@ The context provider that manages game state. Wrap all other ChessGame component
         <code>theme</code>
       </td>
       <td>
-        <code>Partial&lt;Theme&gt;</code>
+        <code>DeepPartial&lt;ChessGameTheme&gt;</code>
       </td>
       <td>default</td>
       <td>Theme customization</td>
@@ -253,12 +253,13 @@ Create and manage game state outside of the component tree.
 import { useChessGame } from "@react-chess-tools/react-chess-game";
 
 function MyComponent() {
-  const { game, history, makeMove, resetGame } = useChessGame();
+  const { game, methods } = useChessGame();
+  const history = game.history();
 
   return (
     <div>
       <p>Turn: {game.turn()}</p>
-      <button onClick={() => makeMove("e4")}>Play e4</button>
+      <button onClick={() => methods.makeMove("e4")}>Play e4</button>
     </div>
   );
 }
@@ -272,7 +273,8 @@ Access game state from child components.
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
 
 function MoveHistory() {
-  const { history, methods } = useChessGameContext();
+  const { game, methods } = useChessGameContext();
+  const history = game.history();
 
   return (
     <ul>

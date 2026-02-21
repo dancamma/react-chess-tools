@@ -72,7 +72,8 @@ Use hooks to access game state in your components:
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
 
 function MoveCounter() {
-  const { game, history } = useChessGameContext();
+  const { game } = useChessGameContext();
+  const history = game.history();
 
   return (
     <div>
@@ -160,13 +161,15 @@ Clock is built into `react-chess-game`:
 Stockfish wraps the game to sync FEN state:
 
 ```tsx
-<ChessStockfish.Root fen={fen} onFenChange={setFen}>
-  <ChessGame.Root fen={fen} onMove={handleMove}>
+const [fen, setFen] = useState(STARTING_FEN);
+
+<ChessStockfish.Root fen={fen}>
+  <ChessGame.Root fen={fen} onMove={(_move, game) => setFen(game.fen())}>
     <ChessStockfish.EvaluationBar />
     <ChessGame.Board />
     <ChessStockfish.EngineLines />
   </ChessGame.Root>
-</ChessStockfish.Root>
+</ChessStockfish.Root>;
 ```
 
 ### Puzzle + Sounds
@@ -189,10 +192,27 @@ Access game state from child components.
 ```tsx
 const {
   game, // Current Chess.js instance
-  history, // Move history
-  methods, // { makeMove, undoMove, resetGame, setPosition }
-  isGameOver, // Boolean
+  currentFen, // Current FEN string
+  currentPosition, // Current move notation
+  orientation, // Board orientation ("w" | "b")
+  currentMoveIndex, // Index of current position in history (-1 = start)
+  isLatestMove, // Boolean - at latest position
+  info, // Game info (checkmate, draw, turn, etc.)
+  methods: {
+    makeMove, // Make a move
+    setPosition, // Set position by FEN and orientation
+    flipBoard, // Flip board orientation
+    goToMove, // Go to specific move index
+    goToStart, // Go to starting position
+    goToEnd, // Go to latest position
+    goToPreviousMove, // Go back one move
+    goToNextMove, // Go forward one move
+  },
+  clock, // Clock state (if timeControl enabled)
 } = useChessGameContext();
+
+// For move history, use game.history()
+const history = game.history();
 ```
 
 ### useChessPuzzleContext
