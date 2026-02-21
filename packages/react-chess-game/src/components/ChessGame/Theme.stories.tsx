@@ -20,6 +20,9 @@ const meta = {
 
 export default meta;
 
+// Re-export for use in other stories
+export { FEN_POSITIONS } from "@story-helpers";
+
 // Theme property configuration for type-safe updates
 type ThemeProperty =
   | { category: "board"; key: "lightSquare" | "darkSquare"; format: "object" }

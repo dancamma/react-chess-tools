@@ -10,13 +10,10 @@ import {
   HORIZONTAL_BAR_CLASS,
   EVAL_BAR_CSS,
 } from "@story-helpers/stockfish";
-import { StoryHeader, StoryContainer } from "@story-helpers";
+import { StoryHeader, StoryContainer, FEN_POSITIONS } from "@story-helpers";
 
+// Additional FEN positions specific to evaluation bar stories
 const FEN = {
-  start: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  italian:
-    "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
-  whiteWinning: "3rkb1r/p2nqppp/5n2/1B2p1B1/4P3/1Q6/PPP2PPP/2KR3R w k - 0 1",
   blackWinning:
     "rnbqkbnr/1ppp1ppp/p5Q1/4p3/4P3/8/PPPP1PPP/RNB1KBNR b KQkq - 0 1",
   mateIn3: "r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1",
@@ -34,12 +31,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Vertical: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.start}>
+    <AnalysisRoot fen={FEN_POSITIONS.starting}>
       <StoryContainer>
         <StoryHeader
           title="Vertical evaluation bar"
           subtitle="White fills from bottom, black fills from top"
-          fen={FEN.start}
+          fen={FEN_POSITIONS.starting}
         />
         <VerticalEvalBar showEvaluation className={EVAL_BAR_CLASS} />
         <EngineStatus />
@@ -50,12 +47,12 @@ export const Vertical: Story = {
 
 export const Horizontal: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.whiteWinning}>
+    <AnalysisRoot fen={FEN_POSITIONS.whiteWinning}>
       <StoryContainer className="w-story max-w-full">
         <StoryHeader
           title="Horizontal evaluation bar"
           subtitle="Same evaluation data in horizontal orientation"
-          fen={FEN.whiteWinning}
+          fen={FEN_POSITIONS.whiteWinning}
         />
         <HorizontalEvalBar showEvaluation className={HORIZONTAL_BAR_CLASS} />
         <EngineStatus />
@@ -66,12 +63,12 @@ export const Horizontal: Story = {
 
 export const Perspective: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.whiteWinning}>
+    <AnalysisRoot fen={FEN_POSITIONS.whiteWinning}>
       <StoryContainer className="w-story max-w-full">
         <StoryHeader
           title="Perspective switch"
           subtitle="Same eval value rendered from white and black perspectives"
-          fen={FEN.whiteWinning}
+          fen={FEN_POSITIONS.whiteWinning}
         />
         <div className="flex gap-7 items-center">
           {(["w", "b"] as const).map((perspective) => (
@@ -95,12 +92,12 @@ export const Perspective: Story = {
 
 export const NoText: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.start}>
+    <AnalysisRoot fen={FEN_POSITIONS.starting}>
       <StoryContainer className="w-board-preview max-w-full">
         <StoryHeader
           title="Bar only"
           subtitle="Fill animation without score label"
-          fen={FEN.start}
+          fen={FEN_POSITIONS.starting}
         />
         <VerticalEvalBar showEvaluation={false} className={EVAL_BAR_CLASS} />
         <EngineStatus />
@@ -111,12 +108,12 @@ export const NoText: Story = {
 
 export const AsChild: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.start}>
+    <AnalysisRoot fen={FEN_POSITIONS.starting}>
       <StoryContainer className="w-board-preview max-w-full">
         <StoryHeader
           title="asChild pattern"
           subtitle="Render the bar into a custom section element"
-          fen={FEN.start}
+          fen={FEN_POSITIONS.starting}
         />
         <ChessStockfish.EvaluationBar asChild showEvaluation>
           <section className={EVAL_BAR_CLASS}>
@@ -147,12 +144,12 @@ export const MateScore: Story = {
 
 export const WhiteWinning: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.whiteWinning}>
+    <AnalysisRoot fen={FEN_POSITIONS.whiteWinning}>
       <StoryContainer className="w-story max-w-full">
         <StoryHeader
           title="White winning position"
           subtitle="Large positive evaluation"
-          fen={FEN.whiteWinning}
+          fen={FEN_POSITIONS.whiteWinning}
         />
         <HorizontalEvalBar showEvaluation className={HORIZONTAL_BAR_CLASS} />
         <EngineStatus />

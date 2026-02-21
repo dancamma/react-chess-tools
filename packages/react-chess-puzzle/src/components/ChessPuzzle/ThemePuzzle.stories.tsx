@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { ChessPuzzle } from "./index";
 import { defaultPuzzleTheme } from "../../theme/defaults";
 import type { ChessPuzzleTheme } from "../../theme/types";
-import { ColorInput } from "@story-helpers";
+import { ColorInput, copyToClipboard } from "@story-helpers";
 
 const meta = {
   title: "Packages/react-chess-puzzle/Theming/Playground",
@@ -29,6 +29,7 @@ const samplePuzzle = {
 export const PuzzlePlayground = () => {
   const [theme, setTheme] = useState<ChessPuzzleTheme>(defaultPuzzleTheme);
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
 
   const updatePuzzleColor = (
     key: keyof ChessPuzzleTheme["puzzle"],
@@ -47,10 +48,16 @@ export const PuzzlePlayground = () => {
   puzzle: ${JSON.stringify(theme.puzzle, null, 4)}
 };`;
 
-  const copyTheme = () => {
-    navigator.clipboard.writeText(themeCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    const success = await copyToClipboard(themeCode);
+    if (success) {
+      setCopied(true);
+      setCopyError(false);
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      setCopyError(true);
+      setTimeout(() => setCopyError(false), 3000);
+    }
   };
 
   return (
@@ -127,10 +134,17 @@ export const PuzzlePlayground = () => {
             {themeCode}
           </pre>
           <button
-            onClick={copyTheme}
-            className={`absolute top-3 right-3 px-2 py-1 text-size-xs rounded ${copied ? "bg-success text-white" : "bg-accent text-white hover:opacity-90"}`}
+            onClick={handleCopy}
+            className={`absolute top-3 right-3 px-2 py-1 text-size-xs rounded ${
+              copyError
+                ? "bg-danger text-white"
+                : copied
+                  ? "bg-success text-white"
+                  : "bg-accent text-white hover:opacity-90"
+            }`}
+            aria-label="Copy theme code"
           >
-            {copied ? "Copied!" : "Copy"}
+            {copyError ? "Failed" : copied ? "Copied!" : "Copy"}
           </button>
         </div>
       </div>

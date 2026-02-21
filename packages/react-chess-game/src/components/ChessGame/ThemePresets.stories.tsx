@@ -2,6 +2,7 @@ import type { Meta } from "@storybook/react-vite";
 import React from "react";
 import { ChessGame } from "./index";
 import { themes } from "../../theme";
+import { FEN_POSITIONS } from "@story-helpers";
 
 const meta = {
   title: "Packages/react-chess-game/Theming/Presets",
@@ -17,10 +18,6 @@ const meta = {
 } satisfies Meta<typeof ChessGame.Root>;
 
 export default meta;
-
-// Position with a move played (to show lastMove highlight)
-const POSITION_WITH_MOVE =
-  "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2";
 
 export const DefaultTheme = () => (
   <div className="max-w-board-preview">
@@ -114,7 +111,7 @@ export const PartialThemeOverride = () => {
         Only override specific colors (purple last move, orange check). Other
         colors use defaults.
       </p>
-      <ChessGame.Root fen={POSITION_WITH_MOVE} theme={partialTheme}>
+      <ChessGame.Root fen={FEN_POSITIONS.withMove} theme={partialTheme}>
         <ChessGame.Board />
       </ChessGame.Root>
       <details className="mt-4">
