@@ -183,7 +183,7 @@ import { ChessGame } from "@react-chess-tools/react-chess-game";
 function ChessApp() {
   return (
     <ChessGame.Root
-      timeControl={{ time: "5+3", clockStart: "firstMove" }}
+      timeControl={{ time: "5+3", clockStart: "delayed" }}
       onMove={(move, game) => {
         if (game.isCheckmate()) {
           alert("Checkmate!");

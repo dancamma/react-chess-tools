@@ -134,7 +134,7 @@ The context provider that manages puzzle state.
         <code>theme</code>
       </td>
       <td>
-        <code>Partial&lt;Theme&gt;</code>
+        <code>PartialChessPuzzleTheme</code>
       </td>
       <td>default</td>
       <td>Theme customization</td>
@@ -224,16 +224,17 @@ Access puzzle state from child components.
 import { useChessPuzzleContext } from "@react-chess-tools/react-chess-puzzle";
 
 function PuzzleStatus() {
-  const { solved, failed, currentMoveIndex, totalMoves, hintUsed } =
+  const { status, movesPlayed, totalMoves, isPlayerTurn, hint, nextMove } =
     useChessPuzzleContext();
 
   return (
     <div>
-      {solved && <p>Puzzle solved!</p>}
-      {failed && <p>Wrong move - try again!</p>}
+      {status === "solved" && <p>Puzzle solved!</p>}
+      {status === "failed" && <p>Wrong move - try again!</p>}
       <p>
-        Progress: {currentMoveIndex} / {totalMoves}
+        Progress: {movesPlayed} / {totalMoves}
       </p>
+      {hint.visible && <p>Hint: {nextMove}</p>}
     </div>
   );
 }

@@ -90,7 +90,7 @@ Time is added after each move:
 <ChessClock.Root
   timeControl={{
     time: { baseTime: 300, increment: 3 },
-    method: "increment",
+    method: "fischer",
   }}
 >
 ```
@@ -331,22 +331,18 @@ import { useChessClock } from "@react-chess-tools/react-chess-clock";
 
 function MyClock() {
   const {
-    whiteTime,
-    blackTime,
+    times,
     activePlayer,
-    isRunning,
-    start,
-    pause,
-    switch: switchPlayer,
-    reset,
+    info,
+    methods: { start, pause, switch: switchPlayer, reset },
   } = useChessClock({ time: "5+3" });
 
   return (
     <div>
-      <div>White: {whiteTime}s</div>
-      <div>Black: {blackTime}s</div>
-      <button onClick={isRunning ? pause : start}>
-        {isRunning ? "Pause" : "Start"}
+      <div>White: {(times.white / 1000).toFixed(1)}s</div>
+      <div>Black: {(times.black / 1000).toFixed(1)}s</div>
+      <button onClick={info.isRunning ? pause : start}>
+        {info.isRunning ? "Pause" : "Start"}
       </button>
     </div>
   );
@@ -361,15 +357,15 @@ Access clock state from child components.
 import { useChessClockContext } from "@react-chess-tools/react-chess-clock";
 
 function TimeDisplay() {
-  const { whiteTime, blackTime, activePlayer } = useChessClockContext();
+  const { times, activePlayer } = useChessClockContext();
 
   return (
     <div>
       <span className={activePlayer === "white" ? "active" : ""}>
-        White: {formatTime(whiteTime)}
+        White: {(times.white / 1000).toFixed(1)}s
       </span>
       <span className={activePlayer === "black" ? "active" : ""}>
-        Black: {formatTime(blackTime)}
+        Black: {(times.black / 1000).toFixed(1)}s
       </span>
     </div>
   );

@@ -46,7 +46,7 @@ export const GameWithClock: StoryObj = {
         title="Game with Clock"
         subtitle="5+3 Blitz game with Fischer increment"
       />
-      <ChessGame.Root timeControl={{ time: "5+3", clockStart: "firstMove" }}>
+      <ChessGame.Root timeControl={{ time: "5+3", clockStart: "delayed" }}>
         <div className="flex flex-col gap-2">
           <div className="px-3 py-1 bg-dark-bg text-white text-size-sm font-mono rounded text-center">
             <ChessGame.Clock.Display color="black" />
@@ -122,7 +122,7 @@ export const FullFeaturedGame: StoryObj = {
           <ChessGame.Root
             fen={fen}
             onMove={(_move, game) => setFen(game.fen())}
-            timeControl={{ time: "5+3", clockStart: "firstMove" }}
+            timeControl={{ time: "5+3", clockStart: "delayed" }}
           >
             <div className="flex gap-4 items-start">
               {/* Left: Board and Clocks */}

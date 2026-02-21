@@ -77,8 +77,7 @@ function MoveCounter() {
 
   return (
     <div>
-      Moves: {history.length}
-      Turn: {game.turn() === "w" ? "White" : "Black"}
+      Moves: {history.length} · Turn: {game.turn() === "w" ? "White" : "Black"}
     </div>
   );
 }
@@ -161,7 +160,9 @@ Clock is built into `react-chess-game`:
 Stockfish wraps the game to sync FEN state:
 
 ```tsx
-const [fen, setFen] = useState(STARTING_FEN);
+const [fen, setFen] = useState(
+  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+);
 
 <ChessStockfish.Root fen={fen}>
   <ChessGame.Root fen={fen} onMove={(_move, game) => setFen(game.fen())}>
@@ -263,7 +264,7 @@ Create and manage a standalone chess clock (from `react-chess-clock`).
 const {
   times,         // { white: number, black: number } in ms
   initialTimes,  // Starting times
-  status,        // "idle" | "running" | "paused" | "finished"
+  status,        // "idle" | "delayed" | "running" | "paused" | "finished"
   activePlayer,  // "white" | "black" | null
   timeout,       // Player who ran out of time, or null
   info,          // Computed state (isRunning, isPaused, etc.)

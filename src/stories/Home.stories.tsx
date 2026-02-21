@@ -90,7 +90,7 @@ export const Landing: StoryObj = {
           <ChessGame.Root
             fen={fen}
             onMove={(_move, game) => setFen(game.fen())}
-            timeControl={{ time: "5+3", clockStart: "firstMove" }}
+            timeControl={{ time: "5+3", clockStart: "delayed" }}
           >
             <div className="flex flex-col lg:flex-row gap-4 items-start">
               {/* Left: Evaluation Bar */}

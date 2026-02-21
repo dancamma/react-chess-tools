@@ -44,7 +44,9 @@ import { ChessStockfish } from "@react-chess-tools/react-chess-stockfish";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 
 function App() {
-  const [fen, setFen] = useState(STARTING_FEN);
+  const [fen, setFen] = useState(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  );
 
   return (
     <ChessStockfish.Root
@@ -368,7 +370,9 @@ The Stockfish component wraps the game component to share FEN state:
 
 ```tsx
 function AnalysisBoard() {
-  const [fen, setFen] = useState(STARTING_FEN);
+  const [fen, setFen] = useState(
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  );
 
   return (
     <ChessStockfish.Root

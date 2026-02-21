@@ -247,7 +247,7 @@ Reset button component.
 
 ### useChessGame
 
-Create and manage game state outside of the component tree.
+Create and manage game state outside of the component tree. This hook creates isolated state, unlike `useChessGameContext` which accesses shared state from a provider.
 
 ```tsx
 import { useChessGame } from "@react-chess-tools/react-chess-game";
