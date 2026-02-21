@@ -80,7 +80,6 @@ export const Landing: StoryObj = {
         {/* Main Layout */}
         <ChessStockfish.Root
           fen={fen}
-          onFenChange={setFen}
           workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
           config={{ multiPV: 3 }}
         >

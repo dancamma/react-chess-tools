@@ -16,7 +16,7 @@ function useStyleOnce(id: string, css: string) {
     style.id = id;
     style.textContent = css;
     document.head.appendChild(style);
-  }, []);
+  }, [id, css]);
 }
 
 // CSS styles for Stockfish components - kept inline to ensure styles are scoped to story components

@@ -79,7 +79,6 @@ export const GameWithAnalysis: StoryObj = {
         <BoardWrapper>
           <ChessStockfish.Root
             fen={fen}
-            onFenChange={setFen}
             workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
           >
             <ChessGame.Root
@@ -116,7 +115,6 @@ export const FullFeaturedGame: StoryObj = {
         />
         <ChessStockfish.Root
           fen={fen}
-          onFenChange={setFen}
           workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
           config={{ multiPV: 2 }}
         >

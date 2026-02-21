@@ -49,8 +49,8 @@ function App() {
   return (
     <ChessStockfish.Root
       fen={fen}
-      onFenChange={setFen}
       workerOptions={{ workerPath: "/stockfish.js" }}
+      config={{ multiPV: 3 }}
     >
       <ChessStockfish.EvaluationBar showEvaluation />
       <ChessGame.Root fen={fen} onMove={(_, game) => setFen(game.fen())}>
@@ -90,13 +90,15 @@ The context provider that manages engine state.
     </tr>
     <tr>
       <td>
-        <code>onFenChange</code>
+        <code>config</code>
       </td>
       <td>
-        <code>(fen: string) =&gt; void</code>
+        <code>StockfishConfig</code>
       </td>
-      <td>-</td>
-      <td>Called when FEN changes</td>
+      <td>
+        <code>{"{}"}</code>
+      </td>
+      <td>Engine config (multiPV, depth, skillLevel)</td>
     </tr>
     <tr>
       <td>
@@ -110,42 +112,46 @@ The context provider that manages engine state.
     </tr>
     <tr>
       <td>
-        <code>depth</code>
+        <code>onEvaluationChange</code>
       </td>
       <td>
-        <code>number</code>
+        <code>(eval: Evaluation | null) =&gt; void</code>
       </td>
-      <td>
-        <code>20</code>
-      </td>
-      <td>Search depth</td>
+      <td>-</td>
+      <td>Called when evaluation updates</td>
     </tr>
     <tr>
       <td>
-        <code>maxLines</code>
+        <code>onDepthChange</code>
       </td>
       <td>
-        <code>number</code>
+        <code>(depth: number) =&gt; void</code>
       </td>
-      <td>
-        <code>1</code>
-      </td>
-      <td>Number of PV lines</td>
+      <td>-</td>
+      <td>Called when depth changes</td>
     </tr>
     <tr>
       <td>
-        <code>autoAnalyze</code>
+        <code>onError</code>
       </td>
       <td>
-        <code>boolean</code>
+        <code>(error: Error) =&gt; void</code>
       </td>
-      <td>
-        <code>true</code>
-      </td>
-      <td>Auto-analyze on FEN change</td>
+      <td>-</td>
+      <td>Called on engine errors</td>
     </tr>
   </tbody>
 </table>
+
+#### StockfishConfig
+
+```tsx
+interface StockfishConfig {
+  multiPV?: number; // Number of PV lines (default: 1)
+  depth?: number; // Max search depth (default: 20)
+  skillLevel?: number; // Engine skill 0-20 (default: 20)
+}
+```
 
 #### WorkerOptions
 
@@ -307,69 +313,54 @@ Shows engine status.
   </tbody>
 </table>
 
-Shows: `idle` | `analyzing` | `error`
+Shows: `initializing` | `ready` | `analyzing` | `error`
 
 ## Hooks
 
-### useChessStockfish
+### useStockfish
 
-Create and manage engine state outside of the component tree.
-
-```tsx
-import { useChessStockfish } from "@react-chess-tools/react-chess-stockfish";
-
-function AnalysisPanel() {
-  const {
-    evaluation,
-    lines,
-    depth,
-    isAnalyzing,
-    setFen,
-    setDepth,
-    stopAnalysis,
-  } = useChessStockfish({
-    workerOptions: { workerPath: "/stockfish.js" },
-  });
-
-  return (
-    <div>
-      <p>Evaluation: {evaluation / 100}</p>
-      <p>Analyzing: {isAnalyzing ? "Yes" : "No"}</p>
-      <div>
-        {lines.map((line, i) => (
-          <div key={i}>
-            {line.evaluation > 0 ? "+" : ""}
-            {line.evaluation / 100}: {line.moves.join(" ")}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-```
-
-### useChessStockfishContext
-
-Access engine state from child components.
+Access engine state from child components within ChessStockfish.Root.
 
 ```tsx
-import { useChessStockfishContext } from "@react-chess-tools/react-chess-stockfish";
+import { useStockfish } from "@react-chess-tools/react-chess-stockfish";
 
 function EvalDisplay() {
-  const { evaluation, depth, isAnalyzing } = useChessStockfishContext();
+  const { fen, info, methods } = useStockfish();
 
   return (
     <div>
       <span>
-        {evaluation > 0 ? "+" : ""}
-        {(evaluation / 100).toFixed(1)}
+        {info.evaluation?.type === "cp"
+          ? `${info.evaluation.value > 0 ? "+" : ""}${(info.evaluation.value / 100).toFixed(1)}`
+          : info.evaluation?.type === "mate"
+            ? `M${info.evaluation.value}`
+            : "—"}
       </span>
-      <span>Depth: {depth}</span>
-      {isAnalyzing && <span>Analyzing...</span>}
+      <span>Depth: {info.depth}</span>
+      {info.isEngineThinking && <span>Analyzing...</span>}
+      <button onClick={methods.stopAnalysis}>Stop</button>
     </div>
   );
 }
 ```
+
+The hook returns:
+
+- `fen` - Current FEN string being analyzed
+- `info` - Analysis state:
+  - `evaluation` - Current evaluation (`{ type: "cp", value }` or `{ type: "mate", value }`)
+  - `normalizedEvaluation` - Normalized -1 to +1 value
+  - `principalVariations` - Array of PV lines
+  - `depth` - Current search depth
+  - `status` - Engine status (`"initializing"` | `"ready"` | `"analyzing"` | `"error"`)
+  - `isEngineThinking` - Whether engine is actively analyzing
+  - `hasResults` - Whether any results are available
+  - `error` - Any error that occurred
+- `methods` - Control methods:
+  - `startAnalysis()` - Start analysis
+  - `stopAnalysis()` - Stop analysis
+  - `getBestMove()` - Get the best move from top line
+  - `setConfig(config)` - Update engine configuration
 
 ## Integration with react-chess-game
 
@@ -382,8 +373,8 @@ function AnalysisBoard() {
   return (
     <ChessStockfish.Root
       fen={fen}
-      onFenChange={setFen}
       workerOptions={{ workerPath: "/stockfish.js" }}
+      config={{ multiPV: 3 }}
     >
       <ChessStockfish.EvaluationBar showEvaluation />
       <ChessGame.Root fen={fen} onMove={(move, game) => setFen(game.fen())}>

@@ -48,7 +48,6 @@ export const PositionAnalysis: StoryObj = {
         <BoardWrapper>
           <ChessStockfish.Root
             fen={fen}
-            onFenChange={setFen}
             workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
             config={{ multiPV: 3 }}
           >
@@ -60,7 +59,7 @@ export const PositionAnalysis: StoryObj = {
                 <ChessStockfish.EvaluationBar
                   height={300}
                   width={24}
-                  showLabel
+                  showEvaluation
                 />
                 <ChessGame.Board />
                 <ChessStockfish.EngineLines maxLines={3} />
@@ -105,7 +104,6 @@ export const EngineEvaluation: StoryObj = {
         <BoardWrapper>
           <ChessStockfish.Root
             fen={fen}
-            onFenChange={setFen}
             workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
             config={{ multiPV }}
           >
@@ -143,7 +141,6 @@ export const GameReview: StoryObj = {
         <BoardWrapper>
           <ChessStockfish.Root
             fen={fen}
-            onFenChange={setFen}
             workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
             config={{ multiPV: 2 }}
           >
@@ -165,7 +162,7 @@ export const GameReview: StoryObj = {
                   <ChessStockfish.EvaluationBar
                     height={200}
                     width={24}
-                    showLabel
+                    showEvaluation
                   />
                   <ChessStockfish.EngineLines maxLines={2} />
                 </div>

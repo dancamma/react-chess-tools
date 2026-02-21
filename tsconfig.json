@@ -22,6 +22,13 @@
       "@story-helpers/stockfish": ["./.storybook/helpers/stockfish"]
     }
   },
-  "include": ["packages/**/*.ts", "packages/**/*.tsx"],
+  "include": [
+    "packages/**/*.ts",
+    "packages/**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".storybook/**/*.ts",
+    ".storybook/**/*.tsx"
+  ],
   "exclude": ["node_modules"]
 }

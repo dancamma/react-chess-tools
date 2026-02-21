@@ -191,12 +191,11 @@ export const ColorInput = ({
     const hexPattern = /^#([0-9A-Fa-f]{3,4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
     const rgbPattern =
       /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*(0|1|0?\.\d+))?\s*\)$/;
-    const namedColorPattern = /^[a-z]+$/i;
-    return (
-      hexPattern.test(color) ||
-      rgbPattern.test(color) ||
-      namedColorPattern.test(color)
-    );
+    if (hexPattern.test(color) || rgbPattern.test(color)) return true;
+    if (typeof CSS !== "undefined" && CSS.supports) {
+      return CSS.supports("color", color);
+    }
+    return false;
   };
 
   const handleChange = (newValue: string) => {
@@ -309,20 +308,7 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
     await navigator.clipboard.writeText(text);
     return true;
   } catch {
-    // Fallback for non-HTTPS or unsupported browsers
-    try {
-      const textarea = document.createElement("textarea");
-      textarea.value = text;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.select();
-      const success = document.execCommand("copy");
-      document.body.removeChild(textarea);
-      return success;
-    } catch {
-      return false;
-    }
+    return false;
   }
 };
 
