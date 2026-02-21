@@ -287,3 +287,37 @@ export const FEN_POSITIONS = {
 
 // Position with a move played (for showing lastMove highlight)
 export const POSITION_WITH_MOVE = FEN_POSITIONS.withMove;
+
+// Shared clipboard utility with fallback for non-HTTPS contexts
+export const copyToClipboard = async (text: string): Promise<boolean> => {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Fallback for non-HTTPS or unsupported browsers
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      const success = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return success;
+    } catch {
+      return false;
+    }
+  }
+};
+
+// Re-export stockfish helpers for convenience
+export {
+  EngineStatus,
+  AnalysisRoot,
+  VerticalEvalBar,
+  HorizontalEvalBar,
+  StyledEngineLines,
+  EVAL_BAR_CLASS,
+  HORIZONTAL_BAR_CLASS,
+} from "./stockfish";

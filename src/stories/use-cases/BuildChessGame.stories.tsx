@@ -6,6 +6,7 @@ import {
   StoryHeader,
   BoardWrapper,
   STOCKFISH_WORKER_PATH,
+  FEN_POSITIONS,
 } from "@story-helpers";
 
 const meta = {
@@ -69,9 +70,7 @@ export const GameWithClock: StoryObj = {
 
 export const GameWithAnalysis: StoryObj = {
   render: () => {
-    const [fen, setFen] = React.useState(
-      "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3",
-    );
+    const [fen, setFen] = React.useState(FEN_POSITIONS.italian);
 
     return (
       <div className="flex flex-col gap-4 p-6 max-w-story-xl mx-auto">
@@ -109,9 +108,7 @@ export const GameWithAnalysis: StoryObj = {
 
 export const FullFeaturedGame: StoryObj = {
   render: () => {
-    const [fen, setFen] = React.useState(
-      "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-    );
+    const [fen, setFen] = React.useState(FEN_POSITIONS.starting);
 
     return (
       <div className="flex flex-col gap-4 p-6 max-w-3xl mx-auto">

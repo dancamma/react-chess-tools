@@ -1,9 +1,9 @@
 import type { Meta } from "@storybook/react-vite";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { ChessGame } from "./index";
 import { defaultGameTheme, themes } from "../../theme";
 import type { ChessGameTheme } from "../../theme/types";
-import { ColorInput } from "@story-helpers";
+import { ColorInput, copyToClipboard, FEN_POSITIONS } from "@story-helpers";
 
 const meta = {
   title: "Packages/react-chess-game/Theming/Playground",
@@ -20,6 +20,27 @@ const meta = {
 
 export default meta;
 
+// Theme property configuration for type-safe updates
+type ThemeProperty =
+  | { category: "board"; key: "lightSquare" | "darkSquare"; format: "object" }
+  | {
+      category: "state";
+      key: "lastMove" | "check" | "activeSquare" | "dropSquare";
+      format: "string";
+    }
+  | { category: "indicators"; key: "move" | "capture"; format: "string" };
+
+const THEME_PROPERTIES: ThemeProperty[] = [
+  { category: "board", key: "lightSquare", format: "object" },
+  { category: "board", key: "darkSquare", format: "object" },
+  { category: "state", key: "lastMove", format: "string" },
+  { category: "state", key: "check", format: "string" },
+  { category: "state", key: "activeSquare", format: "string" },
+  { category: "state", key: "dropSquare", format: "string" },
+  { category: "indicators", key: "move", format: "string" },
+  { category: "indicators", key: "capture", format: "string" },
+];
+
 // Helper to safely extract background color from theme square
 const getBackgroundColor = (value: string | React.CSSProperties): string => {
   if (typeof value === "string") {
@@ -28,50 +49,71 @@ const getBackgroundColor = (value: string | React.CSSProperties): string => {
   return (value?.backgroundColor as string) || "#f0d9b5";
 };
 
+// Helper to safely extract string color from theme value
+const getStringColor = (value: string | React.CSSProperties): string => {
+  if (typeof value === "string") {
+    return value;
+  }
+  return (value?.backgroundColor as string) || "";
+};
+
+// Preset display names for consistent labeling
+const PRESET_NAMES: Record<string, string> = {
+  default: "Default",
+  lichess: "Lichess",
+  chessCom: "Chess.com",
+};
+
 export const Playground = () => {
   const [theme, setTheme] = useState<ChessGameTheme>(defaultGameTheme);
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
 
-  const updateTheme = (path: string[], value: string) => {
+  // Type-safe theme update function
+  const updateTheme = useCallback((property: ThemeProperty, value: string) => {
     setTheme((prev) => {
-      // Deep clone the theme object for mutation
       const newTheme = JSON.parse(JSON.stringify(prev)) as ChessGameTheme;
-      let current: Record<string, unknown> = newTheme as unknown as Record<
+      const formattedValue =
+        property.format === "object" ? { backgroundColor: value } : value;
+      // Use type assertion through unknown for dynamic access
+      const category = newTheme[property.category] as unknown as Record<
         string,
         unknown
       >;
-      for (let i = 0; i < path.length - 1; i++) {
-        current = current[path[i]] as Record<string, unknown>;
-      }
-      if (path[path.length - 2] === "board") {
-        current[path[path.length - 1]] = { backgroundColor: value };
-      } else {
-        current[path[path.length - 1]] = value;
-      }
+      category[property.key] = formattedValue;
       return newTheme;
     });
-  };
+  }, []);
 
   const themeCode = `const myTheme: ChessGameTheme = ${JSON.stringify(theme, null, 2)};`;
 
   const copyTheme = async () => {
-    try {
-      await navigator.clipboard.writeText(themeCode);
-    } catch {
-      // Fallback for non-HTTPS or unsupported browsers
-      const textarea = document.createElement("textarea");
-      textarea.value = themeCode;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
+    const success = await copyToClipboard(themeCode);
+    if (success) {
+      setCopied(true);
+      setCopyError(false);
+      setTimeout(() => setCopied(false), 2000);
+    } else {
+      setCopyError(true);
+      setTimeout(() => setCopyError(false), 3000);
     }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const loadPreset = (preset: ChessGameTheme) => {
     setTheme(preset);
+  };
+
+  // Get color value for a theme property
+  const getColorValue = (property: ThemeProperty): string => {
+    const category = theme[property.category] as unknown as Record<
+      string,
+      unknown
+    >;
+    const value = category[property.key];
+    if (property.format === "object") {
+      return getBackgroundColor(value as string | React.CSSProperties);
+    }
+    return getStringColor(value as string | React.CSSProperties);
   };
 
   return (
@@ -81,10 +123,7 @@ export const Playground = () => {
         {/* Preview */}
         <div className="flex flex-col gap-2">
           <h3 className="text-size-sm font-semibold text-text">Preview</h3>
-          <ChessGame.Root
-            fen="r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4"
-            theme={theme}
-          >
+          <ChessGame.Root fen={FEN_POSITIONS.scholarMate} theme={theme}>
             <ChessGame.Board />
           </ChessGame.Root>
           <p className="text-size-xs text-text-muted">
@@ -101,24 +140,15 @@ export const Playground = () => {
               Load Preset
             </h4>
             <div className="flex gap-2">
-              <button
-                className="px-2 py-1 text-size-xs rounded bg-surface border border-border hover:bg-surface-alt"
-                onClick={() => loadPreset(themes.default)}
-              >
-                Default
-              </button>
-              <button
-                className="px-2 py-1 text-size-xs rounded bg-surface border border-border hover:bg-surface-alt"
-                onClick={() => loadPreset(themes.lichess)}
-              >
-                Lichess
-              </button>
-              <button
-                className="px-2 py-1 text-size-xs rounded bg-surface border border-border hover:bg-surface-alt"
-                onClick={() => loadPreset(themes.chessCom)}
-              >
-                Chess.com
-              </button>
+              {Object.entries(themes).map(([key, preset]) => (
+                <button
+                  key={key}
+                  className="px-2 py-1 text-size-xs rounded bg-surface border border-border hover:bg-surface-alt"
+                  onClick={() => loadPreset(preset)}
+                >
+                  {PRESET_NAMES[key] || key}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -127,16 +157,16 @@ export const Playground = () => {
               Board Squares
             </h4>
             <div className="space-y-2">
-              <ColorInput
-                label="Light Square"
-                value={getBackgroundColor(theme.board.lightSquare)}
-                onChange={(v) => updateTheme(["board", "lightSquare"], v)}
-              />
-              <ColorInput
-                label="Dark Square"
-                value={getBackgroundColor(theme.board.darkSquare)}
-                onChange={(v) => updateTheme(["board", "darkSquare"], v)}
-              />
+              {THEME_PROPERTIES.filter((p) => p.category === "board").map(
+                (property) => (
+                  <ColorInput
+                    key={`${property.category}-${property.key}`}
+                    label={property.key.replace(/([A-Z])/g, " $1").trim()}
+                    value={getColorValue(property)}
+                    onChange={(v) => updateTheme(property, v)}
+                  />
+                ),
+              )}
             </div>
           </div>
 
@@ -145,21 +175,16 @@ export const Playground = () => {
               State Highlights
             </h4>
             <div className="space-y-2">
-              <ColorInput
-                label="Last Move"
-                value={theme.state.lastMove}
-                onChange={(v) => updateTheme(["state", "lastMove"], v)}
-              />
-              <ColorInput
-                label="Active Square"
-                value={theme.state.activeSquare}
-                onChange={(v) => updateTheme(["state", "activeSquare"], v)}
-              />
-              <ColorInput
-                label="Check"
-                value={theme.state.check}
-                onChange={(v) => updateTheme(["state", "check"], v)}
-              />
+              {THEME_PROPERTIES.filter((p) => p.category === "state").map(
+                (property) => (
+                  <ColorInput
+                    key={`${property.category}-${property.key}`}
+                    label={property.key.replace(/([A-Z])/g, " $1").trim()}
+                    value={getColorValue(property)}
+                    onChange={(v) => updateTheme(property, v)}
+                  />
+                ),
+              )}
             </div>
           </div>
 
@@ -168,16 +193,16 @@ export const Playground = () => {
               Move Indicators
             </h4>
             <div className="space-y-2">
-              <ColorInput
-                label="Legal Move"
-                value={theme.indicators.move}
-                onChange={(v) => updateTheme(["indicators", "move"], v)}
-              />
-              <ColorInput
-                label="Capture"
-                value={theme.indicators.capture}
-                onChange={(v) => updateTheme(["indicators", "capture"], v)}
-              />
+              {THEME_PROPERTIES.filter((p) => p.category === "indicators").map(
+                (property) => (
+                  <ColorInput
+                    key={`${property.category}-${property.key}`}
+                    label={property.key.replace(/([A-Z])/g, " $1").trim()}
+                    value={getColorValue(property)}
+                    onChange={(v) => updateTheme(property, v)}
+                  />
+                ),
+              )}
             </div>
           </div>
         </div>
@@ -192,10 +217,16 @@ export const Playground = () => {
           </pre>
           <button
             onClick={copyTheme}
-            className={`absolute top-3 right-3 px-2 py-1 text-size-xs rounded ${copied ? "bg-success text-white" : "bg-accent text-white hover:opacity-90"}`}
+            className={`absolute top-3 right-3 px-2 py-1 text-size-xs rounded ${
+              copyError
+                ? "bg-danger text-white"
+                : copied
+                  ? "bg-success text-white"
+                  : "bg-accent text-white hover:opacity-90"
+            }`}
             aria-label="Copy theme code"
           >
-            {copied ? "Copied!" : "Copy"}
+            {copyError ? "Failed" : copied ? "Copied!" : "Copy"}
           </button>
         </div>
       </div>

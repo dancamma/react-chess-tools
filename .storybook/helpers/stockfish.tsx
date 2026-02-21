@@ -150,19 +150,28 @@ export function EngineStatus() {
   const { info, methods } = useStockfish();
   const bestMove = methods.getBestMove();
 
+  const statusDisplay = () => {
+    if (info.status === "initializing") {
+      return <span className="text-warning">initializing...</span>;
+    }
+    if (info.status === "error") {
+      return <span className="text-danger">error</span>;
+    }
+    if (info.isEngineThinking) {
+      return <span className="text-success">thinking</span>;
+    }
+    return <span className="text-text-muted">ready</span>;
+  };
+
   return (
     <div className="font-mono text-size-xs text-text-secondary flex flex-col gap-1">
       <div className="flex gap-3">
         <span>depth: {info.depth}</span>
-        <span>
-          status:{" "}
-          {info.isEngineThinking ? (
-            <span className="text-success">thinking</span>
-          ) : (
-            <span className="text-text-muted">ready</span>
-          )}
-        </span>
+        <span>status: {statusDisplay()}</span>
       </div>
+      {info.status === "initializing" && (
+        <span className="text-text-muted">Engine loading...</span>
+      )}
       {bestMove && (
         <span>
           best: <span className="text-text font-semibold">{bestMove.san}</span>

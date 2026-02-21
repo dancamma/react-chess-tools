@@ -4,6 +4,7 @@ import { ChessGame } from "@react-chess-tools/react-chess-game";
 import {
   themes,
   mergeTheme,
+  defaultGameTheme,
   type DeepPartial,
   type ChessGameTheme,
 } from "@react-chess-tools/react-chess-game";
@@ -12,6 +13,8 @@ import {
   BoardWrapper,
   ColorInput,
   ThemeCard,
+  copyToClipboard,
+  FEN_POSITIONS,
 } from "@story-helpers";
 
 const meta = {
@@ -22,6 +25,23 @@ const meta = {
 } satisfies Meta;
 
 export default meta;
+
+// Preset display names for consistent labeling
+const PRESET_NAMES: Record<string, string> = {
+  default: "Default",
+  lichess: "Lichess",
+  chessCom: "Chess.com",
+};
+
+// Default color values for reference
+const DEFAULT_COLORS = {
+  lightSquare: "#f0d9b5",
+  darkSquare: "#b58863",
+  lastMove: "rgba(255, 255, 0, 0.4)",
+  check: "rgba(255, 0, 0, 0.6)",
+  moveIndicator: "rgba(0, 0, 0, 0.1)",
+  captureIndicator: "rgba(0, 0, 0, 0.2)",
+};
 
 // Helper to safely extract background color from theme square
 const getSquareColor = (square: unknown, fallback: string): string => {
@@ -37,24 +57,43 @@ const getSquareColor = (square: unknown, fallback: string): string => {
   return fallback;
 };
 
+// Helper to safely extract string color from theme
+const getStringColor = (value: unknown, fallback: string): string => {
+  if (typeof value === "string") {
+    return value;
+  }
+  return fallback;
+};
+
+// Check if colors match defaults
+const isDefaultColor = (
+  key: keyof typeof DEFAULT_COLORS,
+  value: string,
+): boolean => {
+  return value === DEFAULT_COLORS[key];
+};
+
 export const Builder: StoryObj = {
   render: () => {
     const [baseThemeKey, setBaseThemeKey] =
       React.useState<keyof typeof themes>("default");
+    const [copied, setCopied] = React.useState(false);
+    const [copyError, setCopyError] = React.useState(false);
 
     // Custom colors
-    const [lightSquare, setLightSquare] = React.useState("#f0d9b5");
-    const [darkSquare, setDarkSquare] = React.useState("#b58863");
-    const [lastMove, setLastMove] = React.useState("rgba(255, 255, 0, 0.4)");
-    const [check, setCheck] = React.useState("rgba(255, 0, 0, 0.6)");
-    const [moveIndicator, setMoveIndicator] =
-      React.useState("rgba(0, 0, 0, 0.1)");
-    const [captureIndicator, setCaptureIndicator] =
-      React.useState("rgba(0, 0, 0, 0.2)");
-
-    // Position with move and check potential
-    const [fen] = React.useState(
-      "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2",
+    const [lightSquare, setLightSquare] = React.useState(
+      DEFAULT_COLORS.lightSquare,
+    );
+    const [darkSquare, setDarkSquare] = React.useState(
+      DEFAULT_COLORS.darkSquare,
+    );
+    const [lastMove, setLastMove] = React.useState(DEFAULT_COLORS.lastMove);
+    const [check, setCheck] = React.useState(DEFAULT_COLORS.check);
+    const [moveIndicator, setMoveIndicator] = React.useState(
+      DEFAULT_COLORS.moveIndicator,
+    );
+    const [captureIndicator, setCaptureIndicator] = React.useState(
+      DEFAULT_COLORS.captureIndicator,
     );
 
     // Build custom theme by merging base preset with overrides
@@ -75,13 +114,41 @@ export const Builder: StoryObj = {
 
     const customTheme = mergeTheme(themes[baseThemeKey], customOverrides);
 
-    const generatedCode = `import { ChessGame, mergeTheme, themes, type DeepPartial, type ChessGameTheme } from '@react-chess-tools/react-chess-game';
+    // Check if any colors differ from defaults
+    const hasCustomizations =
+      !isDefaultColor("lightSquare", lightSquare) ||
+      !isDefaultColor("darkSquare", darkSquare) ||
+      !isDefaultColor("lastMove", lastMove) ||
+      !isDefaultColor("check", check) ||
+      !isDefaultColor("moveIndicator", moveIndicator) ||
+      !isDefaultColor("captureIndicator", captureIndicator);
+
+    // Generate cleaner code - only use mergeTheme when needed
+    const generatedCode = hasCustomizations
+      ? `import { ChessGame, mergeTheme, themes } from '@react-chess-tools/react-chess-game';
 
 const myTheme = mergeTheme(themes.${baseThemeKey}, ${JSON.stringify(customOverrides, null, 2)});
 
 <ChessGame.Root theme={myTheme}>
   <ChessGame.Board />
+</ChessGame.Root>`
+      : `import { ChessGame, themes } from '@react-chess-tools/react-chess-game';
+
+<ChessGame.Root theme={themes.${baseThemeKey}}>
+  <ChessGame.Board />
 </ChessGame.Root>`;
+
+    const handleCopy = async () => {
+      const success = await copyToClipboard(generatedCode);
+      if (success) {
+        setCopied(true);
+        setCopyError(false);
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        setCopyError(true);
+        setTimeout(() => setCopyError(false), 3000);
+      }
+    };
 
     return (
       <div className="flex flex-col gap-6 p-6 max-w-3xl mx-auto">
@@ -91,7 +158,7 @@ const myTheme = mergeTheme(themes.${baseThemeKey}, ${JSON.stringify(customOverri
           <div className="flex flex-col gap-2">
             <h3 className="text-size-sm font-semibold text-text">Preview</h3>
             <BoardWrapper>
-              <ChessGame.Root theme={customTheme} fen={fen}>
+              <ChessGame.Root theme={customTheme} fen={FEN_POSITIONS.withMove}>
                 <ChessGame.Board />
               </ChessGame.Root>
             </BoardWrapper>
@@ -164,17 +231,44 @@ const myTheme = mergeTheme(themes.${baseThemeKey}, ${JSON.stringify(customOverri
                       setBaseThemeKey(key as keyof typeof themes);
                       const t = themes[key as keyof typeof themes];
                       setLightSquare(
-                        getSquareColor(t.board?.lightSquare, "#f0d9b5"),
+                        getSquareColor(
+                          t.board?.lightSquare,
+                          DEFAULT_COLORS.lightSquare,
+                        ),
                       );
                       setDarkSquare(
-                        getSquareColor(t.board?.darkSquare, "#b58863"),
+                        getSquareColor(
+                          t.board?.darkSquare,
+                          DEFAULT_COLORS.darkSquare,
+                        ),
+                      );
+                      setLastMove(
+                        getStringColor(
+                          t.state?.lastMove,
+                          DEFAULT_COLORS.lastMove,
+                        ),
+                      );
+                      setCheck(
+                        getStringColor(t.state?.check, DEFAULT_COLORS.check),
+                      );
+                      setMoveIndicator(
+                        getStringColor(
+                          t.indicators?.move,
+                          DEFAULT_COLORS.moveIndicator,
+                        ),
+                      );
+                      setCaptureIndicator(
+                        getStringColor(
+                          t.indicators?.capture,
+                          DEFAULT_COLORS.captureIndicator,
+                        ),
                       );
                     }}
                     className={`px-2 py-1 text-size-xs rounded bg-surface border border-border hover:bg-surface-alt ${
                       baseThemeKey === key ? "ring-2 ring-accent" : ""
                     }`}
                   >
-                    {key}
+                    {PRESET_NAMES[key] || key}
                   </button>
                 ))}
               </div>
@@ -192,23 +286,17 @@ const myTheme = mergeTheme(themes.${baseThemeKey}, ${JSON.stringify(customOverri
               {generatedCode}
             </pre>
             <button
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(generatedCode);
-                } catch {
-                  // Fallback for non-HTTPS or unsupported browsers
-                  const textarea = document.createElement("textarea");
-                  textarea.value = generatedCode;
-                  document.body.appendChild(textarea);
-                  textarea.select();
-                  document.execCommand("copy");
-                  document.body.removeChild(textarea);
-                }
-              }}
-              className="absolute top-3 right-3 px-2 py-1 text-size-xs bg-accent text-white rounded hover:opacity-90"
+              onClick={handleCopy}
+              className={`absolute top-3 right-3 px-2 py-1 text-size-xs rounded ${
+                copyError
+                  ? "bg-danger text-white"
+                  : copied
+                    ? "bg-success text-white"
+                    : "bg-accent text-white hover:opacity-90"
+              }`}
               aria-label="Copy generated theme code"
             >
-              Copy
+              {copyError ? "Failed" : copied ? "Copied!" : "Copy"}
             </button>
           </div>
         </div>
@@ -221,9 +309,6 @@ export const PresetComparer: StoryObj = {
   render: () => {
     const [selectedPreset, setSelectedPreset] =
       React.useState<keyof typeof themes>("default");
-
-    const fen =
-      "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3";
 
     return (
       <div className="flex flex-col items-center gap-4 p-6 max-w-3xl mx-auto">
@@ -246,14 +331,17 @@ export const PresetComparer: StoryObj = {
                   : "bg-surface-alt text-text-secondary hover:bg-surface"
               }`}
             >
-              {key.charAt(0).toUpperCase() + key.slice(1)}
+              {PRESET_NAMES[key] || key}
             </button>
           ))}
         </div>
 
         {/* Board preview */}
         <BoardWrapper>
-          <ChessGame.Root theme={themes[selectedPreset]} fen={fen}>
+          <ChessGame.Root
+            theme={themes[selectedPreset]}
+            fen={FEN_POSITIONS.italian}
+          >
             <ChessGame.Board />
             <ChessGame.Sounds />
           </ChessGame.Root>

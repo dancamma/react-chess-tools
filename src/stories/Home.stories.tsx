@@ -5,8 +5,9 @@ import { ChessStockfish } from "@react-chess-tools/react-chess-stockfish";
 import {
   BoardWrapper,
   STOCKFISH_WORKER_PATH,
-  EngineStatus,
+  FEN_POSITIONS,
 } from "@story-helpers";
+import { EngineStatus } from "@story-helpers/stockfish";
 
 const meta = {
   title: "Home",
@@ -75,9 +76,7 @@ function CTAButton({
 
 export const Landing: StoryObj = {
   render: () => {
-    const [fen, setFen] = React.useState(
-      "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-    );
+    const [fen, setFen] = React.useState(FEN_POSITIONS.starting);
 
     return (
       <div className="flex flex-col gap-6 p-6 max-w-4xl mx-auto">
