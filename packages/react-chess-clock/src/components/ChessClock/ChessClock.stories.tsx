@@ -23,7 +23,6 @@ const meta = {
   tags: ["components", "clock", "timer"],
   argTypes: {},
   parameters: {
-    actions: { argTypesRegex: "^_on.*" },
     layout: "centered",
   },
 } satisfies Meta<typeof ChessClock.Root>;

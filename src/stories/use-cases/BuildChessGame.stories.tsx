@@ -45,22 +45,20 @@ export const GameWithClock: StoryObj = {
         title="Game with Clock"
         subtitle="5+3 Blitz game with Fischer increment"
       />
-      <BoardWrapper>
-        <ChessGame.Root timeControl={{ time: "5+3", clockStart: "firstMove" }}>
-          <div className="flex justify-between w-full mb-2">
-            <div className="px-3 py-1 bg-dark-bg text-white text-size-sm font-mono rounded">
-              <ChessGame.Clock.Display color="black" />
-            </div>
+      <ChessGame.Root timeControl={{ time: "5+3", clockStart: "firstMove" }}>
+        <div className="flex flex-col gap-2">
+          <div className="px-3 py-1 bg-dark-bg text-white text-size-sm font-mono rounded text-center">
+            <ChessGame.Clock.Display color="black" />
           </div>
-          <ChessGame.Board />
-          <div className="flex justify-between w-full mt-2">
-            <div className="px-3 py-1 bg-dark-bg text-white text-size-sm font-mono rounded">
-              <ChessGame.Clock.Display color="white" />
-            </div>
+          <BoardWrapper>
+            <ChessGame.Board />
+          </BoardWrapper>
+          <div className="px-3 py-1 bg-dark-bg text-white text-size-sm font-mono rounded text-center">
+            <ChessGame.Clock.Display color="white" />
           </div>
-          <ChessGame.Sounds />
-        </ChessGame.Root>
-      </BoardWrapper>
+        </div>
+        <ChessGame.Sounds />
+      </ChessGame.Root>
       <p className="text-size-xs text-text-muted">
         Clock starts on first move. Auto-switches after each move.
       </p>

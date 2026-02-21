@@ -26,7 +26,6 @@ const meta = {
   tags: ["components", "game", "board"],
   argTypes: {},
   parameters: {
-    actions: { argTypesRegex: "^_on.*" },
     layout: "centered",
   },
 } satisfies Meta<typeof ChessGame.Root>;
@@ -234,7 +233,7 @@ export const WithServerControlledClock = () => {
             <span>
               B: <b>{(clientView.blackTime / 1000).toFixed(1)}s</b>
             </span>
-            <span className="px-2 py-0.5 rounded bg-info-blue-bg font-semibold text-size-xs font-sans">
+            <span className="px-2 py-0.5 rounded bg-info-amber-bg font-semibold text-size-xs font-sans">
               {clientView.finished
                 ? "finished"
                 : clientView.running
@@ -246,7 +245,7 @@ export const WithServerControlledClock = () => {
           <div className="flex gap-2 items-center text-xs text-warn font-mono flex-wrap">
             <span className="font-semibold font-sans">W:</span>
             <button
-              className="px-2 py-0.5 text-size-xs font-semibold border border-warn-border rounded bg-info-blue-bg text-warn font-sans"
+              className="px-2 py-0.5 text-size-xs font-semibold border border-warn-border rounded bg-info-amber-bg text-warn font-sans"
               onClick={() => addTime("white", 15000)}
             >
               +15s
@@ -259,7 +258,7 @@ export const WithServerControlledClock = () => {
             </button>
             <span className="font-semibold font-sans ml-1">B:</span>
             <button
-              className="px-2 py-0.5 text-size-xs font-semibold border border-warn-border rounded bg-info-blue-bg text-warn font-sans"
+              className="px-2 py-0.5 text-size-xs font-semibold border border-warn-border rounded bg-info-amber-bg text-warn font-sans"
               onClick={() => addTime("black", 15000)}
             >
               +15s

@@ -23,13 +23,6 @@ type Story = StoryObj<typeof meta>;
 const STORY_CONTAINER_CLASS =
   "flex flex-col gap-4 p-6 w-story max-w-full font-sans";
 
-// Additional FEN positions specific to engine lines stories
-const FEN = {
-  blackWinning:
-    "rnbqkbnr/1ppp1ppp/p5Q1/4p3/4P3/8/PPPP1PPP/RNB1KBNR b KQkq - 0 1",
-  mateIn3: "r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1",
-};
-
 export const Basic: Story = {
   render: () => (
     <AnalysisRoot fen={FEN_POSITIONS.italian} config={{ multiPV: 3 }}>
@@ -48,12 +41,12 @@ export const Basic: Story = {
 
 export const BlackToMove: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.blackWinning} config={{ multiPV: 2 }}>
+    <AnalysisRoot fen={FEN_POSITIONS.blackWinning} config={{ multiPV: 2 }}>
       <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="Black to move"
           subtitle="First SAN token starts with the 1... prefix"
-          fen={FEN.blackWinning}
+          fen={FEN_POSITIONS.blackWinning}
         />
         <StyledEngineLines maxLines={2} />
         <EngineStatus />
@@ -80,12 +73,12 @@ export const WhiteWinning: Story = {
 
 export const MateInThree: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.mateIn3} config={{ multiPV: 2 }}>
+    <AnalysisRoot fen={FEN_POSITIONS.mateIn3} config={{ multiPV: 2 }}>
       <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="Mate in three"
           subtitle="Forced checkmate position"
-          fen={FEN.mateIn3}
+          fen={FEN_POSITIONS.mateIn3}
         />
         <StyledEngineLines maxLines={2} />
         <EngineStatus />

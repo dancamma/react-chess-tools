@@ -188,7 +188,7 @@ export const ColorInput = ({
 
   const validateColor = (color: string): boolean => {
     if (!color) return false; // Empty string is not valid
-    const hexPattern = /^#([0-9A-Fa-f]{3}){1,2}$/;
+    const hexPattern = /^#([0-9A-Fa-f]{3,4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
     const rgbPattern =
       /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*(0|1|0?\.\d+))?\s*\)$/;
     return hexPattern.test(color) || rgbPattern.test(color);
@@ -216,14 +216,18 @@ export const ColorInput = ({
   };
 
   const hexToRgba = (hex: string, alpha: number = 0.5): string => {
-    // Validate hex format before parsing
     if (!hex || !hex.startsWith("#") || !/^#[0-9A-Fa-f]{6}$/.test(hex)) {
-      return `rgba(0, 0, 0, ${alpha})`; // Fallback to black for invalid input
+      return `rgba(0, 0, 0, ${alpha})`;
     }
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  const extractAlpha = (rgba: string): number => {
+    const match = rgba.match(/rgba?\([^)]+,\s*([\d.]+)\s*\)/);
+    return match ? parseFloat(match[1]) : 1;
   };
 
   return (
@@ -234,7 +238,9 @@ export const ColorInput = ({
       <input
         type="color"
         value={rgbaToHex(value)}
-        onChange={(e) => handleChange(hexToRgba(e.target.value))}
+        onChange={(e) =>
+          handleChange(hexToRgba(e.target.value, extractAlpha(value)))
+        }
         className="w-8 h-8 rounded border border-border cursor-pointer"
       />
       <input
@@ -284,6 +290,9 @@ export const FEN_POSITIONS = {
   scholarMate:
     "r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4",
   whiteWinning: "3rkb1r/p2nqppp/5n2/1B2p1B1/4P3/1Q6/PPP2PPP/2KR3R w k - 0 1",
+  blackWinning:
+    "rnbqkbnr/1ppp1ppp/p5Q1/4p3/4P3/8/PPPP1PPP/RNB1KBNR b KQkq - 0 1",
+  mateIn3: "r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1",
 } as const;
 
 // Position with a move played (for showing lastMove highlight)

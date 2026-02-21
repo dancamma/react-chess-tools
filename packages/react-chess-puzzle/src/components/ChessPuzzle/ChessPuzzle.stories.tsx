@@ -37,7 +37,6 @@ const meta = {
     onFail: { action: "onFail" },
   },
   parameters: {
-    actions: { argTypesRegex: "^_on.*" },
     layout: "centered",
   },
 } satisfies Meta<typeof ChessPuzzle.Root>;

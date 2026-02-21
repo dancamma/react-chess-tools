@@ -12,13 +12,6 @@ import {
 } from "@story-helpers/stockfish";
 import { StoryHeader, StoryContainer, FEN_POSITIONS } from "@story-helpers";
 
-// Additional FEN positions specific to evaluation bar stories
-const FEN = {
-  blackWinning:
-    "rnbqkbnr/1ppp1ppp/p5Q1/4p3/4P3/8/PPPP1PPP/RNB1KBNR b KQkq - 0 1",
-  mateIn3: "r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1",
-};
-
 const meta = {
   title: "Packages/react-chess-stockfish/EvaluationBar",
   component: ChessStockfish.EvaluationBar,
@@ -128,12 +121,12 @@ export const AsChild: Story = {
 
 export const MateScore: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.mateIn3}>
+    <AnalysisRoot fen={FEN_POSITIONS.mateIn3}>
       <StoryContainer className="w-board-preview max-w-full">
         <StoryHeader
           title="Mate score display"
           subtitle="Forced checkmate position shows #N notation"
-          fen={FEN.mateIn3}
+          fen={FEN_POSITIONS.mateIn3}
         />
         <VerticalEvalBar showEvaluation className={EVAL_BAR_CLASS} />
         <EngineStatus />
@@ -160,12 +153,12 @@ export const WhiteWinning: Story = {
 
 export const BlackWinning: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.blackWinning}>
+    <AnalysisRoot fen={FEN_POSITIONS.blackWinning}>
       <StoryContainer className="w-story max-w-full">
         <StoryHeader
           title="Black winning position"
           subtitle="Large negative evaluation"
-          fen={FEN.blackWinning}
+          fen={FEN_POSITIONS.blackWinning}
         />
         <HorizontalEvalBar showEvaluation className={HORIZONTAL_BAR_CLASS} />
         <EngineStatus />

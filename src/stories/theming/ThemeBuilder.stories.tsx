@@ -32,7 +32,6 @@ const PRESET_NAMES: Record<string, string> = {
   chessCom: "Chess.com",
 };
 
-// Default color values for reference
 const DEFAULT_COLORS = {
   lightSquare: "#f0d9b5",
   darkSquare: "#b58863",
@@ -40,7 +39,7 @@ const DEFAULT_COLORS = {
   check: "rgba(255, 0, 0, 0.6)",
   moveIndicator: "rgba(0, 0, 0, 0.1)",
   captureIndicator: "rgba(0, 0, 0, 0.2)",
-};
+} as const;
 
 // Helper to safely extract background color from theme square
 const getSquareColor = (square: unknown, fallback: string): string => {
@@ -64,38 +63,80 @@ const getStringColor = (value: unknown, fallback: string): string => {
   return fallback;
 };
 
-// Check if colors match defaults
-const isDefaultColor = (
-  key: keyof typeof DEFAULT_COLORS,
-  value: string,
-): boolean => {
-  return value === DEFAULT_COLORS[key];
+type ThemeColors = {
+  lightSquare: string;
+  darkSquare: string;
+  lastMove: string;
+  check: string;
+  moveIndicator: string;
+  captureIndicator: string;
 };
+
+const extractColorsFromTheme = (theme: ChessGameTheme): ThemeColors => ({
+  lightSquare: getSquareColor(
+    theme.board?.lightSquare,
+    DEFAULT_COLORS.lightSquare,
+  ),
+  darkSquare: getSquareColor(
+    theme.board?.darkSquare,
+    DEFAULT_COLORS.darkSquare,
+  ),
+  lastMove: getStringColor(theme.state?.lastMove, DEFAULT_COLORS.lastMove),
+  check: getStringColor(theme.state?.check, DEFAULT_COLORS.check),
+  moveIndicator: getStringColor(
+    theme.indicators?.move,
+    DEFAULT_COLORS.moveIndicator,
+  ),
+  captureIndicator: getStringColor(
+    theme.indicators?.capture,
+    DEFAULT_COLORS.captureIndicator,
+  ),
+});
+
+const hasColorChanges = (current: ThemeColors, base: ThemeColors): boolean =>
+  current.lightSquare !== base.lightSquare ||
+  current.darkSquare !== base.darkSquare ||
+  current.lastMove !== base.lastMove ||
+  current.check !== base.check ||
+  current.moveIndicator !== base.moveIndicator ||
+  current.captureIndicator !== base.captureIndicator;
 
 export const Builder: StoryObj = {
   render: () => {
     const [baseThemeKey, setBaseThemeKey] =
       React.useState<keyof typeof themes>("default");
+    const [baseThemeColors, setBaseThemeColors] = React.useState<ThemeColors>(
+      () => extractColorsFromTheme(themes.default),
+    );
     const [copied, setCopied] = React.useState(false);
     const [copyError, setCopyError] = React.useState(false);
 
-    // Custom colors
-    const [lightSquare, setLightSquare] = React.useState(
-      DEFAULT_COLORS.lightSquare,
+    const [lightSquare, setLightSquare] = React.useState<string>(
+      baseThemeColors.lightSquare,
     );
-    const [darkSquare, setDarkSquare] = React.useState(
-      DEFAULT_COLORS.darkSquare,
+    const [darkSquare, setDarkSquare] = React.useState<string>(
+      baseThemeColors.darkSquare,
     );
-    const [lastMove, setLastMove] = React.useState(DEFAULT_COLORS.lastMove);
-    const [check, setCheck] = React.useState(DEFAULT_COLORS.check);
-    const [moveIndicator, setMoveIndicator] = React.useState(
-      DEFAULT_COLORS.moveIndicator,
+    const [lastMove, setLastMove] = React.useState<string>(
+      baseThemeColors.lastMove,
     );
-    const [captureIndicator, setCaptureIndicator] = React.useState(
-      DEFAULT_COLORS.captureIndicator,
+    const [check, setCheck] = React.useState<string>(baseThemeColors.check);
+    const [moveIndicator, setMoveIndicator] = React.useState<string>(
+      baseThemeColors.moveIndicator,
+    );
+    const [captureIndicator, setCaptureIndicator] = React.useState<string>(
+      baseThemeColors.captureIndicator,
     );
 
-    // Build custom theme by merging base preset with overrides
+    const currentColors: ThemeColors = {
+      lightSquare,
+      darkSquare,
+      lastMove,
+      check,
+      moveIndicator,
+      captureIndicator,
+    };
+
     const customOverrides: DeepPartial<ChessGameTheme> = {
       board: {
         lightSquare: { backgroundColor: lightSquare },
@@ -113,16 +154,8 @@ export const Builder: StoryObj = {
 
     const customTheme = mergeTheme(themes[baseThemeKey], customOverrides);
 
-    // Check if any colors differ from defaults
-    const hasCustomizations =
-      !isDefaultColor("lightSquare", lightSquare) ||
-      !isDefaultColor("darkSquare", darkSquare) ||
-      !isDefaultColor("lastMove", lastMove) ||
-      !isDefaultColor("check", check) ||
-      !isDefaultColor("moveIndicator", moveIndicator) ||
-      !isDefaultColor("captureIndicator", captureIndicator);
+    const hasCustomizations = hasColorChanges(currentColors, baseThemeColors);
 
-    // Generate cleaner code - only use mergeTheme when needed
     const generatedCode = hasCustomizations
       ? `import { ChessGame, mergeTheme, themes } from '@react-chess-tools/react-chess-game';
 
@@ -230,39 +263,14 @@ const myTheme = mergeTheme(themes.${baseThemeKey}, ${JSON.stringify(customOverri
                     onClick={() => {
                       setBaseThemeKey(key as keyof typeof themes);
                       const t = themes[key as keyof typeof themes];
-                      setLightSquare(
-                        getSquareColor(
-                          t.board?.lightSquare,
-                          DEFAULT_COLORS.lightSquare,
-                        ),
-                      );
-                      setDarkSquare(
-                        getSquareColor(
-                          t.board?.darkSquare,
-                          DEFAULT_COLORS.darkSquare,
-                        ),
-                      );
-                      setLastMove(
-                        getStringColor(
-                          t.state?.lastMove,
-                          DEFAULT_COLORS.lastMove,
-                        ),
-                      );
-                      setCheck(
-                        getStringColor(t.state?.check, DEFAULT_COLORS.check),
-                      );
-                      setMoveIndicator(
-                        getStringColor(
-                          t.indicators?.move,
-                          DEFAULT_COLORS.moveIndicator,
-                        ),
-                      );
-                      setCaptureIndicator(
-                        getStringColor(
-                          t.indicators?.capture,
-                          DEFAULT_COLORS.captureIndicator,
-                        ),
-                      );
+                      const colors = extractColorsFromTheme(t);
+                      setBaseThemeColors(colors);
+                      setLightSquare(colors.lightSquare);
+                      setDarkSquare(colors.darkSquare);
+                      setLastMove(colors.lastMove);
+                      setCheck(colors.check);
+                      setMoveIndicator(colors.moveIndicator);
+                      setCaptureIndicator(colors.captureIndicator);
                     }}
                     className={`px-2 py-1 text-size-xs rounded bg-surface border border-border hover:bg-surface-alt ${
                       baseThemeKey === key ? "ring-2 ring-accent" : ""
