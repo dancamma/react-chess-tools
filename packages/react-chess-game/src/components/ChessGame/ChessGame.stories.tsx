@@ -45,7 +45,7 @@ export const Default = () => (
         <ChessGame.Board />
       </ChessGame.Root>
     </BoardWrapper>
-    <p className="text-xs text-text-muted text-center m-0 leading-relaxed">
+    <p className="text-size-xs text-text-muted text-center m-0 leading-relaxed">
       Arrow keys to navigate moves · Press F to flip
     </p>
   </StoryContainer>
@@ -63,7 +63,7 @@ export const WithSounds = () => (
         <ChessGame.Board />
       </ChessGame.Root>
     </BoardWrapper>
-    <p className="text-xs text-text-muted text-center m-0 leading-relaxed">
+    <p className="text-size-xs text-text-muted text-center m-0 leading-relaxed">
       Move pieces to hear sounds for each piece type
     </p>
   </StoryContainer>
@@ -301,7 +301,7 @@ export const WithServerControlledClock = () => {
           <SecondaryBtn onClick={serverReset}>Reset Server</SecondaryBtn>
         </div>
 
-        <p className="text-xs text-text-muted text-center m-0 leading-relaxed">
+        <p className="text-size-xs text-text-muted text-center m-0 leading-relaxed">
           Use +/- to change server time. Set lag &gt; 0 and make moves to see
           client interpolation with delayed server corrections.
         </p>

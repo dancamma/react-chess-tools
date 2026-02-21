@@ -86,7 +86,7 @@ export const GameWithAnalysis: StoryObj = {
           >
             <ChessGame.Root
               fen={fen}
-              onMove={(move, game) => setFen(game.fen())}
+              onMove={(_move, game) => setFen(game.fen())}
             >
               <div className="flex gap-4 items-start">
                 <ChessGame.Board />
@@ -124,7 +124,7 @@ export const FullFeaturedGame: StoryObj = {
         >
           <ChessGame.Root
             fen={fen}
-            onMove={(move, game) => setFen(game.fen())}
+            onMove={(_move, game) => setFen(game.fen())}
             timeControl={{ time: "5+3", clockStart: "firstMove" }}
           >
             <div className="flex gap-4 items-start">

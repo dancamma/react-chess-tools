@@ -7,7 +7,11 @@ import {
   STOCKFISH_WORKER_PATH,
   FEN_POSITIONS,
 } from "@story-helpers";
-import { EngineStatus } from "@story-helpers/stockfish";
+import {
+  EngineStatus,
+  StyledEngineLines,
+  VerticalEvalBar,
+} from "@story-helpers/stockfish";
 
 const meta = {
   title: "Home",
@@ -30,29 +34,6 @@ const STORY_PATHS = {
   chessGame: "/story/packages-react-chess-game-chess-game--default",
   theming: "/docs/theming-overview--docs",
 } as const;
-
-// Styled engine lines wrapper
-function StyledEngineLines({ maxLines = 3 }: { maxLines?: number }) {
-  return (
-    <div className="flex flex-col min-w-[200px] rounded overflow-hidden border border-border bg-surface">
-      <ChessStockfish.EngineLines maxLines={maxLines} />
-    </div>
-  );
-}
-
-// Styled evaluation bar wrapper
-function StyledEvaluationBar() {
-  return (
-    <div className="rounded overflow-hidden">
-      <ChessStockfish.EvaluationBar
-        height={360}
-        width={30}
-        showLabel
-        labelPosition="center"
-      />
-    </div>
-  );
-}
 
 // CTA Button component
 function CTAButton({
@@ -99,13 +80,13 @@ export const Landing: StoryObj = {
         >
           <ChessGame.Root
             fen={fen}
-            onMove={(move, game) => setFen(game.fen())}
+            onMove={(_move, game) => setFen(game.fen())}
             timeControl={{ time: "5+3", clockStart: "firstMove" }}
           >
             <div className="flex flex-col lg:flex-row gap-4 items-start">
               {/* Left: Evaluation Bar */}
               <div className="hidden lg:block">
-                <StyledEvaluationBar />
+                <VerticalEvalBar showEvaluation height={360} width={30} />
               </div>
 
               {/* Center: Board and Clocks */}

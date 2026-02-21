@@ -226,6 +226,7 @@ const myTheme = mergeTheme(themes.${baseThemeKey}, ${JSON.stringify(customOverri
                 {Object.keys(themes).map((key) => (
                   <button
                     key={key}
+                    aria-label={`Apply ${PRESET_NAMES[key] || key} theme preset`}
                     onClick={() => {
                       setBaseThemeKey(key as keyof typeof themes);
                       const t = themes[key as keyof typeof themes];
@@ -323,6 +324,7 @@ export const PresetComparer: StoryObj = {
           {Object.keys(themes).map((key) => (
             <button
               key={key}
+              aria-label={`Select ${PRESET_NAMES[key] || key} theme`}
               onClick={() => setSelectedPreset(key as keyof typeof themes)}
               className={`px-4 py-2 text-size-sm rounded transition-colors ${
                 selectedPreset === key
