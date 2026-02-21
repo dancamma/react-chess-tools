@@ -33,6 +33,7 @@ export const PositionAnalysis: StoryObj = {
           {Object.entries(FEN_POSITIONS).map(([name, position]) => (
             <button
               key={name}
+              aria-label={`Load ${name} position`}
               onClick={() => setFen(position)}
               className={`px-2 py-1 text-size-xs rounded ${
                 fen === position
@@ -53,7 +54,7 @@ export const PositionAnalysis: StoryObj = {
           >
             <ChessGame.Root
               fen={fen}
-              onMove={(move, game) => setFen(game.fen())}
+              onMove={(_move, game) => setFen(game.fen())}
             >
               <div className="flex gap-4 items-start">
                 <ChessStockfish.EvaluationBar
@@ -89,6 +90,7 @@ export const EngineEvaluation: StoryObj = {
           {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
+              aria-label={`Show ${n} engine line${n > 1 ? "s" : ""}`}
               onClick={() => setMultiPV(n)}
               className={`px-2 py-1 text-size-xs rounded ${
                 multiPV === n
@@ -109,7 +111,7 @@ export const EngineEvaluation: StoryObj = {
           >
             <ChessGame.Root
               fen={fen}
-              onMove={(move, game) => setFen(game.fen())}
+              onMove={(_move, game) => setFen(game.fen())}
             >
               <div className="flex gap-4 items-start">
                 <ChessGame.Board />
@@ -147,7 +149,7 @@ export const GameReview: StoryObj = {
           >
             <ChessGame.Root
               fen={fen}
-              onMove={(move, game) => setFen(game.fen())}
+              onMove={(_move, game) => setFen(game.fen())}
             >
               <div className="flex flex-col gap-2">
                 <ChessGame.Board />

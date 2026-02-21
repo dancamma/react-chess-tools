@@ -137,6 +137,7 @@ export const PuzzlePlatform: StoryObj = {
               <ChessPuzzle.Hint />
               <ChessPuzzle.Reset />
               <button
+                aria-label="Go to next puzzle"
                 onClick={() =>
                   setCurrentPuzzle((p) =>
                     Math.min(p + 1, puzzleList.length - 1),
