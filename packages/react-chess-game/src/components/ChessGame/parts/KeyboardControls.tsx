@@ -1,7 +1,5 @@
-import {
-  ChessGameContextType,
-  useChessGameContext,
-} from "../../../hooks/useChessGameContext";
+import type { FC } from "react";
+import { ChessGameContextType } from "../../../hooks/useChessGameContext";
 import { useKeyboardControls } from "../../../hooks/useKeyboardControls";
 
 export type KeyboardControls = Record<
@@ -14,6 +12,10 @@ export const defaultKeyboardControls: KeyboardControls = {
   ArrowRight: (context) => context.methods.goToNextMove(),
   ArrowUp: (context) => context.methods.goToStart(),
   ArrowDown: (context) => context.methods.goToEnd(),
+  Home: (context) => context.methods.goToStart(),
+  End: (context) => context.methods.goToEnd(),
+  f: (context) => context.methods.flipBoard(),
+  F: (context) => context.methods.flipBoard(),
 };
 
 /**
@@ -27,13 +29,7 @@ type KeyboardControlsProps = {
   controls?: KeyboardControls;
 };
 
-export const KeyboardControls: React.FC<KeyboardControlsProps> = ({
-  controls,
-}) => {
-  const gameContext = useChessGameContext();
-  if (!gameContext) {
-    throw new Error("ChessGameContext not found");
-  }
+export const KeyboardControls: FC<KeyboardControlsProps> = ({ controls }) => {
   const keyboardControls = { ...defaultKeyboardControls, ...controls };
   useKeyboardControls(keyboardControls);
   return null;

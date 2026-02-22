@@ -21,12 +21,11 @@ import {
 } from "@story-helpers";
 
 const meta = {
-  title: "react-chess-game/Components/ChessGame",
+  title: "Packages/react-chess-game/ChessGame",
   component: ChessGame.Root,
   tags: ["components", "game", "board"],
   argTypes: {},
   parameters: {
-    actions: { argTypesRegex: "^_on.*" },
     layout: "centered",
   },
 } satisfies Meta<typeof ChessGame.Root>;
@@ -45,7 +44,7 @@ export const Default = () => (
         <ChessGame.Board />
       </ChessGame.Root>
     </BoardWrapper>
-    <p className="text-xs text-text-muted text-center m-0 leading-relaxed">
+    <p className="text-size-xs text-text-muted text-center m-0 leading-relaxed">
       Arrow keys to navigate moves · Press F to flip
     </p>
   </StoryContainer>
@@ -63,7 +62,7 @@ export const WithSounds = () => (
         <ChessGame.Board />
       </ChessGame.Root>
     </BoardWrapper>
-    <p className="text-xs text-text-muted text-center m-0 leading-relaxed">
+    <p className="text-size-xs text-text-muted text-center m-0 leading-relaxed">
       Move pieces to hear sounds for each piece type
     </p>
   </StoryContainer>
@@ -109,11 +108,15 @@ export const WithKeyboardControls = () => (
   </StoryContainer>
 );
 
-const ClockDisplay = ({
-  label,
-  color: side,
-  ...props
-}: { label: string; color: "white" | "black" } & Record<string, unknown>) => (
+type ClockDisplayProps = {
+  label: string;
+  color: "white" | "black";
+} & Omit<
+  React.ComponentProps<typeof ChessGame.Clock.Display>,
+  "color" | "className"
+>;
+
+const ClockDisplay = ({ label, color: side, ...props }: ClockDisplayProps) => (
   <ClockDisplayWrapper label={label}>
     <ChessGame.Clock.Display
       color={side}
@@ -202,7 +205,7 @@ export const WithServerControlledClock = () => {
       timeControl={{
         time: { baseTime: 30, increment: 2 },
         clockStart: "immediate",
-        onTimeout: (loser) => console.log(`Server: ${loser} flagged`),
+        onTimeout: () => {},
       }}
       autoSwitchOnMove={false}
     >
@@ -230,7 +233,7 @@ export const WithServerControlledClock = () => {
             <span>
               B: <b>{(clientView.blackTime / 1000).toFixed(1)}s</b>
             </span>
-            <span className="px-2 py-0.5 rounded bg-info-blue-bg font-semibold text-size-xs font-sans">
+            <span className="px-2 py-0.5 rounded bg-info-amber-bg font-semibold text-size-xs font-sans">
               {clientView.finished
                 ? "finished"
                 : clientView.running
@@ -242,7 +245,7 @@ export const WithServerControlledClock = () => {
           <div className="flex gap-2 items-center text-xs text-warn font-mono flex-wrap">
             <span className="font-semibold font-sans">W:</span>
             <button
-              className="px-2 py-0.5 text-size-xs font-semibold border border-warn-border rounded bg-info-blue-bg text-warn font-sans"
+              className="px-2 py-0.5 text-size-xs font-semibold border border-warn-border rounded bg-info-amber-bg text-warn font-sans"
               onClick={() => addTime("white", 15000)}
             >
               +15s
@@ -255,7 +258,7 @@ export const WithServerControlledClock = () => {
             </button>
             <span className="font-semibold font-sans ml-1">B:</span>
             <button
-              className="px-2 py-0.5 text-size-xs font-semibold border border-warn-border rounded bg-info-blue-bg text-warn font-sans"
+              className="px-2 py-0.5 text-size-xs font-semibold border border-warn-border rounded bg-info-amber-bg text-warn font-sans"
               onClick={() => addTime("black", 15000)}
             >
               +15s
@@ -301,7 +304,7 @@ export const WithServerControlledClock = () => {
           <SecondaryBtn onClick={serverReset}>Reset Server</SecondaryBtn>
         </div>
 
-        <p className="text-xs text-text-muted text-center m-0 leading-relaxed">
+        <p className="text-size-xs text-text-muted text-center m-0 leading-relaxed">
           Use +/- to change server time. Set lag &gt; 0 and make moves to see
           client interpolation with delayed server corrections.
         </p>

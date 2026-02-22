@@ -1,9 +1,12 @@
 @import "tailwindcss";
 
 /* Tell Tailwind where to find class names */
+@source "../src/**/*.stories.tsx";
+@source "../docs/**/*.mdx";
 @source "../packages/**/*.stories.tsx";
 @source "../packages/**/*.mdx";
 @source "./*.tsx";
+@source "./helpers/**/*.tsx";
 
 @theme {
   /* Story Container Themes (choose one via class) */
@@ -78,7 +81,7 @@
   --color-info-border: #b4d5f0;
   --color-info-text: #1864ab;
   --color-info-blue: #4dabf7;
-  --color-info-blue-bg: #f5edcf;
+  --color-info-amber-bg: #f5edcf;
 
   /* Dark Theme Colors */
   --color-dark-bg: #403d39;
