@@ -7,11 +7,12 @@ import {
 // Stockfish worker path (centralized for maintainability)
 export const STOCKFISH_WORKER_PATH = "/stockfish.js";
 
-export const CLOCK_WHITE_CLASS =
-  "py-2.5 px-5 text-2xl font-semibold font-mono rounded-sm text-center min-w-[100px] bg-surface border-2 border-text text-text";
+export const CLOCK_BASE_CLASS =
+  "py-2.5 px-5 text-2xl font-semibold font-mono rounded-sm text-center min-w-[100px] border-2";
 
-export const CLOCK_BLACK_CLASS =
-  "py-2.5 px-5 text-2xl font-semibold font-mono rounded-sm text-center min-w-[100px] bg-dark border-2 border-dark text-dark-text";
+export const CLOCK_WHITE_CLASS = `${CLOCK_BASE_CLASS} bg-surface border-text text-text`;
+
+export const CLOCK_BLACK_CLASS = `${CLOCK_BASE_CLASS} bg-dark border-dark text-dark-text`;
 
 export const CLOCK_DISPLAY_CLASS =
   "py-1.5 px-3.5 text-base font-semibold font-mono rounded bg-surface border-2 border-text text-text";

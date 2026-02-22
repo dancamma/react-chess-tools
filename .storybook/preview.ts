@@ -14,7 +14,6 @@ const preview: Preview = {
         order: [
           "Getting Started",
           ["Introduction", "Installation", "Quick Start", "Core Concepts"],
-          "Use Cases",
           "Theming",
           "Packages",
           "*",
