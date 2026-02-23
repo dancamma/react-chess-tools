@@ -147,38 +147,6 @@ The context provider that manages clock state.
       <td>required</td>
       <td>Time control configuration</td>
     </tr>
-    <tr>
-      <td>
-        <code>initialActive</code>
-      </td>
-      <td>
-        <code>'white' | 'black'</code>
-      </td>
-      <td>
-        <code>'white'</code>
-      </td>
-      <td>Which clock starts first</td>
-    </tr>
-    <tr>
-      <td>
-        <code>onTimeout</code>
-      </td>
-      <td>
-        <code>(loser: Color) =&gt; void</code>
-      </td>
-      <td>-</td>
-      <td>Called when a player flags</td>
-    </tr>
-    <tr>
-      <td>
-        <code>onTick</code>
-      </td>
-      <td>
-        <code>(times: ClockTimes) =&gt; void</code>
-      </td>
-      <td>-</td>
-      <td>Called every tick</td>
-    </tr>
   </tbody>
 </table>
 
@@ -228,13 +196,13 @@ Shows the time for one player.
     </tr>
     <tr>
       <td>
-        <code>showTenths</code>
+        <code>formatTime</code>
       </td>
       <td>
-        <code>boolean</code>
+        <code>(milliseconds: number) =&gt; string</code>
       </td>
-      <td>auto</td>
-      <td>Show tenths under 10s</td>
+      <td>-</td>
+      <td>Custom time formatting function</td>
     </tr>
   </tbody>
 </table>

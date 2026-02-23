@@ -176,6 +176,30 @@ Visual evaluation bar showing who's ahead.
   <tbody>
     <tr>
       <td>
+        <code>orientation</code>
+      </td>
+      <td>
+        <code>'vertical' | 'horizontal'</code>
+      </td>
+      <td>
+        <code>'vertical'</code>
+      </td>
+      <td>Bar orientation</td>
+    </tr>
+    <tr>
+      <td>
+        <code>perspective</code>
+      </td>
+      <td>
+        <code>'w' | 'b'</code>
+      </td>
+      <td>
+        <code>'w'</code>
+      </td>
+      <td>Which side is at the bottom/left of the bar</td>
+    </tr>
+    <tr>
+      <td>
         <code>showEvaluation</code>
       </td>
       <td>
@@ -184,31 +208,19 @@ Visual evaluation bar showing who's ahead.
       <td>
         <code>false</code>
       </td>
-      <td>Show numerical eval</td>
+      <td>Show numerical eval text</td>
     </tr>
     <tr>
       <td>
-        <code>height</code>
+        <code>asChild</code>
       </td>
       <td>
-        <code>number</code>
+        <code>boolean</code>
       </td>
       <td>
-        <code>320</code>
+        <code>false</code>
       </td>
-      <td>Bar height in px</td>
-    </tr>
-    <tr>
-      <td>
-        <code>width</code>
-      </td>
-      <td>
-        <code>number</code>
-      </td>
-      <td>
-        <code>20</code>
-      </td>
-      <td>Bar width in px</td>
+      <td>Render as custom element (Radix Slot)</td>
     </tr>
     <tr>
       <td>
@@ -250,22 +262,30 @@ Shows principal variation lines from the engine.
       <td>
         <code>number</code>
       </td>
-      <td>
-        <code>3</code>
-      </td>
-      <td>Number of lines to show</td>
+      <td>all</td>
+      <td>Maximum number of lines to show</td>
     </tr>
     <tr>
       <td>
-        <code>showDepth</code>
+        <code>onLineClick</code>
+      </td>
+      <td>
+        <code>(rank: number, pv: PrincipalVariation) =&gt; void</code>
+      </td>
+      <td>-</td>
+      <td>Callback when a line is clicked</td>
+    </tr>
+    <tr>
+      <td>
+        <code>asChild</code>
       </td>
       <td>
         <code>boolean</code>
       </td>
       <td>
-        <code>true</code>
+        <code>false</code>
       </td>
-      <td>Show search depth</td>
+      <td>Render as custom element (Radix Slot)</td>
     </tr>
     <tr>
       <td>

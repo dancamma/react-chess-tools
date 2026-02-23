@@ -102,20 +102,20 @@ The context provider that manages puzzle state.
         <code>onSolve</code>
       </td>
       <td>
-        <code>() =&gt; void</code>
+        <code>(puzzleContext: ChessPuzzleContextType) =&gt; void</code>
       </td>
       <td>-</td>
-      <td>Called when puzzle is solved</td>
+      <td>Called when puzzle is solved (receives full puzzle context)</td>
     </tr>
     <tr>
       <td>
         <code>onFail</code>
       </td>
       <td>
-        <code>(move: string) =&gt; void</code>
+        <code>(puzzleContext: ChessPuzzleContextType) =&gt; void</code>
       </td>
       <td>-</td>
-      <td>Called on wrong move</td>
+      <td>Called on wrong move (receives full puzzle context)</td>
     </tr>
     <tr>
       <td>
