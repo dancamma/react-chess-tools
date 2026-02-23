@@ -126,9 +126,9 @@ Override only specific properties:
 Combine a preset with custom overrides:
 
 ```tsx
-import { themes, mergeTheme } from "@react-chess-tools/react-chess-game";
+import { themes, mergeThemeWith } from "@react-chess-tools/react-chess-game";
 
-const customTheme = mergeTheme(themes.lichess, {
+const customTheme = mergeThemeWith(themes.lichess, {
   board: {
     lightSquare: { backgroundColor: "#f0d9b5" },
   },
@@ -219,14 +219,14 @@ Create reusable theme configurations:
 ```tsx
 import {
   themes,
-  mergeTheme,
+  mergeThemeWith,
   type DeepPartial,
   type ChessGameTheme,
 } from "@react-chess-tools/react-chess-game";
 
 // Define your theme variants
 const myThemes: Record<string, DeepPartial<ChessGameTheme>> = {
-  dark: mergeTheme(themes.default, {
+  dark: mergeThemeWith(themes.default, {
     board: {
       lightSquare: { backgroundColor: "#769656" },
       darkSquare: { backgroundColor: "#4a6741" },
