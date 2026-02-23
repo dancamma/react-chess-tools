@@ -157,9 +157,9 @@ export const Builder: StoryObj = {
     const hasCustomizations = hasColorChanges(currentColors, baseThemeColors);
 
     const generatedCode = hasCustomizations
-      ? `import { ChessGame, mergeTheme, themes } from '@react-chess-tools/react-chess-game';
+      ? `import { ChessGame, mergeThemeWith, themes } from '@react-chess-tools/react-chess-game';
 
-const myTheme = mergeTheme(themes.${baseThemeKey}, ${JSON.stringify(customOverrides, null, 2)});
+const myTheme = mergeThemeWith(themes.${baseThemeKey}, ${JSON.stringify(customOverrides, null, 2)});
 
 <ChessGame.Root theme={myTheme}>
   <ChessGame.Board />

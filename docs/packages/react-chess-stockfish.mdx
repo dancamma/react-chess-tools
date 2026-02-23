@@ -44,18 +44,14 @@ import { ChessStockfish } from "@react-chess-tools/react-chess-stockfish";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 
 function App() {
-  const [fen, setFen] = useState(
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  );
-
   return (
     <ChessStockfish.Root
-      fen={fen}
+      fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
       workerOptions={{ workerPath: "/stockfish.js" }}
       config={{ multiPV: 3 }}
     >
       <ChessStockfish.EvaluationBar showEvaluation />
-      <ChessGame.Root fen={fen} onMove={(_, game) => setFen(game.fen())}>
+      <ChessGame.Root>
         <ChessGame.Board />
       </ChessGame.Root>
       <ChessStockfish.EngineLines maxLines={3} />
@@ -343,18 +339,14 @@ The Stockfish component wraps the game component to share FEN state:
 
 ```tsx
 function AnalysisBoard() {
-  const [fen, setFen] = useState(
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  );
-
   return (
     <ChessStockfish.Root
-      fen={fen}
+      fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
       workerOptions={{ workerPath: "/stockfish.js" }}
       config={{ multiPV: 3 }}
     >
       <ChessStockfish.EvaluationBar showEvaluation />
-      <ChessGame.Root fen={fen} onMove={(move, game) => setFen(game.fen())}>
+      <ChessGame.Root>
         <ChessGame.Board />
       </ChessGame.Root>
       <ChessStockfish.EngineLines maxLines={3} />

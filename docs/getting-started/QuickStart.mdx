@@ -150,24 +150,32 @@ Time control formats:
 
 ## Responding to Moves
 
-Handle move events:
+Use `useChessGameContext` to react to game state changes:
 
 ```tsx
-import { Chess } from "chess.js";
+import {
+  ChessGame,
+  useChessGameContext,
+} from "@react-chess-tools/react-chess-game";
 
-function App() {
-  const handleMove = (move: string, game: Chess) => {
-    console.log(`Move: ${move}`);
-    console.log(`FEN: ${game.fen()}`);
-
-    if (game.isCheckmate()) {
-      console.log("Checkmate!");
-    }
-  };
+function MoveLogger() {
+  const { game, info } = useChessGameContext();
+  const history = game.history();
 
   return (
-    <ChessGame.Root onMove={handleMove}>
+    <div>
+      <p>Moves: {history.length}</p>
+      <p>Turn: {info.turn === "w" ? "White" : "Black"}</p>
+      {info.isCheckmate && <p>Checkmate!</p>}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <ChessGame.Root>
       <ChessGame.Board />
+      <MoveLogger />
     </ChessGame.Root>
   );
 }
@@ -182,14 +190,7 @@ import { ChessGame } from "@react-chess-tools/react-chess-game";
 
 function ChessApp() {
   return (
-    <ChessGame.Root
-      timeControl={{ time: "5+3", clockStart: "delayed" }}
-      onMove={(move, game) => {
-        if (game.isCheckmate()) {
-          alert("Checkmate!");
-        }
-      }}
-    >
+    <ChessGame.Root timeControl={{ time: "5+3", clockStart: "delayed" }}>
       {/* Clocks */}
       <div style={{ display: "flex", gap: "1rem" }}>
         <ChessGame.Clock.Display color="black" />
