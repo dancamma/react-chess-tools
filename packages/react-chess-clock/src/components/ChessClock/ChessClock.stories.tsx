@@ -11,7 +11,6 @@ import {
   ClockDisplayWrapper,
   ClockPairContainer,
   ClockDisplay,
-  PlayPauseButton,
 } from "@story-helpers";
 
 const meta = {
