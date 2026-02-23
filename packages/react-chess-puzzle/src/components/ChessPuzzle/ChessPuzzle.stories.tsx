@@ -11,7 +11,6 @@ import {
   Kbd,
   SecondaryBtn,
   PrimaryBtn,
-  HintBtn,
 } from "@story-helpers";
 
 const puzzles = [
@@ -70,7 +69,7 @@ export const Example = (args: RootProps) => {
             <PrimaryBtn>Next Puzzle</PrimaryBtn>
           </ChessPuzzle.Reset>
           <ChessPuzzle.Hint asChild>
-            <HintBtn>Hint</HintBtn>
+            <SecondaryBtn>Hint</SecondaryBtn>
           </ChessPuzzle.Hint>
         </div>
       </StoryContainer>
@@ -99,7 +98,7 @@ export const WithOrientation = (args: RootProps) => {
             <SecondaryBtn>Restart</SecondaryBtn>
           </ChessPuzzle.Reset>
           <ChessPuzzle.Hint asChild>
-            <HintBtn>Hint</HintBtn>
+            <SecondaryBtn>Hint</SecondaryBtn>
           </ChessPuzzle.Hint>
         </div>
       </StoryContainer>

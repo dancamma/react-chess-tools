@@ -3,6 +3,7 @@ import {
   ChessGame,
   type ChessGameTheme,
 } from "@react-chess-tools/react-chess-game";
+import { HexColorPicker, HexColorInput } from "react-colorful";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import {
@@ -13,7 +14,7 @@ import {
   CardContent,
 } from "../components/ui/card";
 import { Alert, AlertDescription } from "../components/ui/alert";
-import { Input } from "../components/ui/input";
+import "react-colorful/dist/style.css";
 
 // ============================================================================
 // Button Components
@@ -32,18 +33,6 @@ export const PrimaryBtn = ({
 );
 
 export const SecondaryBtn = ({
-  children,
-  className,
-  ...props
-}: {
-  children: React.ReactNode;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <Button variant="outline" className={className} {...props}>
-    {children}
-  </Button>
-);
-
-export const HintBtn = ({
   children,
   className,
   ...props
@@ -122,83 +111,35 @@ export const ColorInput = ({
   label,
   value,
   onChange,
-  placeholder = "#ffffff or rgba(...)",
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  placeholder?: string;
 }) => {
-  const [error, setError] = React.useState(false);
-
-  const validateColor = (color: string): boolean => {
-    if (!color) return false;
-    const hexPattern = /^#([0-9A-Fa-f]{3,4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
-    const rgbPattern =
-      /^rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(,\s*(0|1|0?\.\d+))?\s*\)$/;
-    if (hexPattern.test(color) || rgbPattern.test(color)) return true;
-    if (typeof CSS !== "undefined" && CSS.supports) {
-      return CSS.supports("color", color);
-    }
-    return false;
-  };
-
-  const handleChange = (newValue: string) => {
-    const isValid = validateColor(newValue);
-    // Show error for invalid colors that look like they're trying to be valid
-    setError(!isValid && newValue.length > 2);
-    if (isValid) {
-      onChange(newValue);
-    }
-  };
-
-  // Extract hex from rgba for color picker
-  const rgbaToHex = (rgba: string): string => {
-    const match = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-    if (match) {
-      const r = parseInt(match[1]).toString(16).padStart(2, "0");
-      const g = parseInt(match[2]).toString(16).padStart(2, "0");
-      const b = parseInt(match[3]).toString(16).padStart(2, "0");
-      return `#${r}${g}${b}`;
-    }
-    return rgba.startsWith("#") ? rgba : "#000000";
-  };
-
-  const hexToRgba = (hex: string, alpha: number = 0.5): string => {
-    if (!hex || !hex.startsWith("#") || !/^#[0-9A-Fa-f]{6}$/.test(hex)) {
-      return `rgba(0, 0, 0, ${alpha})`;
-    }
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-  };
-
-  const extractAlpha = (rgba: string): number => {
-    const match = rgba.match(/rgba?\([^)]+,\s*([\d.]+)\s*\)/);
-    return match ? parseFloat(match[1]) : 1;
-  };
+  const [showPicker, setShowPicker] = React.useState(false);
 
   return (
     <div className="flex items-center gap-2">
       <label className="text-size-xs text-text-secondary min-w-[100px]">
         {label}
       </label>
-      <input
-        type="color"
-        value={rgbaToHex(value)}
-        onChange={(e) =>
-          handleChange(hexToRgba(e.target.value, extractAlpha(value)))
-        }
-        className="w-8 h-8 rounded border border-border cursor-pointer"
+      <button
+        type="button"
+        onClick={() => setShowPicker(!showPicker)}
+        className="w-8 h-8 rounded border border-border cursor-pointer shrink-0"
+        style={{ backgroundColor: value }}
       />
-      <Input
-        value={value}
-        onChange={(e) => handleChange(e.target.value)}
-        className={`flex-1 font-mono text-size-xs ${
-          error ? "border-destructive" : ""
-        }`}
-        placeholder={placeholder}
+      {showPicker && (
+        <div className="absolute z-50 mt-1">
+          <HexColorPicker color={value} onChange={onChange} />
+        </div>
+      )}
+      <HexColorInput
+        color={value}
+        onChange={onChange}
+        prefixed
+        alpha
+        className="flex-1 font-mono text-size-xs px-2 py-1.5 border border-border rounded bg-surface text-text"
       />
     </div>
   );
@@ -281,12 +222,6 @@ export const ClockDisplay = ({
     {children}
   </div>
 );
-
-export const PlayPauseButton = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => <Button size="sm">{children}</Button>;
 
 export const ClockDisplayLabel = ({
   children,

@@ -3,7 +3,6 @@ export {
   // Button components
   PrimaryBtn,
   SecondaryBtn,
-  HintBtn,
   // Badge components
   Kbd,
   // Alert components
@@ -18,7 +17,6 @@ export {
   BoardWrapper,
   // Clock components
   ClockDisplay,
-  PlayPauseButton,
   ClockDisplayLabel,
   ClockDisplayWrapper,
   ClockPairContainer,
