@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
 
 /* Tell Tailwind where to find class names */
 @source "../src/**/*.stories.tsx";
@@ -48,10 +49,6 @@
   /* Line Heights */
   --leading-snug: 1.4;
   --leading-relaxed: 1.5;
-
-  /* Border Radius */
-  --radius-sm: 5px;
-  --radius-md: 10px;
 
   /* Shadows - refined for depth without heaviness */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);

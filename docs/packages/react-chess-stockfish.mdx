@@ -155,8 +155,10 @@ interface StockfishConfig {
 
 ```tsx
 interface WorkerOptions {
-  workerPath: string; // Path to stockfish.js
-  stockfishWasmPath?: string; // Custom WASM path
+  workerPath: string; // Path to stockfish.js worker
+  throttleMs?: number; // Throttle interval (ms) for analysis updates
+  timeout?: number; // Initialization timeout (ms)
+  onError?: (error: Error) => void; // Error handler callback
 }
 ```
 

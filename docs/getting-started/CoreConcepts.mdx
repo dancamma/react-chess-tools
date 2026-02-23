@@ -245,14 +245,20 @@ Access Stockfish analysis state and methods inside `ChessStockfish.Root`.
 const {
   fen, // Current FEN being analyzed
   info: {
-    evaluation, // { type: 'cp' | 'mate', value: number }
+    evaluation, // { type: 'cp' | 'mate', value: number } | null
+    normalizedEvaluation, // Score normalized to -1..+1 range
+    bestLine, // Best principal variation line
+    principalVariations, // All PV lines analyzed
     depth, // Search depth
-    lines, // Principal variation lines
-    status, // Analysis status
+    status, // "initializing" | "ready" | "analyzing" | "error"
+    isEngineThinking, // Whether engine is currently analyzing
+    hasResults, // Whether any results have been received
+    error, // Error encountered, or null
   },
   methods: {
     startAnalysis, // Begin analysis
     stopAnalysis, // Stop analysis
+    getBestMove, // Get best move from current analysis
     setConfig, // Update engine config
   },
 } = useStockfish();

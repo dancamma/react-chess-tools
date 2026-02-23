@@ -24,9 +24,10 @@ type ThemeProperty =
   | { category: "board"; key: "lightSquare" | "darkSquare"; format: "object" }
   | {
       category: "state";
-      key: "lastMove" | "check" | "activeSquare" | "dropSquare";
+      key: "lastMove" | "check" | "activeSquare";
       format: "string";
     }
+  | { category: "state"; key: "dropSquare"; format: "object" }
   | { category: "indicators"; key: "move" | "capture"; format: "string" };
 
 const THEME_PROPERTIES: ThemeProperty[] = [
@@ -35,7 +36,7 @@ const THEME_PROPERTIES: ThemeProperty[] = [
   { category: "state", key: "lastMove", format: "string" },
   { category: "state", key: "check", format: "string" },
   { category: "state", key: "activeSquare", format: "string" },
-  { category: "state", key: "dropSquare", format: "string" },
+  { category: "state", key: "dropSquare", format: "object" },
   { category: "indicators", key: "move", format: "string" },
   { category: "indicators", key: "capture", format: "string" },
 ];
