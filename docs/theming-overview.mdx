@@ -19,14 +19,14 @@ interface ChessGameTheme {
     darkSquare: React.CSSProperties;
   };
   state: {
-    lastMove: string | React.CSSProperties;
-    check: string | React.CSSProperties;
-    activeSquare: string | React.CSSProperties;
-    dropSquare: string | React.CSSProperties;
+    lastMove: string; // Background color string
+    check: string; // Background color string
+    activeSquare: string; // Background color string
+    dropSquare: React.CSSProperties; // Full CSS properties
   };
   indicators: {
-    move: string | React.CSSProperties;
-    capture: string | React.CSSProperties;
+    move: string; // Color used in radial-gradient
+    capture: string; // Color used in radial-gradient
   };
 }
 ```
@@ -174,23 +174,27 @@ See [Preset Gallery](?path=/story/theming-theme-builder--preset-comparer) for vi
 
 ## Color Values
 
-Theme properties accept different formats:
+Theme properties accept different value types depending on their category:
 
 ```tsx
-// String (backgroundColor shorthand)
+// State fields accept color strings (used as backgroundColor)
 lastMove: 'rgba(255, 255, 0, 0.5)'
+check: 'red'
+activeSquare: 'rgba(0, 128, 255, 0.4)'
 
-// Style object (full control)
-lastMove: {
+// dropSquare accepts full CSSProperties
+dropSquare: {
   backgroundColor: 'rgba(255, 255, 0, 0.5)',
   borderRadius: '4px',
 }
 
-// CSS color names
-check: 'red'
-
-// Hex colors
+// Board squares accept CSSProperties
 lightSquare: { backgroundColor: '#f0d9b5' }
+darkSquare: { backgroundColor: '#b58863' }
+
+// Indicator fields accept color strings (used in radial-gradient)
+move: 'rgba(0, 0, 0, 0.25)'
+capture: 'rgba(0, 0, 0, 0.25)'
 ```
 
 ## Cross-Package Theming

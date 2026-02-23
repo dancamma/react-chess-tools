@@ -179,7 +179,7 @@ Shows the time for one player.
         <code>format</code>
       </td>
       <td>
-        <code>string</code>
+        <code>'auto' | 'mm:ss' | 'ss.d' | 'hh:mm:ss'</code>
       </td>
       <td>auto</td>
       <td>Time format string</td>
@@ -210,8 +210,9 @@ Shows the time for one player.
 #### Time Formats
 
 - `mm:ss` - Minutes and seconds (05:00)
+- `hh:mm:ss` - Hours, minutes and seconds (1:05:00)
 - `ss.d` - Seconds with tenths (300.0)
-- Auto - Switches format based on time remaining
+- `auto` - Switches format based on time remaining
 
 ### ChessClock.PlayPause
 

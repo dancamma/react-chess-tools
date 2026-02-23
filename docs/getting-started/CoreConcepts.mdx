@@ -270,12 +270,17 @@ Create and manage a standalone chess clock (from `react-chess-clock`).
 
 ```tsx
 const {
-  times,         // { white: number, black: number } in ms
-  initialTimes,  // Starting times
-  status,        // "idle" | "delayed" | "running" | "paused" | "finished"
-  activePlayer,  // "white" | "black" | null
-  timeout,       // Player who ran out of time, or null
-  info,          // Computed state (isRunning, isPaused, etc.)
+  times,              // { white: number, black: number } in ms
+  initialTimes,       // Starting times
+  status,             // "idle" | "delayed" | "running" | "paused" | "finished"
+  activePlayer,       // "white" | "black" | null
+  timeout,            // Player who ran out of time, or null
+  timingMethod,       // Current timing method
+  info,               // Computed state (isRunning, isPaused, etc.)
+  currentPeriodIndex, // { white: number, black: number } - current period per player
+  totalPeriods,       // Total number of periods
+  currentPeriod,      // { white: Period, black: Period } - current period config
+  periodMoves,        // { white: number, black: number } - moves in current period
   methods: {
     start,    // Start the clock
     pause,    // Pause the clock
