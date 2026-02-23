@@ -5,25 +5,19 @@ import { useChessClockContext } from "../../hooks/useChessClockContext";
 import {
   StoryHeader,
   StoryContainer,
-  SecondaryBtn,
-  PrimaryBtn,
   InfoBox,
   ClockDisplayWrapper,
   ClockPairContainer,
-  CLOCK_WHITE_CLASS,
-  CLOCK_BLACK_CLASS,
-  CLOCK_DISPLAY_CLASS,
-  PLAY_PAUSE_BTN_CLASS,
-  PLAY_PAUSE_DISABLED_CLASS,
+  ClockDisplay,
+  Button,
 } from "@story-helpers";
 
 const meta = {
-  title: "react-chess-clock/Components/ChessClock",
+  title: "Packages/react-chess-clock/ChessClock",
   component: ChessClock.Root,
   tags: ["components", "clock", "timer"],
   argTypes: {},
   parameters: {
-    actions: { argTypesRegex: "^_on.*" },
     layout: "centered",
   },
 } satisfies Meta<typeof ChessClock.Root>;
@@ -37,46 +31,41 @@ const ClockPair = ({
 }) => (
   <ClockPairContainer>
     <ClockDisplayWrapper label="White">
-      <ChessClock.Display
-        color="white"
-        format={format}
-        className={CLOCK_WHITE_CLASS}
-      />
+      <ClockDisplay variant="white">
+        <ChessClock.Display color="white" format={format} />
+      </ClockDisplay>
     </ClockDisplayWrapper>
     <ClockDisplayWrapper label="Black">
-      <ChessClock.Display
-        color="black"
-        format={format}
-        className={CLOCK_BLACK_CLASS}
-      />
+      <ClockDisplay variant="black">
+        <ChessClock.Display color="black" format={format} />
+      </ClockDisplay>
     </ClockDisplayWrapper>
   </ClockPairContainer>
 );
 
 const PlayPauseBtn = () => {
-  const { status } = useChessClockContext();
-  const isDisabled = status === "finished" || status === "delayed";
-
   return (
     <ChessClock.PlayPause
-      className={`${PLAY_PAUSE_BTN_CLASS} ${isDisabled ? PLAY_PAUSE_DISABLED_CLASS : ""}`}
+      asChild
       startContent="Start"
       pauseContent="Pause"
       resumeContent="Resume"
       finishedContent="Game Over"
-    />
+    >
+      <Button variant="default" />
+    </ChessClock.PlayPause>
   );
 };
 
 const SwitchBtn = () => (
   <ChessClock.Switch asChild>
-    <SecondaryBtn>Switch</SecondaryBtn>
+    <Button variant="outline">Switch</Button>
   </ChessClock.Switch>
 );
 
 const ResetBtn = () => (
   <ChessClock.Reset asChild>
-    <SecondaryBtn>Reset</SecondaryBtn>
+    <Button variant="outline">Reset</Button>
   </ChessClock.Reset>
 );
 
@@ -234,51 +223,44 @@ export const DisplayFormats = () => (
           <span className="text-xs font-medium text-text-secondary font-mono">
             format=&quot;auto&quot;
           </span>
-          <ChessClock.Display
-            color="white"
-            format="auto"
-            className={CLOCK_DISPLAY_CLASS}
-          />
+          <ClockDisplay variant="white" size="sm">
+            <ChessClock.Display color="white" format="auto" />
+          </ClockDisplay>
         </div>
         <div className="flex justify-between items-center p-1.5 px-2.5 bg-bg rounded">
           <span className="text-xs font-medium text-text-secondary font-mono">
             format=&quot;mm:ss&quot;
           </span>
-          <ChessClock.Display
-            color="white"
-            format="mm:ss"
-            className={CLOCK_DISPLAY_CLASS}
-          />
+          <ClockDisplay variant="white" size="sm">
+            <ChessClock.Display color="white" format="mm:ss" />
+          </ClockDisplay>
         </div>
         <div className="flex justify-between items-center p-1.5 px-2.5 bg-bg rounded">
           <span className="text-xs font-medium text-text-secondary font-mono">
             format=&quot;hh:mm:ss&quot;
           </span>
-          <ChessClock.Display
-            color="white"
-            format="hh:mm:ss"
-            className={CLOCK_DISPLAY_CLASS}
-          />
+          <ClockDisplay variant="white" size="sm">
+            <ChessClock.Display color="white" format="hh:mm:ss" />
+          </ClockDisplay>
         </div>
         <div className="flex justify-between items-center p-1.5 px-2.5 bg-bg rounded">
           <span className="text-xs font-medium text-text-secondary font-mono">
             format=&quot;ss.d&quot;
           </span>
-          <ChessClock.Display
-            color="white"
-            format="ss.d"
-            className={CLOCK_DISPLAY_CLASS}
-          />
+          <ClockDisplay variant="white" size="sm">
+            <ChessClock.Display color="white" format="ss.d" />
+          </ClockDisplay>
         </div>
         <div className="flex justify-between items-center p-1.5 px-2.5 bg-bg rounded">
           <span className="text-xs font-medium text-text-secondary font-mono">
             Custom fn
           </span>
-          <ChessClock.Display
-            color="white"
-            formatTime={(ms) => `${Math.ceil(ms / 1000)}s`}
-            className={CLOCK_DISPLAY_CLASS}
-          />
+          <ClockDisplay variant="white" size="sm">
+            <ChessClock.Display
+              color="white"
+              formatTime={(ms) => `${Math.ceil(ms / 1000)}s`}
+            />
+          </ClockDisplay>
         </div>
       </div>
       <Controls>
@@ -337,19 +319,19 @@ export const DynamicReset = () => (
       <Controls />
       <div className="flex gap-2 justify-center flex-wrap">
         <ChessClock.Reset asChild>
-          <SecondaryBtn>Reset</SecondaryBtn>
+          <Button variant="outline">Reset</Button>
         </ChessClock.Reset>
         <ChessClock.Reset timeControl="1" asChild>
-          <SecondaryBtn>1+0</SecondaryBtn>
+          <Button variant="outline">1+0</Button>
         </ChessClock.Reset>
         <ChessClock.Reset timeControl="3+2" asChild>
-          <SecondaryBtn>3+2</SecondaryBtn>
+          <Button variant="outline">3+2</Button>
         </ChessClock.Reset>
         <ChessClock.Reset timeControl="5+3" asChild>
-          <SecondaryBtn>5+3</SecondaryBtn>
+          <Button variant="outline">5+3</Button>
         </ChessClock.Reset>
         <ChessClock.Reset timeControl="10" asChild>
-          <SecondaryBtn>10+0</SecondaryBtn>
+          <Button variant="outline">10+0</Button>
         </ChessClock.Reset>
       </div>
     </StoryContainer>
@@ -502,15 +484,15 @@ export const AsChild = () => {
             resumeContent="Resume"
             finishedContent="Game Over"
           >
-            <PrimaryBtn>placeholder</PrimaryBtn>
+            <Button variant="default">placeholder</Button>
           </ChessClock.PlayPause>
 
           <ChessClock.Switch asChild>
-            <SecondaryBtn>Switch</SecondaryBtn>
+            <Button variant="outline">Switch</Button>
           </ChessClock.Switch>
 
           <ChessClock.Reset asChild>
-            <SecondaryBtn>Reset</SecondaryBtn>
+            <Button variant="outline">Reset</Button>
           </ChessClock.Reset>
         </div>
         <AsChildStatus />

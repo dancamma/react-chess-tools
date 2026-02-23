@@ -1,0 +1,214 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Getting Started/Quick Start" />
+
+# Quick Start
+
+Get up and running with react-chess-tools.
+
+## Basic Chess Board
+
+The simplest way to render a chess board:
+
+```tsx
+import { ChessGame } from "@react-chess-tools/react-chess-game";
+
+function App() {
+  return (
+    <ChessGame.Root>
+      <ChessGame.Board />
+    </ChessGame.Root>
+  );
+}
+```
+
+This gives you a playable board with:
+
+- Drag and drop pieces
+- Click-to-move support
+- Legal move validation
+- Check and checkmate detection
+
+## Adding Features
+
+### Sound Effects
+
+Add audio feedback for moves:
+
+```tsx
+<ChessGame.Root>
+  <ChessGame.Board />
+  <ChessGame.Sounds />
+</ChessGame.Root>
+```
+
+### Keyboard Controls
+
+Enable keyboard navigation:
+
+```tsx
+<ChessGame.Root>
+  <ChessGame.KeyboardControls />
+  <ChessGame.Board />
+</ChessGame.Root>
+```
+
+Default controls:
+
+<table>
+  <thead>
+    <tr>
+      <th>Key</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>←</code>
+      </td>
+      <td>Previous move</td>
+    </tr>
+    <tr>
+      <td>
+        <code>→</code>
+      </td>
+      <td>Next move</td>
+    </tr>
+    <tr>
+      <td>
+        <code>↑</code> or <code>Home</code>
+      </td>
+      <td>Go to start</td>
+    </tr>
+    <tr>
+      <td>
+        <code>↓</code> or <code>End</code>
+      </td>
+      <td>Go to end</td>
+    </tr>
+    <tr>
+      <td>
+        <code>f</code> or <code>F</code>
+      </td>
+      <td>Flip board</td>
+    </tr>
+  </tbody>
+</table>
+
+### Custom Keyboard Controls
+
+Define your own shortcuts:
+
+```tsx
+<ChessGame.Root>
+  <ChessGame.KeyboardControls
+    controls={{
+      f: (ctx) => ctx.methods.flipBoard(),
+      w: (ctx) => ctx.methods.goToStart(),
+      s: (ctx) => ctx.methods.goToEnd(),
+      a: (ctx) => ctx.methods.goToPreviousMove(),
+      d: (ctx) => ctx.methods.goToNextMove(),
+    }}
+  />
+  <ChessGame.Board />
+</ChessGame.Root>
+```
+
+**Note:** When choosing custom keybindings, consider accessibility and potential conflicts with browser shortcuts or screen reader navigation. Avoid using keys that may interfere with common assistive technology patterns.
+
+## Starting Position
+
+Load a specific FEN position:
+
+```tsx
+<ChessGame.Root fen="r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3">
+  <ChessGame.Board />
+</ChessGame.Root>
+```
+
+## With Clock
+
+Add a chess clock for timed games:
+
+```tsx
+<ChessGame.Root timeControl={{ time: "5+3" }}>
+  <div className="clocks">
+    <ChessGame.Clock.Display color="white" />
+    <ChessGame.Clock.Display color="black" />
+  </div>
+  <ChessGame.Board />
+</ChessGame.Root>
+```
+
+Time control formats:
+
+- `"5+0"` - 5 minutes, no increment
+- `"5+3"` - 5 minutes with 3 second increment
+- `"1+0"` - Bullet (1 minute)
+- `{ baseTime: 180, increment: 2 }` - Object format
+
+## Responding to Moves
+
+Use `useChessGameContext` to react to game state changes:
+
+```tsx
+import {
+  ChessGame,
+  useChessGameContext,
+} from "@react-chess-tools/react-chess-game";
+
+function MoveLogger() {
+  const { game, info } = useChessGameContext();
+  const history = game.history();
+
+  return (
+    <div>
+      <p>Moves: {history.length}</p>
+      <p>Turn: {info.turn === "w" ? "White" : "Black"}</p>
+      {info.isCheckmate && <p>Checkmate!</p>}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <ChessGame.Root>
+      <ChessGame.Board />
+      <MoveLogger />
+    </ChessGame.Root>
+  );
+}
+```
+
+## Complete Example
+
+A full-featured game component:
+
+```tsx
+import { ChessGame } from "@react-chess-tools/react-chess-game";
+
+function ChessApp() {
+  return (
+    <ChessGame.Root timeControl={{ time: "5+3", clockStart: "delayed" }}>
+      {/* Clocks */}
+      <div style={{ display: "flex", gap: "1rem" }}>
+        <ChessGame.Clock.Display color="black" />
+        <ChessGame.Clock.Display color="white" />
+      </div>
+
+      {/* Board */}
+      <ChessGame.Board />
+
+      {/* Features */}
+      <ChessGame.Sounds />
+      <ChessGame.KeyboardControls />
+    </ChessGame.Root>
+  );
+}
+```
+
+## Next Steps
+
+- [Core Concepts](?path=/docs/getting-started-core-concepts--docs) - Understand the architecture
+- [Theming](?path=/docs/theming-overview--docs) - Customize the look and feel

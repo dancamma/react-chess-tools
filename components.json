@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "tailwind.config.js",
+    "css": ".storybook/styles.css",
+    "baseColor": "neutral",
+    "cssVariables": true
+  },
+  "aliases": {
+    "components": ".storybook/components",
+    "utils": ".storybook/lib/utils",
+    "ui": ".storybook/components/ui",
+    "lib": ".storybook/lib",
+    "hooks": ".storybook/hooks"
+  }
+}

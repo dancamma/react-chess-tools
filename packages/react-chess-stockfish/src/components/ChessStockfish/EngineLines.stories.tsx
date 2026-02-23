@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import React from "react";
 import { ChessStockfish } from "./index";
 import { EngineLines } from "./parts/EngineLines";
-import { StoryHeader } from "@story-helpers";
+import { StoryHeader, FEN_POSITIONS } from "@story-helpers";
 import {
   AnalysisRoot,
   StyledEngineLines,
@@ -10,18 +10,8 @@ import {
   ENGINE_LINES_CSS,
 } from "@story-helpers/stockfish";
 
-const FEN = {
-  start: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  italian:
-    "r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4",
-  whiteWinning: "3rkb1r/p2nqppp/5n2/1B2p1B1/4P3/1Q6/PPP2PPP/2KR3R w k - 0 1",
-  blackWinning:
-    "rnbqkbnr/1ppp1ppp/p5Q1/4p3/4P3/8/PPPP1PPP/RNB1KBNR b KQkq - 0 1",
-  mateIn3: "r1b1kb1r/pppp1ppp/5q2/4n3/3KP3/2N3PN/PPP4P/R1BQ1B1R b kq - 0 1",
-};
-
 const meta = {
-  title: "React-Chess-Stockfish/Components/EngineLines",
+  title: "Packages/react-chess-stockfish/EngineLines",
   component: EngineLines,
   tags: ["components", "engine", "lines"],
   parameters: { layout: "centered" },
@@ -35,12 +25,12 @@ const STORY_CONTAINER_CLASS =
 
 export const Basic: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.italian} config={{ multiPV: 3 }}>
+    <AnalysisRoot fen={FEN_POSITIONS.italian} config={{ multiPV: 3 }}>
       <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="Engine lines"
           subtitle="Default composed rows with evaluation and move list"
-          fen={FEN.italian}
+          fen={FEN_POSITIONS.italian}
         />
         <StyledEngineLines maxLines={3} />
         <EngineStatus />
@@ -51,12 +41,12 @@ export const Basic: Story = {
 
 export const BlackToMove: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.blackWinning} config={{ multiPV: 2 }}>
+    <AnalysisRoot fen={FEN_POSITIONS.blackWinning} config={{ multiPV: 2 }}>
       <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="Black to move"
           subtitle="First SAN token starts with the 1... prefix"
-          fen={FEN.blackWinning}
+          fen={FEN_POSITIONS.blackWinning}
         />
         <StyledEngineLines maxLines={2} />
         <EngineStatus />
@@ -67,12 +57,12 @@ export const BlackToMove: Story = {
 
 export const WhiteWinning: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.whiteWinning} config={{ multiPV: 2 }}>
+    <AnalysisRoot fen={FEN_POSITIONS.whiteWinning} config={{ multiPV: 2 }}>
       <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="White winning"
           subtitle="Position with large white advantage"
-          fen={FEN.whiteWinning}
+          fen={FEN_POSITIONS.whiteWinning}
         />
         <StyledEngineLines maxLines={2} />
         <EngineStatus />
@@ -83,12 +73,12 @@ export const WhiteWinning: Story = {
 
 export const MateInThree: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.mateIn3} config={{ multiPV: 2 }}>
+    <AnalysisRoot fen={FEN_POSITIONS.mateIn3} config={{ multiPV: 2 }}>
       <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="Mate in three"
           subtitle="Forced checkmate position"
-          fen={FEN.mateIn3}
+          fen={FEN_POSITIONS.mateIn3}
         />
         <StyledEngineLines maxLines={2} />
         <EngineStatus />
@@ -102,12 +92,12 @@ export const Clickable: Story = {
     const [selected, setSelected] = React.useState("Click a line");
 
     return (
-      <AnalysisRoot fen={FEN.italian} config={{ multiPV: 3 }}>
+      <AnalysisRoot fen={FEN_POSITIONS.italian} config={{ multiPV: 3 }}>
         <div className={STORY_CONTAINER_CLASS}>
           <StoryHeader
             title="Clickable lines"
             subtitle="Inspect a variation with onLineClick"
-            fen={FEN.italian}
+            fen={FEN_POSITIONS.italian}
           />
           <StyledEngineLines
             maxLines={3}
@@ -131,12 +121,12 @@ export const Clickable: Story = {
 
 export const AsChild: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.italian} config={{ multiPV: 2 }}>
+    <AnalysisRoot fen={FEN_POSITIONS.italian} config={{ multiPV: 2 }}>
       <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="asChild pattern"
           subtitle="Render lines into a custom list element"
-          fen={FEN.italian}
+          fen={FEN_POSITIONS.italian}
         />
         <ChessStockfish.EngineLines asChild maxLines={2}>
           <ul className="list-none m-0 p-0 border border-border rounded-sm overflow-hidden">
@@ -151,12 +141,12 @@ export const AsChild: Story = {
 
 export const MaxLinesOverflow: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.start} config={{ multiPV: 2 }}>
+    <AnalysisRoot fen={FEN_POSITIONS.starting} config={{ multiPV: 2 }}>
       <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="maxLines vs available PV"
           subtitle="maxLines=5 but only 2 PVs available (multiPV=2)"
-          fen={FEN.start}
+          fen={FEN_POSITIONS.starting}
         />
         <StyledEngineLines maxLines={5} />
         <p className="text-size-xs text-text-muted m-0 leading-relaxed">
@@ -171,12 +161,12 @@ export const MaxLinesOverflow: Story = {
 
 export const MultiPV: Story = {
   render: () => (
-    <AnalysisRoot fen={FEN.italian} config={{ multiPV: 4 }}>
+    <AnalysisRoot fen={FEN_POSITIONS.italian} config={{ multiPV: 4 }}>
       <div className={STORY_CONTAINER_CLASS}>
         <StoryHeader
           title="MultiPV analysis"
           subtitle="Four principal variations"
-          fen={FEN.italian}
+          fen={FEN_POSITIONS.italian}
         />
         <StyledEngineLines maxLines={4} />
         <EngineStatus />

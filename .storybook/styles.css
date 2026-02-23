@@ -1,9 +1,14 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
 
 /* Tell Tailwind where to find class names */
+@source "../src/**/*.stories.tsx";
+@source "../docs/**/*.mdx";
 @source "../packages/**/*.stories.tsx";
 @source "../packages/**/*.mdx";
 @source "./*.tsx";
+@source "./helpers/**/*.tsx";
+@source "./components/**/*.tsx";
 
 @theme {
   /* Story Container Themes (choose one via class) */
@@ -28,12 +33,11 @@
   --color-bg: #fafaf9;
   --color-surface: #ffffff;
   --color-surface-alt: #fafaf9;
-  --color-border: #e4e4e7;
   --color-text: #18181b;
   --color-text-secondary: #71717a;
   --color-text-muted: #a1a1aa;
-  --color-accent: #5b8a3c;
-  --color-accent-light: #eef4e8;
+  --color-accent: #6a9955;
+  --color-accent-light: #e8f2e0;
   --color-dark: #18181b;
 
   /* Font Sizes - refined scale */
@@ -45,10 +49,6 @@
   /* Line Heights */
   --leading-snug: 1.4;
   --leading-relaxed: 1.5;
-
-  /* Border Radius */
-  --radius-sm: 5px;
-  --radius-md: 10px;
 
   /* Shadows - refined for depth without heaviness */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -78,7 +78,7 @@
   --color-info-border: #b4d5f0;
   --color-info-text: #1864ab;
   --color-info-blue: #4dabf7;
-  --color-info-blue-bg: #f5edcf;
+  --color-info-amber-bg: #f5edcf;
 
   /* Dark Theme Colors */
   --color-dark-bg: #403d39;
@@ -101,4 +101,33 @@
   --color-btn-blue: #4dabf7;
   --color-btn-green: #51cf66;
   --color-btn-gray: #666;
+
+  /* shadcn/ui CSS Variables - New York Style */
+  --color-background: #ffffff;
+  --color-foreground: #0a0a0b;
+  --color-card: #ffffff;
+  --color-card-foreground: #0a0a0b;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0a0a0b;
+  --color-primary: #4d7349;
+  --color-primary-foreground: #fafafa;
+  --color-secondary: #f5f5f5;
+  --color-secondary-foreground: #171717;
+  --color-muted: #f5f5f5;
+  --color-muted-foreground: #737373;
+  --color-accent: #6a9955;
+  --color-accent-foreground: #fafafa;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #fafafa;
+  --color-border: #e5e5e5;
+  --color-input: #e5e5e5;
+  --color-ring: #0a0a0b;
+
+  /* shadcn radius */
+  --radius-lg: 0.5rem;
+  --radius-md: calc(var(--radius-lg) - 2px);
+  --radius-sm: calc(var(--radius-lg) - 4px);
+
+  /* shadcn shadows */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }

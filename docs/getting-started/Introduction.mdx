@@ -1,0 +1,133 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as ChessGameStories from "../../packages/react-chess-game/src/components/ChessGame/ChessGame.stories";
+
+<Meta title="Getting Started/Introduction" />
+
+# Welcome to react-chess-tools
+
+Build beautiful, accessible chess applications in minutes with React components designed for real-world use.
+
+## Why react-chess-tools?
+
+Building chess applications involves more than just rendering a board. You need:
+
+- Move validation and game state management
+- User interaction (drag, click, keyboard)
+- Visual feedback (highlights, arrows, last move)
+- Audio feedback for moves
+- Timing controls for competitive play
+- Engine integration for analysis
+
+**react-chess-tools** provides all of this with a composable, type-safe API.
+
+### Key Features
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <strong>Compound Components</strong>
+      </td>
+      <td>Compose your UI exactly how you want it</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Type-Safe</strong>
+      </td>
+      <td>Full TypeScript support with intelligent autocomplete</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Theming</strong>
+      </td>
+      <td>Presets for Lichess, Chess.com, or build your own</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Engine Integration</strong>
+      </td>
+      <td>Built-in Stockfish support for analysis</td>
+    </tr>
+    <tr>
+      <td>
+        <strong>Clock Support</strong>
+      </td>
+      <td>Fischer, Delay, and Bronstein timing methods</td>
+    </tr>
+  </tbody>
+</table>
+
+## Packages
+
+<table>
+  <thead>
+    <tr>
+      <th>Package</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>@react-chess-tools/react-chess-game</code>
+      </td>
+      <td>Core game board with move validation</td>
+    </tr>
+    <tr>
+      <td>
+        <code>@react-chess-tools/react-chess-puzzle</code>
+      </td>
+      <td>Interactive puzzle solving</td>
+    </tr>
+    <tr>
+      <td>
+        <code>@react-chess-tools/react-chess-clock</code>
+      </td>
+      <td>Tournament-grade timing controls</td>
+    </tr>
+    <tr>
+      <td>
+        <code>@react-chess-tools/react-chess-stockfish</code>
+      </td>
+      <td>Engine analysis and evaluation</td>
+    </tr>
+  </tbody>
+</table>
+
+## Quick Example
+
+Get a fully functional chess board in just a few lines:
+
+```tsx
+import { ChessGame } from "@react-chess-tools/react-chess-game";
+
+function App() {
+  return (
+    <ChessGame.Root>
+      <ChessGame.Board />
+      <ChessGame.Sounds />
+    </ChessGame.Root>
+  );
+}
+```
+
+<Canvas of={ChessGameStories.WithSounds} meta={ChessGameStories} />
+
+That's it! You now have:
+
+- A playable chess board with drag-and-drop
+- Legal move validation
+- Sound effects for each piece type
+- Check/checkmate detection
+
+## What's Next?
+
+- [Installation](?path=/docs/getting-started-installation--docs) - Add react-chess-tools to your project
+- [Quick Start](?path=/docs/getting-started-quick-start--docs) - Build your first chess application
+- [Core Concepts](?path=/docs/getting-started-core-concepts--docs) - Understand the architecture

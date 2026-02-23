@@ -66,6 +66,7 @@ export default [
       "jest.setup.js",
       "**/tsup.config.ts",
       "eslint.config.mjs",
+      "tailwind.config.js",
       "**/*.stories.tsx",
     ],
     languageOptions: {

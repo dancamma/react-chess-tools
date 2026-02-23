@@ -1,0 +1,453 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as ChessStockfishStories from "../../packages/react-chess-stockfish/src/components/ChessStockfish/ChessStockfish.stories";
+import * as EvaluationBarStories from "../../packages/react-chess-stockfish/src/components/ChessStockfish/EvaluationBar.stories";
+import * as EngineLinesStories from "../../packages/react-chess-stockfish/src/components/ChessStockfish/EngineLines.stories";
+
+<Meta title="Packages/react-chess-stockfish/Overview" />
+
+# react-chess-stockfish
+
+Stockfish chess engine integration with evaluation bar and principal variation lines.
+
+## When to Use
+
+Use `react-chess-stockfish` when you need:
+
+- Real-time position evaluation
+- Engine analysis lines (PV)
+- Evaluation bar visualization
+- Building chess analysis tools
+- Computer opponent features
+
+## Installation
+
+```bash
+npm install @react-chess-tools/react-chess-stockfish
+```
+
+## Stockfish Setup
+
+The engine runs in a WebWorker. Download the required files and place them in your public directory:
+
+```
+public/
+├── stockfish.js      // Worker script
+└── stockfish.wasm    // WebAssembly binary
+```
+
+Download from [stockfish.js releases](https://github.com/nmrugg/stockfish.js/releases).
+
+## Quick Start
+
+```tsx
+import { ChessStockfish } from "@react-chess-tools/react-chess-stockfish";
+import { ChessGame } from "@react-chess-tools/react-chess-game";
+
+function App() {
+  return (
+    <ChessStockfish.Root
+      fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+      workerOptions={{ workerPath: "/stockfish.js" }}
+      config={{ multiPV: 3 }}
+    >
+      <ChessStockfish.EvaluationBar showEvaluation />
+      <ChessGame.Root>
+        <ChessGame.Board />
+      </ChessGame.Root>
+      <ChessStockfish.EngineLines maxLines={3} />
+    </ChessStockfish.Root>
+  );
+}
+```
+
+## Components
+
+### ChessStockfish.Root
+
+The context provider that manages engine state.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>fen</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>required</td>
+      <td>Position to analyze</td>
+    </tr>
+    <tr>
+      <td>
+        <code>config</code>
+      </td>
+      <td>
+        <code>StockfishConfig</code>
+      </td>
+      <td>
+        <code>{"{}"}</code>
+      </td>
+      <td>Engine config (multiPV, depth, skillLevel)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>workerOptions</code>
+      </td>
+      <td>
+        <code>WorkerOptions</code>
+      </td>
+      <td>required</td>
+      <td>Worker configuration</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onEvaluationChange</code>
+      </td>
+      <td>
+        <code>(eval: Evaluation | null) =&gt; void</code>
+      </td>
+      <td>-</td>
+      <td>Called when evaluation updates</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onDepthChange</code>
+      </td>
+      <td>
+        <code>(depth: number) =&gt; void</code>
+      </td>
+      <td>-</td>
+      <td>Called when depth changes</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onError</code>
+      </td>
+      <td>
+        <code>(error: Error) =&gt; void</code>
+      </td>
+      <td>-</td>
+      <td>Called on engine errors</td>
+    </tr>
+  </tbody>
+</table>
+
+#### StockfishConfig
+
+```tsx
+interface StockfishConfig {
+  multiPV?: number; // Number of PV lines (default: 1)
+  depth?: number; // Max search depth (default: 20)
+  skillLevel?: number; // Engine skill 0-20 (default: 20)
+}
+```
+
+#### WorkerOptions
+
+```tsx
+interface WorkerOptions {
+  workerPath: string; // Path to stockfish.js worker
+  throttleMs?: number; // Throttle interval (ms) for analysis updates
+  timeout?: number; // Initialization timeout (ms)
+  onError?: (error: Error) => void; // Error handler callback
+}
+```
+
+### ChessStockfish.EvaluationBar
+
+Visual evaluation bar showing who's ahead.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>orientation</code>
+      </td>
+      <td>
+        <code>'vertical' | 'horizontal'</code>
+      </td>
+      <td>
+        <code>'vertical'</code>
+      </td>
+      <td>Bar orientation</td>
+    </tr>
+    <tr>
+      <td>
+        <code>perspective</code>
+      </td>
+      <td>
+        <code>'w' | 'b'</code>
+      </td>
+      <td>
+        <code>'w'</code>
+      </td>
+      <td>Which side is at the bottom/left of the bar</td>
+    </tr>
+    <tr>
+      <td>
+        <code>showEvaluation</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>false</code>
+      </td>
+      <td>Show numerical eval text</td>
+    </tr>
+    <tr>
+      <td>
+        <code>asChild</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>false</code>
+      </td>
+      <td>Render as custom element (Radix Slot)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>-</td>
+      <td>CSS class</td>
+    </tr>
+  </tbody>
+</table>
+
+The evaluation is normalized to a -1 to +1 range for the bar position:
+
+- `+1` = White is winning (bar full white)
+- `-1` = Black is winning (bar full black)
+- `0` = Position is equal
+
+### ChessStockfish.EngineLines
+
+Shows principal variation lines from the engine.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>maxLines</code>
+      </td>
+      <td>
+        <code>number</code>
+      </td>
+      <td>all</td>
+      <td>Maximum number of lines to show</td>
+    </tr>
+    <tr>
+      <td>
+        <code>onLineClick</code>
+      </td>
+      <td>
+        <code>(rank: number, pv: PrincipalVariation) =&gt; void</code>
+      </td>
+      <td>-</td>
+      <td>Callback when a line is clicked</td>
+    </tr>
+    <tr>
+      <td>
+        <code>asChild</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>false</code>
+      </td>
+      <td>Render as custom element (Radix Slot)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>-</td>
+      <td>CSS class</td>
+    </tr>
+  </tbody>
+</table>
+
+Each line shows:
+
+1. Move sequence in algebraic notation
+2. Evaluation in centipawns (or mate)
+3. Search depth
+
+## Hooks
+
+### useStockfish
+
+Access engine state from child components within ChessStockfish.Root.
+
+```tsx
+import { useStockfish } from "@react-chess-tools/react-chess-stockfish";
+
+function EvalDisplay() {
+  const { fen, info, methods } = useStockfish();
+
+  return (
+    <div>
+      <span>
+        {info.evaluation?.type === "cp"
+          ? `${info.evaluation.value > 0 ? "+" : ""}${(info.evaluation.value / 100).toFixed(1)}`
+          : info.evaluation?.type === "mate"
+            ? `M${info.evaluation.value}`
+            : "—"}
+      </span>
+      <span>Depth: {info.depth}</span>
+      {info.isEngineThinking && <span>Analyzing...</span>}
+      <button onClick={methods.stopAnalysis}>Stop</button>
+    </div>
+  );
+}
+```
+
+The hook returns:
+
+- `fen` - Current FEN string being analyzed
+- `info` - Analysis state:
+  - `evaluation` - Current evaluation (`{ type: "cp", value }` or `{ type: "mate", value }`)
+  - `normalizedEvaluation` - Normalized -1 to +1 value
+  - `principalVariations` - Array of PV lines
+  - `depth` - Current search depth
+  - `status` - Engine status (`"initializing"` | `"ready"` | `"analyzing"` | `"error"`)
+  - `isEngineThinking` - Whether engine is actively analyzing
+  - `hasResults` - Whether any results are available
+  - `error` - Any error that occurred
+- `methods` - Control methods:
+  - `startAnalysis()` - Start analysis
+  - `stopAnalysis()` - Stop analysis
+  - `getBestMove()` - Get the best move from top line
+  - `setConfig(config)` - Update engine configuration
+
+## Integration with react-chess-game
+
+The Stockfish component wraps the game component to share FEN state:
+
+```tsx
+function AnalysisBoard() {
+  return (
+    <ChessStockfish.Root
+      fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+      workerOptions={{ workerPath: "/stockfish.js" }}
+      config={{ multiPV: 3 }}
+    >
+      <ChessStockfish.EvaluationBar showEvaluation />
+      <ChessGame.Root>
+        <ChessGame.Board />
+      </ChessGame.Root>
+      <ChessStockfish.EngineLines maxLines={3} />
+    </ChessStockfish.Root>
+  );
+}
+```
+
+## Evaluation Format
+
+Evaluations are in centipawns (100 = 1 pawn advantage):
+
+<table>
+  <thead>
+    <tr>
+      <th>Value</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>+100</code>
+      </td>
+      <td>White up 1 pawn</td>
+    </tr>
+    <tr>
+      <td>
+        <code>-100</code>
+      </td>
+      <td>Black up 1 pawn</td>
+    </tr>
+    <tr>
+      <td>
+        <code>+300</code>
+      </td>
+      <td>White up ~3 pawns (a piece)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>+5000</code>
+      </td>
+      <td>Large advantage (near winning)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>M5</code>
+      </td>
+      <td>Mate in 5 moves</td>
+    </tr>
+  </tbody>
+</table>
+
+## Performance Considerations
+
+- Higher depth = longer analysis time
+- Use `depth: 15-20` for interactive analysis
+- Use `depth: 25+` for deep analysis
+- Analysis runs in a WebWorker (doesn't block UI)
+
+## Examples
+
+### Full Layout
+
+<Canvas of={ChessStockfishStories.FullLayout} />
+
+### Evaluation Bar
+
+<Canvas of={EvaluationBarStories.Vertical} />
+
+### Engine Lines
+
+<Canvas of={EngineLinesStories.Basic} />
+
+## Browser Support
+
+Requires WebAssembly support:
+
+- Chrome 57+
+- Firefox 52+
+- Safari 11+
+- Edge 16+

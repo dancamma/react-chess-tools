@@ -1,0 +1,74 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Getting Started/Installation" />
+
+# Installation
+
+## Requirements
+
+- React 18 or 19
+- React DOM 18 or 19
+
+## Install Packages
+
+Install only the packages you need:
+
+### Chess Game
+
+The core board component with move validation, sounds, and keyboard controls.
+
+```bash
+npm install @react-chess-tools/react-chess-game
+```
+
+```bash
+yarn add @react-chess-tools/react-chess-game
+```
+
+```bash
+pnpm add @react-chess-tools/react-chess-game
+```
+
+### Chess Puzzle
+
+For building puzzle experiences. Depends on `react-chess-game`.
+
+```bash
+npm install @react-chess-tools/react-chess-puzzle
+```
+
+### Chess Clock
+
+Standalone clock component with multiple timing methods.
+
+```bash
+npm install @react-chess-tools/react-chess-clock
+```
+
+### Chess Stockfish
+
+Stockfish engine integration with evaluation bar and PV lines.
+
+```bash
+npm install @react-chess-tools/react-chess-stockfish
+```
+
+## Stockfish Setup
+
+The Stockfish package requires the Stockfish WebAssembly files. Download them and place in your public directory:
+
+```
+public/
+├── stockfish.js
+└── stockfish.wasm
+```
+
+You can download these files from the [Stockfish.js releases](https://github.com/nmrugg/stockfish.js/releases).
+
+## Peer Dependencies
+
+All packages have `react` and `react-dom` as peer dependencies. Make sure these are installed in your project.
+
+## Next Steps
+
+- [Quick Start](?path=/docs/getting-started-quick-start--docs) - Build your first application

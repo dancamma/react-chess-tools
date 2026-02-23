@@ -1,0 +1,286 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as ChessGameStories from "../../packages/react-chess-game/src/components/ChessGame/ChessGame.stories";
+
+<Meta title="Packages/react-chess-game/Overview" />
+
+# react-chess-game
+
+The core chess board component with move validation, sounds, and keyboard controls.
+
+## When to Use
+
+Use `react-chess-game` when you need:
+
+- A playable chess board with drag-and-drop
+- Legal move validation powered by chess.js
+- Sound effects for moves
+- Keyboard navigation for move history
+- Integrated chess clock for timed games
+- Theme customization
+
+## Installation
+
+```bash
+npm install @react-chess-tools/react-chess-game
+```
+
+## Quick Start
+
+```tsx
+import { ChessGame } from "@react-chess-tools/react-chess-game";
+
+function App() {
+  return (
+    <ChessGame.Root>
+      <ChessGame.Board />
+      <ChessGame.Sounds />
+    </ChessGame.Root>
+  );
+}
+```
+
+## Components
+
+### ChessGame.Root
+
+The context provider that manages game state. Wrap all other ChessGame components inside it.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>fen</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>starting position</td>
+      <td>FEN string to load a position</td>
+    </tr>
+    <tr>
+      <td>
+        <code>orientation</code>
+      </td>
+      <td>
+        <code>"w" | "b"</code>
+      </td>
+      <td>
+        <code>"w"</code>
+      </td>
+      <td>Board orientation (white or black perspective)</td>
+    </tr>
+    <tr>
+      <td>
+        <code>timeControl</code>
+      </td>
+      <td>
+        <code>TimeControl</code>
+      </td>
+      <td>-</td>
+      <td>Clock configuration</td>
+    </tr>
+    <tr>
+      <td>
+        <code>autoSwitchOnMove</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>
+        <code>true</code>
+      </td>
+      <td>Auto-switch clock on move</td>
+    </tr>
+    <tr>
+      <td>
+        <code>theme</code>
+      </td>
+      <td>
+        <code>DeepPartial&lt;ChessGameTheme&gt;</code>
+      </td>
+      <td>default</td>
+      <td>Theme customization</td>
+    </tr>
+  </tbody>
+</table>
+
+### ChessGame.Board
+
+The visual chess board with pieces.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>options</code>
+      </td>
+      <td>
+        <code>BoardOptions</code>
+      </td>
+      <td>-</td>
+      <td>Additional board options</td>
+    </tr>
+    <tr>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>-</td>
+      <td>CSS class for styling</td>
+    </tr>
+    <tr>
+      <td>
+        <code>style</code>
+      </td>
+      <td>
+        <code>React.CSSProperties</code>
+      </td>
+      <td>-</td>
+      <td>Inline styles (use for sizing instead of boardWidth)</td>
+    </tr>
+  </tbody>
+</table>
+
+**Note:** For board sizing, use CSS (className, style, or a wrapper div) rather than a boardWidth prop. See [Core Concepts](?path=/docs/getting-started-core-concepts--docs) for best practices.
+
+### ChessGame.Sounds
+
+Adds audio feedback for moves. No props required.
+
+### ChessGame.KeyboardControls
+
+Enables keyboard navigation.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>controls</code>
+      </td>
+      <td>
+        <code>KeyboardControlsMap</code>
+      </td>
+      <td>defaults</td>
+      <td>Custom key mappings</td>
+    </tr>
+  </tbody>
+</table>
+
+### ChessGame.Clock (nested)
+
+Access clock components when `timeControl` is configured:
+
+- `ChessGame.Clock.Display` - Show time for a player
+- `ChessGame.Clock.PlayPause` - Toggle clock running
+- `ChessGame.Clock.Switch` - Switch active player
+- `ChessGame.Clock.Reset` - Reset clock
+
+## Hooks
+
+### useChessGame
+
+Create and manage game state outside of the component tree. This hook creates isolated state, unlike `useChessGameContext` which accesses shared state from a provider.
+
+```tsx
+import { useChessGame } from "@react-chess-tools/react-chess-game";
+
+function MyComponent() {
+  const { game, methods } = useChessGame();
+  const history = game.history();
+
+  return (
+    <div>
+      <p>Turn: {game.turn()}</p>
+      <button onClick={() => methods.makeMove("e4")}>Play e4</button>
+    </div>
+  );
+}
+```
+
+### useChessGameContext
+
+Access game state from child components.
+
+```tsx
+import { useChessGameContext } from "@react-chess-tools/react-chess-game";
+
+function MoveHistory() {
+  const { game, methods } = useChessGameContext();
+  const history = game.history();
+
+  return (
+    <ul>
+      {history.map((move, i) => (
+        <li key={i}>{move}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+## Theming
+
+Customize the board appearance:
+
+```tsx
+import { themes, mergeTheme } from '@react-chess-tools/react-chess-game';
+
+// Use a preset
+<ChessGame.Root theme={themes.lichess}>
+  <ChessGame.Board />
+</ChessGame.Root>
+
+// Partial override
+<ChessGame.Root
+  theme={{
+    state: {
+      lastMove: 'rgba(147, 112, 219, 0.5)',
+    },
+  }}
+>
+  <ChessGame.Board />
+</ChessGame.Root>
+```
+
+See [Theming/Presets](?path=/story/packages-react-chess-game-theming-presets--default-theme) for available presets.
+
+## Examples
+
+<Canvas of={ChessGameStories.Default} />
+
+## Dependencies
+
+- `chess.js` - Chess logic engine
+- `react-chessboard` - Board rendering
+- `@radix-ui/react-slot` - asChild pattern support
+
+## Peer Dependencies
+
+- `react` >= 18
+- `react-dom` >= 18

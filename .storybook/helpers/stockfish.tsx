@@ -4,9 +4,22 @@ import {
   ChessStockfish,
   useStockfish,
 } from "@react-chess-tools/react-chess-stockfish";
+import { STOCKFISH_WORKER_PATH } from "./components";
 
-const WORKER_PATH = "/stockfish.js";
+// Injects a <style> tag into <head> exactly once per unique id across the lifetime
+// of the page. Using useInsertionEffect ensures the style is applied before paint
+// and avoids duplicating the same stylesheet on every component re-render.
+function useStyleOnce(id: string, css: string) {
+  React.useInsertionEffect(() => {
+    if (document.getElementById(id)) return;
+    const style = document.createElement("style");
+    style.id = id;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }, [id, css]);
+}
 
+// CSS styles for Stockfish components - kept inline to ensure styles are scoped to story components
 export const EVAL_BAR_CSS = `
   [data-stockfish-orientation="vertical"],
   [data-stockfish-orientation="horizontal"] {
@@ -137,7 +150,7 @@ type RootProps = Omit<
 export function AnalysisRoot(props: RootProps) {
   return (
     <ChessStockfish.Root
-      workerOptions={{ workerPath: WORKER_PATH }}
+      workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
       {...props}
     />
   );
@@ -147,19 +160,28 @@ export function EngineStatus() {
   const { info, methods } = useStockfish();
   const bestMove = methods.getBestMove();
 
+  const statusDisplay = () => {
+    if (info.status === "initializing") {
+      return <span className="text-warn">initializing...</span>;
+    }
+    if (info.status === "error") {
+      return <span className="text-danger">error</span>;
+    }
+    if (info.isEngineThinking) {
+      return <span className="text-success">thinking</span>;
+    }
+    return <span className="text-text-muted">ready</span>;
+  };
+
   return (
     <div className="font-mono text-size-xs text-text-secondary flex flex-col gap-1">
       <div className="flex gap-3">
         <span>depth: {info.depth}</span>
-        <span>
-          status:{" "}
-          {info.isEngineThinking ? (
-            <span className="text-success">thinking</span>
-          ) : (
-            <span className="text-text-muted">ready</span>
-          )}
-        </span>
+        <span>status: {statusDisplay()}</span>
       </div>
+      {info.status === "initializing" && (
+        <span className="text-text-muted">Engine loading...</span>
+      )}
       {bestMove && (
         <span>
           best: <span className="text-text font-semibold">{bestMove.san}</span>
@@ -169,27 +191,23 @@ export function EngineStatus() {
   );
 }
 
-type EvaluationBarProps = Omit<
-  React.ComponentProps<typeof ChessStockfish.EvaluationBar>,
-  "orientation"
+type EvaluationBarProps = React.ComponentProps<
+  typeof ChessStockfish.EvaluationBar
 >;
 
-export const VerticalEvalBar = (props: EvaluationBarProps) => (
-  <ChessStockfish.EvaluationBar orientation="vertical" {...props}>
-    <style>{EVAL_BAR_CSS}</style>
-  </ChessStockfish.EvaluationBar>
-);
+export const VerticalEvalBar = (props: EvaluationBarProps) => {
+  useStyleOnce("rct-eval-bar-css", EVAL_BAR_CSS);
+  return <ChessStockfish.EvaluationBar orientation="vertical" {...props} />;
+};
 
-export const HorizontalEvalBar = (props: EvaluationBarProps) => (
-  <ChessStockfish.EvaluationBar orientation="horizontal" {...props}>
-    <style>{EVAL_BAR_CSS}</style>
-  </ChessStockfish.EvaluationBar>
-);
+export const HorizontalEvalBar = (props: EvaluationBarProps) => {
+  useStyleOnce("rct-eval-bar-css", EVAL_BAR_CSS);
+  return <ChessStockfish.EvaluationBar orientation="horizontal" {...props} />;
+};
 
 export const StyledEngineLines = (
   props: React.ComponentProps<typeof ChessStockfish.EngineLines>,
-) => (
-  <ChessStockfish.EngineLines {...props}>
-    <style>{ENGINE_LINES_CSS}</style>
-  </ChessStockfish.EngineLines>
-);
+) => {
+  useStyleOnce("rct-engine-lines-css", ENGINE_LINES_CSS);
+  return <ChessStockfish.EngineLines {...props} />;
+};

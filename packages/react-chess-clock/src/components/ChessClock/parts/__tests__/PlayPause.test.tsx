@@ -348,7 +348,7 @@ describe("ChessClock.PlayPause", () => {
   });
 
   describe("asChild prop", () => {
-    it("should render as custom element when asChild is true", () => {
+    it("should render as custom element when asChild is true and inject resolved content", () => {
       render(
         <ChessClock.Root timeControl={{ time: "5+0", clockStart: "immediate" }}>
           <ChessClock.PlayPause asChild>
@@ -361,7 +361,8 @@ describe("ChessClock.PlayPause", () => {
 
       const customElement = screen.getByTestId("custom-playpause");
       expect(customElement.tagName).toBe("DIV");
-      expect(customElement).toHaveTextContent("Toggle");
+      // When asChild is true, resolved content ("Pause" for running state) is injected
+      expect(customElement).toHaveTextContent("Pause");
     });
 
     it("should toggle pause when asChild element is clicked", () => {
@@ -381,11 +382,14 @@ describe("ChessClock.PlayPause", () => {
       const customPlayPause = screen.getByTestId("custom-playpause");
 
       expect(clock).toHaveAttribute("data-clock-status", "running");
-      expect(customPlayPause).toHaveTextContent("Toggle");
+      // When running, content should be "Pause"
+      expect(customPlayPause).toHaveTextContent("Pause");
 
       fireEvent.click(customPlayPause);
 
       expect(clock).toHaveAttribute("data-clock-status", "paused");
+      // When paused, content should be "Resume"
+      expect(customPlayPause).toHaveTextContent("Resume");
       expect(handleClick).toHaveBeenCalled();
     });
 
@@ -402,6 +406,36 @@ describe("ChessClock.PlayPause", () => {
 
       const customElement = screen.getByTestId("custom-playpause");
       expect(customElement).toHaveAttribute("disabled");
+    });
+
+    it("should show Start when clock is idle with asChild", () => {
+      render(
+        <ChessClock.Root timeControl={{ time: "5+0", clockStart: "manual" }}>
+          <ChessClock.PlayPause asChild>
+            <div data-testid="custom-playpause" role="button" tabIndex={0}>
+              Ignored
+            </div>
+          </ChessClock.PlayPause>
+        </ChessClock.Root>,
+      );
+
+      const customElement = screen.getByTestId("custom-playpause");
+      expect(customElement).toHaveTextContent("Start");
+    });
+
+    it("should show custom content when props are provided with asChild", () => {
+      render(
+        <ChessClock.Root timeControl={{ time: "5+0", clockStart: "immediate" }}>
+          <ChessClock.PlayPause asChild pauseContent="⏸️ Stop">
+            <div data-testid="custom-playpause" role="button" tabIndex={0}>
+              Ignored
+            </div>
+          </ChessClock.PlayPause>
+        </ChessClock.Root>,
+      );
+
+      const customElement = screen.getByTestId("custom-playpause");
+      expect(customElement).toHaveTextContent("⏸️ Stop");
     });
   });
 
