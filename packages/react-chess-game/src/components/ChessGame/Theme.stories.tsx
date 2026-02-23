@@ -5,7 +5,7 @@ import { defaultGameTheme, themes } from "../../theme";
 import type { ChessGameTheme } from "../../theme/types";
 import { ColorInput, copyToClipboard, FEN_POSITIONS } from "@story-helpers";
 
-const meta = {
+const meta: Meta<typeof ChessGame.Root> = {
   title: "Packages/react-chess-game/Theming/Playground",
   component: ChessGame.Root,
   tags: ["theme"],
@@ -16,7 +16,7 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof ChessGame.Root>;
+};
 
 export default meta;
 

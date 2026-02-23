@@ -4,7 +4,7 @@ import { ChessGame } from "./index";
 import { themes } from "../../theme";
 import { FEN_POSITIONS } from "@story-helpers";
 
-const meta = {
+const meta: Meta<typeof ChessGame.Root> = {
   title: "Packages/react-chess-game/Theming/Presets",
   component: ChessGame.Root,
   tags: ["theme", "presets"],
@@ -15,7 +15,7 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof ChessGame.Root>;
+};
 
 export default meta;
 

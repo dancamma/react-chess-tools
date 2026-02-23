@@ -5,7 +5,7 @@ import { defaultPuzzleTheme } from "../../theme/defaults";
 import type { ChessPuzzleTheme } from "../../theme/types";
 import { ColorInput, copyToClipboard } from "@story-helpers";
 
-const meta = {
+const meta: Meta<typeof ChessPuzzle.Root> = {
   title: "Packages/react-chess-puzzle/Theming/Playground",
   component: ChessPuzzle.Root,
   tags: ["theme", "puzzle"],
@@ -16,7 +16,7 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof ChessPuzzle.Root>;
+};
 
 export default meta;
 
