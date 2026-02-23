@@ -16,8 +16,7 @@ import {
   SecondaryBtn,
   PrimaryBtn,
   ClockDisplayWrapper,
-  CLOCK_WHITE_CLASS,
-  CLOCK_BLACK_CLASS,
+  ClockDisplay,
 } from "@story-helpers";
 
 const meta = {
@@ -108,21 +107,20 @@ export const WithKeyboardControls = () => (
   </StoryContainer>
 );
 
-type ClockDisplayProps = {
+type GameClockDisplayProps = {
   label: string;
   color: "white" | "black";
-} & Omit<
-  React.ComponentProps<typeof ChessGame.Clock.Display>,
-  "color" | "className"
->;
+} & Omit<React.ComponentProps<typeof ChessGame.Clock.Display>, "color">;
 
-const ClockDisplay = ({ label, color: side, ...props }: ClockDisplayProps) => (
+const GameClockDisplay = ({
+  label,
+  color: side,
+  ...props
+}: GameClockDisplayProps) => (
   <ClockDisplayWrapper label={label}>
-    <ChessGame.Clock.Display
-      color={side}
-      className={side === "white" ? CLOCK_WHITE_CLASS : CLOCK_BLACK_CLASS}
-      {...props}
-    />
+    <ClockDisplay variant={side}>
+      <ChessGame.Clock.Display color={side} {...props} />
+    </ClockDisplay>
   </ClockDisplayWrapper>
 );
 
@@ -135,8 +133,8 @@ export const WithClockBlitz = () => (
       />
       <GameStatus />
       <div className="flex gap-3 justify-center items-center">
-        <ClockDisplay label="White" color="white" />
-        <ClockDisplay label="Black" color="black" />
+        <GameClockDisplay label="White" color="white" />
+        <GameClockDisplay label="Black" color="black" />
       </div>
       <BoardWrapper>
         <ChessGame.Board />
@@ -151,8 +149,8 @@ export const WithClockBullet = () => (
       <StoryHeader title="Bullet · 1+0" subtitle="1 minute, no increment" />
       <GameStatus />
       <div className="flex gap-3 justify-center items-center">
-        <ClockDisplay label="White" color="white" format="ss.d" />
-        <ClockDisplay label="Black" color="black" format="ss.d" />
+        <GameClockDisplay label="White" color="white" format="ss.d" />
+        <GameClockDisplay label="Black" color="black" format="ss.d" />
       </div>
       <BoardWrapper>
         <ChessGame.Board />
@@ -173,8 +171,8 @@ export const WithClockControls = () => (
       />
       <GameStatus />
       <div className="flex gap-3 justify-center items-center">
-        <ClockDisplay label="White" color="white" />
-        <ClockDisplay label="Black" color="black" />
+        <GameClockDisplay label="White" color="white" />
+        <GameClockDisplay label="Black" color="black" />
       </div>
       <div className="flex gap-2 justify-center flex-wrap">
         <ChessGame.Clock.PlayPause asChild>
@@ -291,8 +289,8 @@ export const WithServerControlledClock = () => {
         <GameStatus />
 
         <div className="flex gap-3 justify-center items-center">
-          <ClockDisplay label="White" color="white" />
-          <ClockDisplay label="Black" color="black" />
+          <GameClockDisplay label="White" color="white" />
+          <GameClockDisplay label="Black" color="black" />
         </div>
 
         <ServerMoveDetector onMove={serverMove} />
@@ -330,8 +328,8 @@ export const WithClockMultiPeriod = () => (
       />
       <GameStatus />
       <div className="flex gap-3 justify-center items-center">
-        <ClockDisplay label="White" color="white" format="mm:ss" />
-        <ClockDisplay label="Black" color="black" format="mm:ss" />
+        <GameClockDisplay label="White" color="white" format="mm:ss" />
+        <GameClockDisplay label="Black" color="black" format="mm:ss" />
       </div>
       <BoardWrapper>
         <ChessGame.Board />

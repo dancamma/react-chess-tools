@@ -10,11 +10,8 @@ import {
   InfoBox,
   ClockDisplayWrapper,
   ClockPairContainer,
-  CLOCK_WHITE_CLASS,
-  CLOCK_BLACK_CLASS,
-  CLOCK_DISPLAY_CLASS,
-  PLAY_PAUSE_BTN_CLASS,
-  PLAY_PAUSE_DISABLED_CLASS,
+  ClockDisplay,
+  PlayPauseButton,
 } from "@story-helpers";
 
 const meta = {
@@ -36,34 +33,29 @@ const ClockPair = ({
 }) => (
   <ClockPairContainer>
     <ClockDisplayWrapper label="White">
-      <ChessClock.Display
-        color="white"
-        format={format}
-        className={CLOCK_WHITE_CLASS}
-      />
+      <ClockDisplay variant="white">
+        <ChessClock.Display color="white" format={format} />
+      </ClockDisplay>
     </ClockDisplayWrapper>
     <ClockDisplayWrapper label="Black">
-      <ChessClock.Display
-        color="black"
-        format={format}
-        className={CLOCK_BLACK_CLASS}
-      />
+      <ClockDisplay variant="black">
+        <ChessClock.Display color="black" format={format} />
+      </ClockDisplay>
     </ClockDisplayWrapper>
   </ClockPairContainer>
 );
 
 const PlayPauseBtn = () => {
-  const { status } = useChessClockContext();
-  const isDisabled = status === "finished" || status === "delayed";
-
   return (
     <ChessClock.PlayPause
-      className={`${PLAY_PAUSE_BTN_CLASS} ${isDisabled ? PLAY_PAUSE_DISABLED_CLASS : ""}`}
+      asChild
       startContent="Start"
       pauseContent="Pause"
       resumeContent="Resume"
       finishedContent="Game Over"
-    />
+    >
+      <PrimaryBtn />
+    </ChessClock.PlayPause>
   );
 };
 
@@ -233,51 +225,44 @@ export const DisplayFormats = () => (
           <span className="text-xs font-medium text-text-secondary font-mono">
             format=&quot;auto&quot;
           </span>
-          <ChessClock.Display
-            color="white"
-            format="auto"
-            className={CLOCK_DISPLAY_CLASS}
-          />
+          <ClockDisplay variant="white" size="sm">
+            <ChessClock.Display color="white" format="auto" />
+          </ClockDisplay>
         </div>
         <div className="flex justify-between items-center p-1.5 px-2.5 bg-bg rounded">
           <span className="text-xs font-medium text-text-secondary font-mono">
             format=&quot;mm:ss&quot;
           </span>
-          <ChessClock.Display
-            color="white"
-            format="mm:ss"
-            className={CLOCK_DISPLAY_CLASS}
-          />
+          <ClockDisplay variant="white" size="sm">
+            <ChessClock.Display color="white" format="mm:ss" />
+          </ClockDisplay>
         </div>
         <div className="flex justify-between items-center p-1.5 px-2.5 bg-bg rounded">
           <span className="text-xs font-medium text-text-secondary font-mono">
             format=&quot;hh:mm:ss&quot;
           </span>
-          <ChessClock.Display
-            color="white"
-            format="hh:mm:ss"
-            className={CLOCK_DISPLAY_CLASS}
-          />
+          <ClockDisplay variant="white" size="sm">
+            <ChessClock.Display color="white" format="hh:mm:ss" />
+          </ClockDisplay>
         </div>
         <div className="flex justify-between items-center p-1.5 px-2.5 bg-bg rounded">
           <span className="text-xs font-medium text-text-secondary font-mono">
             format=&quot;ss.d&quot;
           </span>
-          <ChessClock.Display
-            color="white"
-            format="ss.d"
-            className={CLOCK_DISPLAY_CLASS}
-          />
+          <ClockDisplay variant="white" size="sm">
+            <ChessClock.Display color="white" format="ss.d" />
+          </ClockDisplay>
         </div>
         <div className="flex justify-between items-center p-1.5 px-2.5 bg-bg rounded">
           <span className="text-xs font-medium text-text-secondary font-mono">
             Custom fn
           </span>
-          <ChessClock.Display
-            color="white"
-            formatTime={(ms) => `${Math.ceil(ms / 1000)}s`}
-            className={CLOCK_DISPLAY_CLASS}
-          />
+          <ClockDisplay variant="white" size="sm">
+            <ChessClock.Display
+              color="white"
+              formatTime={(ms) => `${Math.ceil(ms / 1000)}s`}
+            />
+          </ClockDisplay>
         </div>
       </div>
       <Controls>

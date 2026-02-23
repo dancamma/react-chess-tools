@@ -11,7 +11,6 @@ import {
   Kbd,
   SecondaryBtn,
   PrimaryBtn,
-  SuccessBtn,
   HintBtn,
 } from "@story-helpers";
 
@@ -126,7 +125,7 @@ export const Underpromotion = (args: RootProps) => {
         </BoardWrapper>
         <div className="flex gap-2.5 justify-center flex-wrap">
           <ChessPuzzle.Reset asChild>
-            <SuccessBtn>Solved! Restart</SuccessBtn>
+            <PrimaryBtn>Solved! Restart</PrimaryBtn>
           </ChessPuzzle.Reset>
         </div>
         <div className="px-4 py-3 bg-info border border-info-border rounded-md text-size-sm text-info-text text-center">

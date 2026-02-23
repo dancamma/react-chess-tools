@@ -3,7 +3,7 @@ import React from "react";
 import { ChessGame } from "@react-chess-tools/react-chess-game";
 import {
   themes,
-  mergeTheme,
+  mergeThemeWith,
   type DeepPartial,
   type ChessGameTheme,
 } from "@react-chess-tools/react-chess-game";
@@ -152,7 +152,7 @@ export const Builder: StoryObj = {
       },
     };
 
-    const customTheme = mergeTheme(themes[baseThemeKey], customOverrides);
+    const customTheme = mergeThemeWith(themes[baseThemeKey], customOverrides);
 
     const hasCustomizations = hasColorChanges(currentColors, baseThemeColors);
 
@@ -450,22 +450,22 @@ export const Examples: StoryObj = {
           <ThemeCard
             title="Dark Forest"
             description="Deep green, dark mode feel"
-            theme={darkTheme}
+            theme={mergeThemeWith(themes.default, darkTheme)}
           />
           <ThemeCard
             title="Ocean"
             description="Blue and light blue"
-            theme={oceanTheme}
+            theme={mergeThemeWith(themes.default, oceanTheme)}
           />
           <ThemeCard
             title="Purple Rain"
             description="Lavender and purple"
-            theme={purpleTheme}
+            theme={mergeThemeWith(themes.default, purpleTheme)}
           />
           <ThemeCard
             title="Warm Wood"
             description="Wheat and golden brown"
-            theme={warmTheme}
+            theme={mergeThemeWith(themes.default, warmTheme)}
           />
         </div>
       </div>
