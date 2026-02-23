@@ -9,8 +9,7 @@ import {
   StoryContainer,
   BoardWrapper,
   Kbd,
-  SecondaryBtn,
-  PrimaryBtn,
+  Button,
 } from "@story-helpers";
 
 const puzzles = [
@@ -59,17 +58,17 @@ export const Example = (args: RootProps) => {
         </BoardWrapper>
         <div className="flex gap-2.5 justify-center flex-wrap">
           <ChessPuzzle.Reset asChild>
-            <SecondaryBtn>Restart</SecondaryBtn>
+            <Button variant="outline">Restart</Button>
           </ChessPuzzle.Reset>
           <ChessPuzzle.Reset
             asChild
             puzzle={puzzles[(puzzleIndex + 1) % puzzles.length]}
             onReset={() => setPuzzleIndex((puzzleIndex + 1) % puzzles.length)}
           >
-            <PrimaryBtn>Next Puzzle</PrimaryBtn>
+            <Button variant="default">Next Puzzle</Button>
           </ChessPuzzle.Reset>
           <ChessPuzzle.Hint asChild>
-            <SecondaryBtn>Hint</SecondaryBtn>
+            <Button variant="outline">Hint</Button>
           </ChessPuzzle.Hint>
         </div>
       </StoryContainer>
@@ -95,10 +94,10 @@ export const WithOrientation = (args: RootProps) => {
         </BoardWrapper>
         <div className="flex gap-2.5 justify-center flex-wrap">
           <ChessPuzzle.Reset asChild>
-            <SecondaryBtn>Restart</SecondaryBtn>
+            <Button variant="outline">Restart</Button>
           </ChessPuzzle.Reset>
           <ChessPuzzle.Hint asChild>
-            <SecondaryBtn>Hint</SecondaryBtn>
+            <Button variant="outline">Hint</Button>
           </ChessPuzzle.Hint>
         </div>
       </StoryContainer>
@@ -124,7 +123,7 @@ export const Underpromotion = (args: RootProps) => {
         </BoardWrapper>
         <div className="flex gap-2.5 justify-center flex-wrap">
           <ChessPuzzle.Reset asChild>
-            <PrimaryBtn>Solved! Restart</PrimaryBtn>
+            <Button variant="default">Solved! Restart</Button>
           </ChessPuzzle.Reset>
         </div>
         <div className="px-4 py-3 bg-info border border-info-border rounded-md text-size-sm text-info-text text-center">
@@ -221,7 +220,7 @@ export const MultiMatePuzzle = (args: RootProps) => {
         </BoardWrapper>
         <div className="flex gap-2.5 justify-center flex-wrap">
           <ChessPuzzle.Reset asChild>
-            <SecondaryBtn>Restart</SecondaryBtn>
+            <Button variant="outline">Restart</Button>
           </ChessPuzzle.Reset>
         </div>
       </StoryContainer>
@@ -251,7 +250,7 @@ export const MultiMatePuzzleStrict = (args: RootProps) => {
         </BoardWrapper>
         <div className="flex gap-2.5 justify-center flex-wrap">
           <ChessPuzzle.Reset asChild>
-            <SecondaryBtn>Restart</SecondaryBtn>
+            <Button variant="outline">Restart</Button>
           </ChessPuzzle.Reset>
         </div>
       </StoryContainer>

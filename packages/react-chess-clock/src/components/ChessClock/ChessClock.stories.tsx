@@ -5,12 +5,11 @@ import { useChessClockContext } from "../../hooks/useChessClockContext";
 import {
   StoryHeader,
   StoryContainer,
-  SecondaryBtn,
-  PrimaryBtn,
   InfoBox,
   ClockDisplayWrapper,
   ClockPairContainer,
   ClockDisplay,
+  Button,
 } from "@story-helpers";
 
 const meta = {
@@ -53,20 +52,20 @@ const PlayPauseBtn = () => {
       resumeContent="Resume"
       finishedContent="Game Over"
     >
-      <PrimaryBtn />
+      <Button variant="default" />
     </ChessClock.PlayPause>
   );
 };
 
 const SwitchBtn = () => (
   <ChessClock.Switch asChild>
-    <SecondaryBtn>Switch</SecondaryBtn>
+    <Button variant="outline">Switch</Button>
   </ChessClock.Switch>
 );
 
 const ResetBtn = () => (
   <ChessClock.Reset asChild>
-    <SecondaryBtn>Reset</SecondaryBtn>
+    <Button variant="outline">Reset</Button>
   </ChessClock.Reset>
 );
 
@@ -320,19 +319,19 @@ export const DynamicReset = () => (
       <Controls />
       <div className="flex gap-2 justify-center flex-wrap">
         <ChessClock.Reset asChild>
-          <SecondaryBtn>Reset</SecondaryBtn>
+          <Button variant="outline">Reset</Button>
         </ChessClock.Reset>
         <ChessClock.Reset timeControl="1" asChild>
-          <SecondaryBtn>1+0</SecondaryBtn>
+          <Button variant="outline">1+0</Button>
         </ChessClock.Reset>
         <ChessClock.Reset timeControl="3+2" asChild>
-          <SecondaryBtn>3+2</SecondaryBtn>
+          <Button variant="outline">3+2</Button>
         </ChessClock.Reset>
         <ChessClock.Reset timeControl="5+3" asChild>
-          <SecondaryBtn>5+3</SecondaryBtn>
+          <Button variant="outline">5+3</Button>
         </ChessClock.Reset>
         <ChessClock.Reset timeControl="10" asChild>
-          <SecondaryBtn>10+0</SecondaryBtn>
+          <Button variant="outline">10+0</Button>
         </ChessClock.Reset>
       </div>
     </StoryContainer>
@@ -485,15 +484,15 @@ export const AsChild = () => {
             resumeContent="Resume"
             finishedContent="Game Over"
           >
-            <PrimaryBtn>placeholder</PrimaryBtn>
+            <Button variant="default">placeholder</Button>
           </ChessClock.PlayPause>
 
           <ChessClock.Switch asChild>
-            <SecondaryBtn>Switch</SecondaryBtn>
+            <Button variant="outline">Switch</Button>
           </ChessClock.Switch>
 
           <ChessClock.Reset asChild>
-            <SecondaryBtn>Reset</SecondaryBtn>
+            <Button variant="outline">Reset</Button>
           </ChessClock.Reset>
         </div>
         <AsChildStatus />

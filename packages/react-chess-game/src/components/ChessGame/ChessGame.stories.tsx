@@ -13,10 +13,9 @@ import {
   StoryContainer,
   BoardWrapper,
   Kbd,
-  SecondaryBtn,
-  PrimaryBtn,
   ClockDisplayWrapper,
   ClockDisplay,
+  Button,
 } from "@story-helpers";
 
 const meta = {
@@ -176,13 +175,13 @@ export const WithClockControls = () => (
       </div>
       <div className="flex gap-2 justify-center flex-wrap">
         <ChessGame.Clock.PlayPause asChild>
-          <PrimaryBtn>Play / Pause</PrimaryBtn>
+          <Button variant="default">Play / Pause</Button>
         </ChessGame.Clock.PlayPause>
         <ChessGame.Clock.Switch asChild>
-          <SecondaryBtn>Switch</SecondaryBtn>
+          <Button variant="outline">Switch</Button>
         </ChessGame.Clock.Switch>
         <ChessGame.Clock.Reset asChild>
-          <SecondaryBtn>Reset</SecondaryBtn>
+          <Button variant="outline">Reset</Button>
         </ChessGame.Clock.Reset>
       </div>
       <BoardWrapper>
@@ -299,7 +298,9 @@ export const WithServerControlledClock = () => {
         </BoardWrapper>
 
         <div className="flex gap-2 justify-center flex-wrap">
-          <SecondaryBtn onClick={serverReset}>Reset Server</SecondaryBtn>
+          <Button variant="outline" onClick={serverReset}>
+            Reset Server
+          </Button>
         </div>
 
         <p className="text-size-xs text-text-muted text-center m-0 leading-relaxed">

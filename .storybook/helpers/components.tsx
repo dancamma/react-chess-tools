@@ -4,8 +4,10 @@ import {
   type ChessGameTheme,
 } from "@react-chess-tools/react-chess-game";
 import { HexColorPicker, HexColorInput } from "react-colorful";
-import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
+
+// Re-export Button for direct use in stories
+export { Button } from "../components/ui/button";
 import {
   Card,
   CardHeader,
@@ -15,34 +17,6 @@ import {
 } from "../components/ui/card";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import "react-colorful/dist/style.css";
-
-// ============================================================================
-// Button Components
-// ============================================================================
-
-export const PrimaryBtn = ({
-  children,
-  className,
-  ...props
-}: {
-  children?: React.ReactNode;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <Button variant="default" className={className} {...props}>
-    {children}
-  </Button>
-);
-
-export const SecondaryBtn = ({
-  children,
-  className,
-  ...props
-}: {
-  children: React.ReactNode;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-  <Button variant="outline" className={className} {...props}>
-    {children}
-  </Button>
-);
 
 // ============================================================================
 // Badge Components

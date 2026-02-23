@@ -1,8 +1,7 @@
 // Re-export all helper components (now using shadcn/ui primitives)
 export {
-  // Button components
-  PrimaryBtn,
-  SecondaryBtn,
+  // UI components
+  Button,
   // Badge components
   Kbd,
   // Alert components
