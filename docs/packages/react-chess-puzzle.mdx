@@ -234,7 +234,7 @@ function PuzzleStatus() {
       <p>
         Progress: {movesPlayed} / {totalMoves}
       </p>
-      {hint.visible && <p>Hint: {nextMove}</p>}
+      {hint !== "none" && <p>Hint: {nextMove}</p>}
     </div>
   );
 }

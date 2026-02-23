@@ -225,7 +225,7 @@ Access puzzle state from child components inside `ChessPuzzle.Root`.
 ```tsx
 const {
   puzzle, // Current puzzle data
-  status, // "idle" | "playing" | "solved" | "failed"
+  status, // "not-started" | "in-progress" | "solved" | "failed"
   hint, // Current hint (if any)
   nextMove, // Next expected move
   isPlayerTurn, // Boolean
