@@ -90,7 +90,7 @@ Time is added after each move:
 <ChessClock.Root
   timeControl={{
     time: { baseTime: 300, increment: 3 },
-    method: "fischer",
+    timingMethod: "fischer",
   }}
 >
 ```
@@ -103,7 +103,7 @@ Clock waits before starting (time is not added):
 <ChessClock.Root
   timeControl={{
     time: { baseTime: 300, delay: 5 },
-    method: "delay",
+    timingMethod: "delay",
   }}
 >
 ```
@@ -116,7 +116,7 @@ Similar to delay, but caps at the delay amount:
 <ChessClock.Root
   timeControl={{
     time: { baseTime: 300, delay: 5 },
-    method: "bronstein",
+    timingMethod: "bronstein",
   }}
 >
 ```
