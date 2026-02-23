@@ -4,7 +4,7 @@ import {
   ChessStockfish,
   useStockfish,
 } from "@react-chess-tools/react-chess-stockfish";
-import { STOCKFISH_WORKER_PATH } from "./index";
+import { STOCKFISH_WORKER_PATH } from "./components";
 
 // Injects a <style> tag into <head> exactly once per unique id across the lifetime
 // of the page. Using useInsertionEffect ensures the style is applied before paint
