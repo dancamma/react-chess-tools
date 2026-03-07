@@ -348,6 +348,47 @@ describe("ChessClock.PlayPause", () => {
   });
 
   describe("asChild prop", () => {
+    it("should throw descriptive error when asChild is true without children", () => {
+      // Suppress console.error from React's error boundary
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      expect(() => {
+        render(
+          <ChessClock.Root
+            timeControl={{ time: "5+0", clockStart: "immediate" }}
+          >
+            <ChessClock.PlayPause asChild />
+          </ChessClock.Root>,
+        );
+      }).toThrow(
+        "[ChessClock.PlayPause] When 'asChild' is true, a single React element child is required.",
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it("should throw descriptive error when asChild is true with null children", () => {
+      const consoleSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => {});
+
+      expect(() => {
+        render(
+          <ChessClock.Root
+            timeControl={{ time: "5+0", clockStart: "immediate" }}
+          >
+            <ChessClock.PlayPause asChild>{null}</ChessClock.PlayPause>
+          </ChessClock.Root>,
+        );
+      }).toThrow(
+        "[ChessClock.PlayPause] When 'asChild' is true, a single React element child is required.",
+      );
+
+      consoleSpy.mockRestore();
+    });
+
     it("should render as custom element when asChild is true and inject resolved content", () => {
       render(
         <ChessClock.Root timeControl={{ time: "5+0", clockStart: "immediate" }}>

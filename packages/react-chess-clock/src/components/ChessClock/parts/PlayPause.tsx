@@ -159,8 +159,15 @@ export const PlayPause = React.forwardRef<
     );
 
     if (asChild) {
+      // Validate that a single React element child is provided
+      if (!React.isValidElement(children)) {
+        throw new Error(
+          "[ChessClock.PlayPause] When 'asChild' is true, a single React element child is required. " +
+            "Example: <ChessClock.PlayPause asChild><button>Custom</button></ChessClock.PlayPause>",
+        );
+      }
       // Clone child and inject resolved content as children
-      const child = React.Children.only(children) as React.ReactElement<{
+      const child = children as React.ReactElement<{
         children?: React.ReactNode;
       }>;
       return (
