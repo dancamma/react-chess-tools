@@ -43,7 +43,7 @@
     "@react-chess-tools/react-chess-clock": "^1.0.3",
     "chess.js": "^1.4.0",
     "lodash": "^4.17.21",
-    "react-chessboard": "^5.8.6"
+    "react-chessboard": "^5.10.0"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.21",
