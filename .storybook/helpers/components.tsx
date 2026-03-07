@@ -16,7 +16,6 @@ import {
   CardContent,
 } from "../components/ui/card";
 import { Alert, AlertDescription } from "../components/ui/alert";
-import "react-colorful/dist/style.css";
 
 // ============================================================================
 // Badge Components
@@ -56,26 +55,51 @@ export const ThemeCard = ({
   description,
   theme,
   fen = POSITION_WITH_MOVE,
+  copyCode,
 }: {
   title: string;
   description: string;
   theme: ChessGameTheme;
   fen?: string;
-}) => (
-  <Card className="flex flex-col items-center">
-    <CardHeader className="text-center">
-      <CardTitle className="text-size-md mb-1">{title}</CardTitle>
-      <CardDescription className="text-size-xs">{description}</CardDescription>
-    </CardHeader>
-    <CardContent>
-      <BoardWrapper>
-        <ChessGame.Root theme={theme} fen={fen}>
-          <ChessGame.Board />
-        </ChessGame.Root>
-      </BoardWrapper>
-    </CardContent>
-  </Card>
-);
+  copyCode?: string;
+}) => {
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = async () => {
+    if (!copyCode) return;
+    const success = await copyToClipboard(copyCode);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <Card className="flex flex-col items-center">
+      <CardHeader className="text-center">
+        <CardTitle className="text-size-md mb-1">{title}</CardTitle>
+        <CardDescription className="text-size-xs">
+          {description}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col items-center gap-3">
+        <BoardWrapper>
+          <ChessGame.Root theme={theme} fen={fen}>
+            <ChessGame.Board />
+          </ChessGame.Root>
+        </BoardWrapper>
+        {copyCode && (
+          <button
+            onClick={handleCopy}
+            className="px-2 py-1 text-size-xs rounded bg-accent text-white hover:opacity-90"
+          >
+            {copied ? "Copied!" : "Copy Theme"}
+          </button>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
 
 // ============================================================================
 // Input Components

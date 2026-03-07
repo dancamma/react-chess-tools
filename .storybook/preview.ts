@@ -16,7 +16,12 @@ const preview: Preview = {
           ["Introduction", "Installation", "Quick Start", "Core Concepts"],
           "Theming",
           "Packages",
-          "*",
+          [
+            "react-chess-game",
+            "react-chess-puzzle",
+            "react-chess-clock",
+            "react-chess-stockfish",
+          ],
         ],
       },
     },
