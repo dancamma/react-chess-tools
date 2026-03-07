@@ -1,5 +1,11 @@
 # @react-chess-tools/react-chess-stockfish
 
+## 1.0.3
+
+### Patch Changes
+
+- df8dc01: chore: upgrade dependencies
+
 ## 1.0.2
 
 ### Patch Changes

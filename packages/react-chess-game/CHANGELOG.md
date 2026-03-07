@@ -1,5 +1,13 @@
 # @react-chess-tools/react-chess-game
 
+## 1.0.5
+
+### Patch Changes
+
+- df8dc01: chore: upgrade dependencies
+- Updated dependencies [df8dc01]
+  - @react-chess-tools/react-chess-clock@1.0.4
+
 ## 1.0.4
 
 ### Patch Changes
