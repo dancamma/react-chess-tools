@@ -61,7 +61,7 @@ export default [
   // Config files not in TypeScript project - disable type-aware linting
   {
     files: [
-      ".storybook/**/*.{js,ts}",
+      ".storybook/**/*.{js,ts,tsx}",
       "jest.config.js",
       "jest.setup.js",
       "**/tsup.config.ts",
