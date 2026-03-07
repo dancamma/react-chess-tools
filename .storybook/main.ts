@@ -10,17 +10,18 @@ const require = createRequire(import.meta.url);
 
 const config: StorybookConfig = {
   stories: [
+    // MDX Documentation
+    "../docs/**/*.mdx",
+    // Theming
+    "../src/stories/theming/**/*.stories.@(js|jsx|ts|tsx)",
+    // Package Stories
     "../packages/**/*.mdx",
     "../packages/**/*.stories.@(js|jsx|ts|tsx)",
   ],
 
   staticDirs: ["../.storybook/public"],
 
-  addons: [
-    getAbsolutePath("@storybook/addon-links"),
-    getAbsolutePath("@storybook/addon-onboarding"),
-    getAbsolutePath("@storybook/addon-docs"),
-  ],
+  addons: [getAbsolutePath("@storybook/addon-docs")],
 
   framework: {
     name: getAbsolutePath("@storybook/react-vite"),
@@ -39,6 +40,23 @@ const config: StorybookConfig = {
       resolve: {
         alias: {
           "@story-helpers": resolve(__dirname, "helpers"),
+          // Resolve packages to source for consistent React Context instances
+          "@react-chess-tools/react-chess-stockfish": resolve(
+            __dirname,
+            "../packages/react-chess-stockfish/src/index.ts",
+          ),
+          "@react-chess-tools/react-chess-game": resolve(
+            __dirname,
+            "../packages/react-chess-game/src/index.ts",
+          ),
+          "@react-chess-tools/react-chess-puzzle": resolve(
+            __dirname,
+            "../packages/react-chess-puzzle/src/index.ts",
+          ),
+          "@react-chess-tools/react-chess-clock": resolve(
+            __dirname,
+            "../packages/react-chess-clock/src/index.ts",
+          ),
         },
       },
     });

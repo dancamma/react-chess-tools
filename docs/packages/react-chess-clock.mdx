@@ -1,0 +1,383 @@
+import { Meta, Canvas } from "@storybook/addon-docs/blocks";
+import * as ChessClockStories from "../../packages/react-chess-clock/src/components/ChessClock/ChessClock.stories";
+
+<Meta title="Packages/react-chess-clock/Overview" />
+
+# react-chess-clock
+
+Standalone chess clock component with tournament-grade timing controls.
+
+## When to Use
+
+Use `react-chess-clock` when you need:
+
+- A standalone chess clock (without a board)
+- Custom timing methods (Fischer, Delay, Bronstein)
+- Multi-period time controls
+- Integration with external game logic
+
+For integrated clock+board, use `react-chess-game` with its built-in clock support.
+
+## Installation
+
+```bash
+npm install @react-chess-tools/react-chess-clock
+```
+
+## Quick Start
+
+```tsx
+import { ChessClock } from "@react-chess-tools/react-chess-clock";
+
+function App() {
+  return (
+    <ChessClock.Root timeControl={{ time: "5+3" }}>
+      <ChessClock.Display color="white" />
+      <ChessClock.Display color="black" />
+      <ChessClock.PlayPause />
+      <ChessClock.Reset>Reset</ChessClock.Reset>
+    </ChessClock.Root>
+  );
+}
+```
+
+## Time Control Formats
+
+### String Format
+
+Simple format for common time controls:
+
+```tsx
+timeControl={{ time: "5+3" }}   // 5 min + 3 sec increment
+timeControl={{ time: "1+0" }}   // 1 min, no increment (bullet)
+timeControl={{ time: "10+0" }}  // 10 min (rapid)
+```
+
+### Object Format
+
+For more control:
+
+```tsx
+timeControl={{
+  time: {
+    baseTime: 300,    // 5 minutes in seconds
+    increment: 3,     // 3 second increment
+  }
+}}
+```
+
+### Multi-Period Format
+
+Tournament-style time controls:
+
+```tsx
+timeControl={{
+  time: [
+    { baseTime: 7200, moves: 40 },  // 2 hours for first 40 moves
+    { baseTime: 3600, moves: 20 },  // 1 hour for next 20 moves
+    { baseTime: 1800 },              // 30 min sudden death
+  ]
+}}
+```
+
+## Timing Methods
+
+### Fischer Increment
+
+Time is added after each move:
+
+```tsx
+<ChessClock.Root
+  timeControl={{
+    time: { baseTime: 300, increment: 3 },
+    timingMethod: "fischer",
+  }}
+>
+```
+
+### Simple Delay
+
+Clock waits before starting (time is not added):
+
+```tsx
+<ChessClock.Root
+  timeControl={{
+    time: { baseTime: 300, delay: 5 },
+    timingMethod: "delay",
+  }}
+>
+```
+
+### Bronstein Delay
+
+Similar to delay, but caps at the delay amount:
+
+```tsx
+<ChessClock.Root
+  timeControl={{
+    time: { baseTime: 300, delay: 5 },
+    timingMethod: "bronstein",
+  }}
+>
+```
+
+## Components
+
+### ChessClock.Root
+
+The context provider that manages clock state.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>timeControl</code>
+      </td>
+      <td>
+        <code>TimeControl</code>
+      </td>
+      <td>required</td>
+      <td>Time control configuration</td>
+    </tr>
+  </tbody>
+</table>
+
+### ChessClock.Display
+
+Shows the time for one player.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>color</code>
+      </td>
+      <td>
+        <code>'white' | 'black'</code>
+      </td>
+      <td>required</td>
+      <td>Which player's time</td>
+    </tr>
+    <tr>
+      <td>
+        <code>format</code>
+      </td>
+      <td>
+        <code>'auto' | 'mm:ss' | 'ss.d' | 'hh:mm:ss'</code>
+      </td>
+      <td>auto</td>
+      <td>Time format string</td>
+    </tr>
+    <tr>
+      <td>
+        <code>className</code>
+      </td>
+      <td>
+        <code>string</code>
+      </td>
+      <td>-</td>
+      <td>CSS class</td>
+    </tr>
+    <tr>
+      <td>
+        <code>formatTime</code>
+      </td>
+      <td>
+        <code>(milliseconds: number) =&gt; string</code>
+      </td>
+      <td>-</td>
+      <td>Custom time formatting function</td>
+    </tr>
+  </tbody>
+</table>
+
+#### Time Formats
+
+- `mm:ss` - Minutes and seconds (05:00)
+- `hh:mm:ss` - Hours, minutes and seconds (1:05:00)
+- `ss.d` - Seconds with tenths (300.0)
+- `auto` - Switches format based on time remaining
+
+### ChessClock.PlayPause
+
+Toggle button for running/pausing.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>asChild</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>Use custom element</td>
+    </tr>
+  </tbody>
+</table>
+
+### ChessClock.Switch
+
+Switches the active clock.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>asChild</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>Use custom element</td>
+    </tr>
+  </tbody>
+</table>
+
+### ChessClock.Reset
+
+Resets both clocks.
+
+<table>
+  <thead>
+    <tr>
+      <th>Prop</th>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <code>asChild</code>
+      </td>
+      <td>
+        <code>boolean</code>
+      </td>
+      <td>Use custom element</td>
+    </tr>
+  </tbody>
+</table>
+
+## Hooks
+
+### useChessClock
+
+Create and manage clock state outside of the component tree.
+
+```tsx
+import { useChessClock } from "@react-chess-tools/react-chess-clock";
+
+function MyClock() {
+  const {
+    times,
+    activePlayer,
+    info,
+    methods: { start, pause, switch: switchPlayer, reset },
+  } = useChessClock({ time: "5+3" });
+
+  return (
+    <div>
+      <div>White: {(times.white / 1000).toFixed(1)}s</div>
+      <div>Black: {(times.black / 1000).toFixed(1)}s</div>
+      <button onClick={info.isRunning ? pause : start}>
+        {info.isRunning ? "Pause" : "Start"}
+      </button>
+    </div>
+  );
+}
+```
+
+### useChessClockContext
+
+Access clock state from child components.
+
+```tsx
+import { useChessClockContext } from "@react-chess-tools/react-chess-clock";
+
+function TimeDisplay() {
+  const { times, activePlayer } = useChessClockContext();
+
+  return (
+    <div>
+      <span className={activePlayer === "white" ? "active" : ""}>
+        White: {(times.white / 1000).toFixed(1)}s
+      </span>
+      <span className={activePlayer === "black" ? "active" : ""}>
+        Black: {(times.black / 1000).toFixed(1)}s
+      </span>
+    </div>
+  );
+}
+```
+
+## Examples
+
+<Canvas of={ChessClockStories.Default} />
+
+<Canvas of={ChessClockStories.TimingMethods} />
+
+## Data Attributes
+
+Components expose data attributes for CSS styling:
+
+```css
+/* Style the active clock */
+[data-clock-active="true"] {
+  border-color: gold;
+  box-shadow: 0 0 10px gold;
+}
+
+/* Style when a player has timed out */
+[data-clock-timeout="true"] {
+  color: red;
+}
+```
+
+## Integration with react-chess-game
+
+For most use cases, use the built-in clock in react-chess-game:
+
+```tsx
+<ChessGame.Root timeControl={{ time: "5+3" }}>
+  <ChessGame.Clock.Display color="white" />
+  <ChessGame.Clock.Display color="black" />
+  <ChessGame.Board />
+</ChessGame.Root>
+```
+
+Use the standalone clock when you need:
+
+- A clock without a board (OTB play)
+- Custom game logic
+- Integration with other chess libraries

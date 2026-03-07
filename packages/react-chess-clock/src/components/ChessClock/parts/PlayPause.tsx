@@ -142,36 +142,51 @@ export const PlayPause = React.forwardRef<
       [shouldShowStart, isPaused, isRunning, methods, onClick],
     );
 
-    // Determine content to render
-    // Priority: children > custom+defaults > all defaults
-    const content =
-      children ??
-      resolveContent(
-        isFinished,
-        isDelayed,
-        shouldShowStart,
-        isPaused,
-        isRunning,
-        {
-          startContent,
-          pauseContent,
-          resumeContent,
-          delayedContent,
-          finishedContent,
-        },
-      );
+    // Always compute the resolved content based on clock state
+    const resolvedContent = resolveContent(
+      isFinished,
+      isDelayed,
+      shouldShowStart,
+      isPaused,
+      isRunning,
+      {
+        startContent,
+        pauseContent,
+        resumeContent,
+        delayedContent,
+        finishedContent,
+      },
+    );
 
-    return asChild ? (
-      <Slot
-        ref={ref}
-        onClick={handleClick}
-        className={className}
-        style={style}
-        {...{ ...rest, disabled: isDisabled }}
-      >
-        {content}
-      </Slot>
-    ) : (
+    if (asChild) {
+      // Validate that a single React element child is provided
+      if (!React.isValidElement(children)) {
+        throw new Error(
+          "[ChessClock.PlayPause] When 'asChild' is true, a single React element child is required. " +
+            "Example: <ChessClock.PlayPause asChild><button>Custom</button></ChessClock.PlayPause>",
+        );
+      }
+      // Clone child and inject resolved content as children
+      const child = children as React.ReactElement<{
+        children?: React.ReactNode;
+      }>;
+      return (
+        <Slot
+          ref={ref}
+          onClick={handleClick}
+          className={className}
+          style={style}
+          {...{ ...rest, disabled: isDisabled }}
+        >
+          {React.cloneElement(child, { children: resolvedContent })}
+        </Slot>
+      );
+    }
+
+    // Non-asChild: use children if provided (backward compat), otherwise resolved content
+    const content = children ?? resolvedContent;
+
+    return (
       <button
         ref={ref as React.RefObject<HTMLButtonElement>}
         type={type || "button"}
