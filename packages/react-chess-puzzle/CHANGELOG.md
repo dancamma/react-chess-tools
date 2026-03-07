@@ -1,5 +1,13 @@
 # @react-chess-tools/react-chess-puzzle
 
+## 1.0.6
+
+### Patch Changes
+
+- df8dc01: chore: upgrade dependencies
+- Updated dependencies [df8dc01]
+  - @react-chess-tools/react-chess-game@1.0.5
+
 ## 1.0.5
 
 ### Patch Changes
