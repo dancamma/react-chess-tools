@@ -4,7 +4,10 @@ import {
   ChessStockfish,
   useStockfish,
 } from "@react-chess-tools/react-chess-stockfish";
-import { STOCKFISH_WORKER_PATH } from "./components";
+import {
+  FAIRY_STOCKFISH_WORKER_PATH,
+  STOCKFISH_WORKER_PATH,
+} from "./components";
 
 // Injects a <style> tag into <head> exactly once per unique id across the lifetime
 // of the page. Using useInsertionEffect ensures the style is applied before paint
@@ -145,12 +148,33 @@ export const HORIZONTAL_BAR_CLASS =
 type RootProps = Omit<
   React.ComponentProps<typeof ChessStockfish.Root>,
   "workerOptions"
->;
+> & {
+  workerOptions?: Partial<
+    React.ComponentProps<typeof ChessStockfish.Root>["workerOptions"]
+  >;
+};
 
-export function AnalysisRoot(props: RootProps) {
+export function AnalysisRoot({ workerOptions, ...props }: RootProps) {
   return (
     <ChessStockfish.Root
-      workerOptions={{ workerPath: STOCKFISH_WORKER_PATH }}
+      workerOptions={{
+        workerPath: STOCKFISH_WORKER_PATH,
+        engineType: "stockfish",
+        ...workerOptions,
+      }}
+      {...props}
+    />
+  );
+}
+
+export function FairyAnalysisRoot({ workerOptions, ...props }: RootProps) {
+  return (
+    <ChessStockfish.Root
+      workerOptions={{
+        workerPath: FAIRY_STOCKFISH_WORKER_PATH,
+        engineType: "fairy-stockfish",
+        ...workerOptions,
+      }}
       {...props}
     />
   );

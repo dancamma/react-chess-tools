@@ -33,7 +33,7 @@ import type {
  * Props for the ChessStockfish.Root provider component.
  *
  * @property fen - Valid FEN string to analyze. Invalid FENs set error in context (recoverable).
- * @property config - Optional engine configuration (skillLevel, depth, multiPV). Hoist or memoize to avoid unnecessary restarts.
+ * @property config - Optional engine configuration (threads, hash, skillLevel, depth, multiPV, etc.). Hoist or memoize to avoid unnecessary restarts.
  * @property workerOptions - Worker options including path to Stockfish worker JS file.
  * @property onEvaluationChange - Callback called when the engine evaluation changes.
  * @property onDepthChange - Callback called when the analysis depth changes.
@@ -64,7 +64,7 @@ interface RootProps {
  * to children via React Context.
  *
  * @param fen - Valid FEN string to analyze. Invalid FENs set error in context (recoverable).
- * @param config - Optional engine configuration (skillLevel, depth, multiPV). Hoist or memoize to avoid unnecessary restarts.
+ * @param config - Optional engine configuration (threads, hash, skillLevel, depth, multiPV, etc.). Hoist or memoize to avoid unnecessary restarts.
  * @param workerOptions - Worker options including path to Stockfish worker JS file.
  * @param onEvaluationChange - Callback called when the engine evaluation changes.
  * @param onDepthChange - Callback called when the analysis depth changes.

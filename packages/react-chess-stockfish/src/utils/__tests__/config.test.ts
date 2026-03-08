@@ -41,6 +41,14 @@ describe("configCompareEqual", () => {
     expect(configCompareEqual({ multiPV: 1 }, { multiPV: 3 })).toBe(false);
   });
 
+  it("returns false when threads differ", () => {
+    expect(configCompareEqual({ threads: 2 }, { threads: 4 })).toBe(false);
+  });
+
+  it("returns false when elo differs", () => {
+    expect(configCompareEqual({ elo: 1500 }, { elo: 1800 })).toBe(false);
+  });
+
   it("returns false when one has a field and the other does not", () => {
     expect(configCompareEqual({ depth: 20 }, {})).toBe(false);
     expect(configCompareEqual({}, { depth: 20 })).toBe(false);

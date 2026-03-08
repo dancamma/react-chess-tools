@@ -19,9 +19,15 @@ export function configCompareEqual(
   b: StockfishConfig,
 ): boolean {
   return (
+    a.threads === b.threads &&
+    a.hash === b.hash &&
     a.skillLevel === b.skillLevel &&
-    a.depth === b.depth &&
-    a.multiPV === b.multiPV
+    a.multiPV === b.multiPV &&
+    a.moveOverhead === b.moveOverhead &&
+    a.ponder === b.ponder &&
+    a.limitStrength === b.limitStrength &&
+    a.elo === b.elo &&
+    a.depth === b.depth
   );
 }
 

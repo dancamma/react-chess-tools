@@ -29,7 +29,7 @@
 
 ## Overview
 
-`@react-chess-tools/react-chess-stockfish` is a React component library for integrating the Stockfish chess engine into your applications. It provides real-time position evaluation, principal variation lines, and customizable engine configuration through a clean, unstyled component API.
+`@react-chess-tools/react-chess-stockfish` is a React component library for integrating Stockfish-compatible chess engines into your applications. It provides real-time position evaluation, principal variation lines, and customizable engine configuration through a clean, unstyled component API.
 
 ## Features
 
@@ -38,6 +38,7 @@
 - **Engine Lines** - Display principal variations with move numbers
 - **MultiPV Support** - Analyze multiple candidate moves simultaneously
 - **Engine Control** - Configure skill level, depth, and number of lines
+- **Fairy-Stockfish Support** - Use Fairy-Stockfish for bot-focused setups with engine-specific parameter handling
 - **Unstyled Components** - Bring your own styles with data-attribute driven styling
 - **TypeScript** - Full TypeScript support with comprehensive type definitions
 - **Web Worker** - Non-blocking analysis using Web Workers
@@ -112,11 +113,11 @@ yarn add @react-chess-tools/react-chess-stockfish
 pnpm add @react-chess-tools/react-chess-stockfish
 ```
 
-**Note:** You also need a Stockfish worker file. See [Getting Stockfish Worker](#getting-stockfish-worker) below.
+**Note:** You also need a Stockfish-compatible worker file. See [Getting Stockfish Worker](#getting-stockfish-worker) below.
 
 ## Getting Stockfish Worker
 
-This package does not bundle Stockfish. You need to provide your own worker file.
+This package does not bundle an engine. You need to provide your own worker file.
 
 ### Host Your Own Copy
 
@@ -133,6 +134,26 @@ const workerPath = "/stockfish.js";
 ```
 
 **Note:** Multi-threaded engines use `SharedArrayBuffer` which requires your server to send `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` headers. If you see `SharedArrayBuffer is not defined` errors, use the single-threaded version instead.
+
+### Fairy-Stockfish
+
+If you want to use Fairy-Stockfish, provide its worker file and set `workerOptions.engineType` to `"fairy-stockfish"`.
+
+```tsx
+<ChessStockfish.Root
+  fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+  config={{ skillLevel: -8, multiPV: 3, threads: 2 }}
+  workerOptions={{
+    workerPath: "/fairy-stockfish/worker.js",
+    engineType: "fairy-stockfish",
+  }}
+>
+  <ChessStockfish.EvaluationBar showEvaluation />
+  <ChessStockfish.EngineLines maxLines={3} />
+</ChessStockfish.Root>
+```
+
+The package currently targets standard chess while accounting for engine-specific parameter differences. For example, `skillLevel` is clamped to `0..20` on Stockfish and `-20..20` on Fairy-Stockfish.
 
 ## Quick Start
 
@@ -178,20 +199,28 @@ The root component that manages the Stockfish worker and provides analysis conte
 
 #### StockfishConfig
 
-| Property     | Type     | Default | Range   | Description                                     |
-| ------------ | -------- | ------- | ------- | ----------------------------------------------- |
-| `skillLevel` | `number` | `20`    | `0-20`  | Engine playing strength (0 = weakest, 20 = max) |
-| `depth`      | `number` | -       | `1-255` | Maximum search depth                            |
-| `multiPV`    | `number` | `1`     | `1-500` | Number of principal variations to calculate     |
+| Property        | Type      | Default | Range              | Description                                        |
+| --------------- | --------- | ------- | ------------------ | -------------------------------------------------- |
+| `threads`       | `number`  | `1`     | `1-1024` / `1-512` | Search threads (`Stockfish` / `Fairy-Stockfish`)   |
+| `hash`          | `number`  | `16`    | `1-33554432`       | Hash table size in MB                              |
+| `skillLevel`    | `number`  | `20`    | `0-20` / `-20-20`  | Playing strength (`Stockfish` / `Fairy-Stockfish`) |
+| `multiPV`       | `number`  | `1`     | `1-500`            | Number of principal variations to calculate        |
+| `moveOverhead`  | `number`  | `10`    | `0-5000`           | GUI/network overhead in milliseconds               |
+| `ponder`        | `boolean` | `false` | -                  | Think during the opponent's turn                   |
+| `limitStrength` | `boolean` | `false` | -                  | Enables weaker play mode via `UCI_LimitStrength`   |
+| `elo`           | `number`  | `1320`  | `1320-3190`        | Target ELO when `limitStrength` is enabled         |
+| `chess960`      | `boolean` | `false` | -                  | Enables Chess960 mode on engines that support it   |
+| `depth`         | `number`  | -       | `1-255`            | Maximum search depth                               |
 
 #### WorkerOptions
 
-| Property     | Type                     | Default | Description                                           |
-| ------------ | ------------------------ | ------- | ----------------------------------------------------- |
-| `workerPath` | `string`                 | -       | URL to the Stockfish worker file (required)           |
-| `throttleMs` | `number`                 | `50`    | Throttle updates to prevent excessive re-renders (ms) |
-| `timeout`    | `number`                 | `30000` | Timeout for initialization and analysis (ms)          |
-| `onError`    | `(error: Error) => void` | -       | Callback for worker-specific errors                   |
+| Property     | Type                               | Default       | Description                                                            |
+| ------------ | ---------------------------------- | ------------- | ---------------------------------------------------------------------- |
+| `workerPath` | `string`                           | -             | URL to the Stockfish worker file (required)                            |
+| `engineType` | `"stockfish" \| "fairy-stockfish"` | `"stockfish"` | Selects the engine behavior layer and engine-specific parameter ranges |
+| `throttleMs` | `number`                           | `50`          | Throttle updates to prevent excessive re-renders (ms)                  |
+| `timeout`    | `number`                           | `30000`       | Timeout for initialization and analysis (ms)                           |
+| `onError`    | `(error: Error) => void`           | -             | Callback for worker-specific errors                                    |
 
 #### Example
 
