@@ -23,6 +23,7 @@ export {
   FEN_POSITIONS,
   POSITION_WITH_MOVE,
   STOCKFISH_WORKER_PATH,
+  FAIRY_STOCKFISH_WORKER_PATH,
   // Utilities
   copyToClipboard,
 } from "./components";
@@ -31,6 +32,7 @@ export {
 export {
   EngineStatus,
   AnalysisRoot,
+  FairyAnalysisRoot,
   VerticalEvalBar,
   HorizontalEvalBar,
   StyledEngineLines,

@@ -284,5 +284,6 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
   }
 };
 
-// Stockfish worker path (centralized for maintainability)
-export const STOCKFISH_WORKER_PATH = "/stockfish.js";
+// Stockfish worker paths (centralized for maintainability)
+export const STOCKFISH_WORKER_PATH = "/stockfish/stockfish.js";
+export const FAIRY_STOCKFISH_WORKER_PATH = "/fairy-stockfish/worker.js";

@@ -19,7 +19,19 @@
     "jsx": "react",
     "paths": {
       "@story-helpers": ["./.storybook/helpers"],
-      "@story-helpers/stockfish": ["./.storybook/helpers/stockfish"]
+      "@story-helpers/stockfish": ["./.storybook/helpers/stockfish"],
+      "@react-chess-tools/react-chess-stockfish": [
+        "./packages/react-chess-stockfish/src/index.ts"
+      ],
+      "@react-chess-tools/react-chess-game": [
+        "./packages/react-chess-game/src/index.ts"
+      ],
+      "@react-chess-tools/react-chess-puzzle": [
+        "./packages/react-chess-puzzle/src/index.ts"
+      ],
+      "@react-chess-tools/react-chess-clock": [
+        "./packages/react-chess-clock/src/index.ts"
+      ]
     }
   },
   "include": [

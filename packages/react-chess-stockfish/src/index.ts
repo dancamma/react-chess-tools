@@ -17,6 +17,7 @@ export { validateFen, uciToSan, uciToPvMoves } from "./utils/uci";
 
 export type {
   Color,
+  EngineType,
   Evaluation,
   PVMove,
   PrincipalVariation,

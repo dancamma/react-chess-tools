@@ -28,6 +28,10 @@ const config: StorybookConfig = {
     options: {},
   },
 
+  core: {
+    crossOriginIsolated: true,
+  },
+
   docs: {},
 
   typescript: {

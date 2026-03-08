@@ -68,6 +68,11 @@ describe("StockfishEngine", () => {
     workerPath: "https://example.com/stockfish.js",
   };
 
+  const fairyWorkerOptions: WorkerOptions = {
+    workerPath: "https://example.com/fairy-stockfish.js",
+    engineType: "fairy-stockfish",
+  };
+
   // Helper to complete UCI handshake
   async function completeInit(
     eng: StockfishEngine,
@@ -567,6 +572,19 @@ describe("StockfishEngine", () => {
       );
     });
 
+    it("clamps skill level to the stockfish lower bound", () => {
+      engine.startAnalysis(
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        {
+          skillLevel: -5,
+        },
+      );
+
+      expect(mockWorker.postMessage).toHaveBeenCalledWith(
+        "setoption name Skill Level value 0",
+      );
+    });
+
     it("applies multiPV via setoption", () => {
       engine.startAnalysis(
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -593,6 +611,39 @@ describe("StockfishEngine", () => {
       );
     });
 
+    it("applies shared UCI parameters", () => {
+      engine.startAnalysis(
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        {
+          threads: 4,
+          hash: 128,
+          moveOverhead: 50,
+          ponder: true,
+          limitStrength: true,
+          elo: 1500,
+        },
+      );
+
+      expect(mockWorker.postMessage).toHaveBeenCalledWith(
+        "setoption name Threads value 4",
+      );
+      expect(mockWorker.postMessage).toHaveBeenCalledWith(
+        "setoption name Hash value 128",
+      );
+      expect(mockWorker.postMessage).toHaveBeenCalledWith(
+        "setoption name Move Overhead value 50",
+      );
+      expect(mockWorker.postMessage).toHaveBeenCalledWith(
+        "setoption name Ponder value true",
+      );
+      expect(mockWorker.postMessage).toHaveBeenCalledWith(
+        "setoption name UCI_LimitStrength value true",
+      );
+      expect(mockWorker.postMessage).toHaveBeenCalledWith(
+        "setoption name UCI_Elo value 1500",
+      );
+    });
+
     it("updates config during analysis", () => {
       engine.startAnalysis(
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -605,6 +656,70 @@ describe("StockfishEngine", () => {
 
       // Should restart analysis with new config
       expect(mockWorker.postMessage).toHaveBeenCalledWith("stop");
+    });
+
+    it("resets stockfish MultiPV to its default when omitted in a later analysis", () => {
+      const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+      engine.startAnalysis(fen, { multiPV: 4 });
+      mockWorker.simulateMessage("readyok");
+      jest.clearAllMocks();
+
+      engine.startAnalysis(fen, {});
+
+      expect(mockWorker.postMessage).toHaveBeenCalledWith("stop");
+      mockWorker.simulateMessage("bestmove e2e4");
+
+      expect(mockWorker.postMessage).toHaveBeenCalledWith(
+        "setoption name MultiPV value 1",
+      );
+    });
+  });
+
+  describe("fairy-stockfish config options", () => {
+    beforeEach(async () => {
+      engine = new StockfishEngine(fairyWorkerOptions);
+      await completeInit(engine, mockWorker);
+      jest.clearAllMocks();
+    });
+
+    it("accepts negative skill levels for fairy-stockfish", () => {
+      engine.startAnalysis(
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        {
+          skillLevel: -10,
+        },
+      );
+
+      expect(mockWorker.postMessage).toHaveBeenCalledWith(
+        "setoption name Skill Level value -10",
+      );
+    });
+
+    it("clamps fairy-stockfish skill level to -20 / 20", () => {
+      engine.startAnalysis(
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        {
+          skillLevel: -30,
+        },
+      );
+
+      expect(mockWorker.postMessage).toHaveBeenCalledWith(
+        "setoption name Skill Level value -20",
+      );
+    });
+
+    it("clamps fairy-stockfish threads to 512", () => {
+      engine.startAnalysis(
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+        {
+          threads: 999,
+        },
+      );
+
+      expect(mockWorker.postMessage).toHaveBeenCalledWith(
+        "setoption name Threads value 512",
+      );
     });
   });
 

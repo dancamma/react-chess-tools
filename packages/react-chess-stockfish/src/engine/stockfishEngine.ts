@@ -35,6 +35,7 @@ import {
   DEFAULT_THROTTLE_MS,
   DEFAULT_TIMEOUT_MS,
 } from "../utils/config";
+import { getEngineBehavior, type EngineBehavior } from "./engineBehavior";
 
 /**
  * Analysis request that is pending to be started.
@@ -139,11 +140,13 @@ export class StockfishEngine {
   private workerOptions: WorkerOptions;
   private throttleMs: number;
   private timeoutMs: number;
+  private engineBehavior: EngineBehavior;
 
   constructor(workerOptions: WorkerOptions) {
     this.mutableState = getInitialState();
     this.engineState = { type: "idle" };
     this.workerOptions = workerOptions;
+    this.engineBehavior = getEngineBehavior(workerOptions);
     this.throttleMs = workerOptions.throttleMs ?? DEFAULT_THROTTLE_MS;
     this.timeoutMs = workerOptions.timeout ?? DEFAULT_TIMEOUT_MS;
   }
@@ -292,7 +295,7 @@ export class StockfishEngine {
    * from the previous position.
    *
    * @param fen - FEN string of the position to analyze
-   * @param config - UCI configuration options (skillLevel, depth, multiPV)
+   * @param config - UCI configuration options (threads, hash, skillLevel, multiPV, depth, etc.)
    */
   startAnalysis(fen: string, config: StockfishConfig = {}): void {
     if (this.engineState.type === "destroyed") return;
@@ -302,7 +305,7 @@ export class StockfishEngine {
     if (
       this.currentFen === fen &&
       this.engineState.type === "analyzing" &&
-      configCompareEqual(this.appliedConfig, config)
+      configCompareEqual(this.mutableState.config, config)
     ) {
       return;
     }
@@ -872,30 +875,11 @@ export class StockfishEngine {
   private applyConfig(): void {
     if (this.engineState.type === "destroyed" || !this.worker) return;
 
-    const config = this.pendingConfig;
-
-    // Skill Level (UCI option name contains a space)
-    this.applyUciOption("Skill Level", "skillLevel", config.skillLevel, 0, 20);
-
-    // Multi PV
-    this.applyUciOption("MultiPV", "multiPV", config.multiPV, 1, 500);
-
-    // Note: depth is handled in the go command, not as a setoption
-    this.appliedConfig.depth = config.depth;
-  }
-
-  private applyUciOption(
-    uciName: string,
-    key: keyof StockfishConfig,
-    value: number | undefined,
-    min: number,
-    max: number,
-  ): void {
-    if (value !== undefined && value !== this.appliedConfig[key]) {
-      const clamped = Math.max(min, Math.min(max, value));
-      this.postMessage(`setoption name ${uciName} value ${clamped}`);
-      this.appliedConfig[key] = clamped;
-    }
+    this.engineBehavior.applyConfig({
+      appliedConfig: this.appliedConfig,
+      config: this.pendingConfig,
+      postMessage: (message) => this.postMessage(message),
+    });
   }
 
   /**

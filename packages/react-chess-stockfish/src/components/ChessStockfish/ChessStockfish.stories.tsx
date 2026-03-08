@@ -4,6 +4,7 @@ import { ChessStockfish } from "./index";
 import {
   AnalysisRoot,
   EngineStatus,
+  FairyAnalysisRoot,
   VerticalEvalBar,
   HorizontalEvalBar,
   StyledEngineLines,
@@ -110,5 +111,53 @@ export const StatusIndicator: Story = {
         </p>
       </StoryContainer>
     </AnalysisRoot>
+  ),
+};
+
+export const StockfishClassicEngine: Story = {
+  render: () => (
+    <AnalysisRoot
+      fen={FEN_POSITIONS.italian}
+      config={{ multiPV: 3, depth: 14 }}
+    >
+      <StoryContainer>
+        <StoryHeader
+          title="Stockfish engine"
+          subtitle="Classic Stockfish worker with SAN-formatted principal variations"
+          fen={FEN_POSITIONS.italian}
+        />
+        <div className="grid grid-cols-[30px_minmax(0,1fr)] gap-3 items-start w-full">
+          <VerticalEvalBar showEvaluation className={EVAL_BAR_CLASS} />
+          <StyledEngineLines maxLines={3} />
+        </div>
+        <EngineStatus />
+      </StoryContainer>
+    </AnalysisRoot>
+  ),
+};
+
+export const FairyStockfishClassicChess: Story = {
+  render: () => (
+    <FairyAnalysisRoot
+      fen={FEN_POSITIONS.italian}
+      config={{ multiPV: 3, depth: 14, skillLevel: -8, threads: 2 }}
+    >
+      <StoryContainer>
+        <StoryHeader
+          title="Fairy-Stockfish engine"
+          subtitle="Fairy-Stockfish on standard chess with engine-specific parameter handling"
+          fen={FEN_POSITIONS.italian}
+        />
+        <div className="grid grid-cols-[30px_minmax(0,1fr)] gap-3 items-start w-full">
+          <VerticalEvalBar showEvaluation className={EVAL_BAR_CLASS} />
+          <StyledEngineLines maxLines={3} />
+        </div>
+        <EngineStatus />
+        <p className="text-size-xs text-text-muted m-0 leading-relaxed">
+          This example uses a negative skill level, which Fairy-Stockfish
+          accepts but classic Stockfish clamps to 0.
+        </p>
+      </StoryContainer>
+    </FairyAnalysisRoot>
   ),
 };

@@ -1,5 +1,7 @@
 export type { Color } from "chess.js";
 
+export type EngineType = "stockfish" | "fairy-stockfish";
+
 export type Evaluation =
   | { type: "cp"; value: number }
   | { type: "mate"; value: number };
@@ -18,9 +20,15 @@ export interface PrincipalVariation {
 export type EngineStatus = "initializing" | "ready" | "analyzing" | "error";
 
 export interface StockfishConfig {
+  threads?: number;
+  hash?: number;
   skillLevel?: number;
-  depth?: number;
   multiPV?: number;
+  moveOverhead?: number;
+  ponder?: boolean;
+  limitStrength?: boolean;
+  elo?: number;
+  depth?: number;
 }
 
 export interface AnalysisInfo {
@@ -62,6 +70,7 @@ export interface AnalysisMethods {
 
 export interface WorkerOptions {
   workerPath: string;
+  engineType?: EngineType;
   throttleMs?: number;
   timeout?: number;
   onError?: (error: Error) => void;
