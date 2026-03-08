@@ -1,5 +1,11 @@
 # @react-chess-tools/react-chess-stockfish
 
+## 1.0.4
+
+### Patch Changes
+
+- 8e1a4ab: feat(stockfish): add multi-engine support with Fairy-Stockfish
+
 ## 1.0.3
 
 ### Patch Changes
