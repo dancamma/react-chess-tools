@@ -12,6 +12,8 @@ export default [
       "**/coverage/*",
       "**/storybook-static/*",
       ".storybook/public/stockfish.js",
+      ".storybook/public/stockfish/**",
+      ".storybook/public/fairy-stockfish/**",
       "**/*.mdx",
     ],
   },
