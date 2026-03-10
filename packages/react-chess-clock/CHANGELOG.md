@@ -1,5 +1,11 @@
 # @react-chess-tools/react-chess-clock
 
+## 2.0.0
+
+### Major Changes
+
+- 0c3df58: fix: prop sync and dependency restructuring
+
 ## 1.0.4
 
 ### Patch Changes
