@@ -30,6 +30,16 @@ const meta = {
 
 export default meta;
 
+const AutoFocusedBoard = () => {
+  const boardRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    boardRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  return <ChessGame.Board ref={boardRef} />;
+};
+
 export const Default = () => (
   <StoryContainer>
     <StoryHeader
@@ -39,7 +49,7 @@ export const Default = () => (
     <BoardWrapper>
       <ChessGame.Root>
         <ChessGame.KeyboardControls />
-        <ChessGame.Board />
+        <AutoFocusedBoard />
       </ChessGame.Root>
     </BoardWrapper>
     <p className="text-size-xs text-text-muted text-center m-0 leading-relaxed">
@@ -83,7 +93,7 @@ export const WithKeyboardControls = () => (
             d: (ctx) => ctx.methods.goToNextMove(),
           }}
         />
-        <ChessGame.Board />
+        <AutoFocusedBoard />
       </ChessGame.Root>
     </BoardWrapper>
     <div className="flex gap-1.5 justify-center flex-wrap">

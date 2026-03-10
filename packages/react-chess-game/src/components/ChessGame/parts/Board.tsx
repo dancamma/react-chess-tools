@@ -59,6 +59,10 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
     // Track square width for responsive updates
     const [squareWidth, setSquareWidth] = React.useState(80);
 
+    const focusBoardContainer = React.useCallback(() => {
+      boardContainerRef.current?.focus({ preventScroll: true });
+    }, [boardContainerRef]);
+
     const setBoardContainerRef = React.useCallback(
       (node: HTMLDivElement | null) => {
         boardContainerRef.current = node;
@@ -81,13 +85,15 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
         onPointerDownCapture?.(event);
 
         if (!event.defaultPrevented) {
-          boardContainerRef.current?.focus({ preventScroll: true });
+          focusBoardContainer();
         }
       },
-      [boardContainerRef, onPointerDownCapture],
+      [focusBoardContainer, onPointerDownCapture],
     );
 
     const onSquareClick = (square: Square) => {
+      focusBoardContainer();
+
       if (isGameOver) {
         return;
       }
@@ -131,6 +137,8 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
     };
 
     const onPromotionPieceSelect = (piece: string): void => {
+      focusBoardContainer();
+
       if (promotionMove?.from && promotionMove?.to) {
         makeMove({
           from: promotionMove.from,
@@ -142,6 +150,7 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
     };
 
     const onSquareRightClick = () => {
+      focusBoardContainer();
       setActiveSquare(null);
       setPromotionMove(null);
     };
@@ -197,11 +206,13 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       },
       dropSquareStyle: theme.state.dropSquare,
       onPieceDrag: ({ piece, square }) => {
+        focusBoardContainer();
         if (piece.pieceType[0] === turn) {
           setActiveSquare(square as Square);
         }
       },
       onPieceDrop: ({ sourceSquare, targetSquare }) => {
+        focusBoardContainer();
         setActiveSquare(null);
         const moveData = {
           from: sourceSquare as Square,
