@@ -10,7 +10,8 @@ export type {
   BotStatus,
   BotMove,
   BotStateSnapshot,
-  PlayerProps,
 } from "./types";
+
+export type { PlayerProps } from "./components/ChessBot/parts/Player";
 
 export { BOT_LEVELS } from "./levels";

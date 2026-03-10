@@ -4,4 +4,4 @@ export const ChessBot = {
   Player,
 };
 
-export type { PlayerProps } from "../../types";
+export type { PlayerProps } from "./parts/Player";

@@ -2,7 +2,6 @@ import type { Color } from "chess.js";
 import type {
   EngineType,
   Evaluation,
-  WorkerOptions,
 } from "@react-chess-tools/react-chess-stockfish";
 
 export type BotLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
@@ -73,19 +72,4 @@ export interface BotStateSnapshot {
   currentFen: string;
   lastMove: BotMove | null;
   error: Error | null;
-}
-
-export interface PlayerProps {
-  color: Color;
-  workerOptions: WorkerOptions;
-  strength?: BotStrength;
-  variability?: BotVariability;
-  moveDelay?: BotTiming;
-  paused?: boolean;
-  autoPlay?: boolean;
-  onStateChange?: (state: BotStateSnapshot) => void;
-  onThinkStart?: (fen: string, color: Color) => void;
-  onMoveSelected?: (move: BotMove) => void;
-  onMove?: (move: BotMove) => void;
-  onError?: (error: Error) => void;
 }

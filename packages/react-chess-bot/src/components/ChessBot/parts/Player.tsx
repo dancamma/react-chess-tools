@@ -4,6 +4,7 @@ import {
   StockfishEngine,
   type AnalysisState,
   type StockfishConfig,
+  type WorkerOptions,
 } from "@react-chess-tools/react-chess-stockfish";
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
 
@@ -11,7 +12,9 @@ import type {
   BotMove,
   BotStateSnapshot,
   BotStatus,
-  PlayerProps,
+  BotStrength,
+  BotVariability,
+  BotTiming,
 } from "../../../types";
 import { createBotMove, parseUciMove } from "../../../utils/move";
 import {
@@ -23,6 +26,21 @@ import {
   normalizeBotVariability,
   selectVariationForBot,
 } from "../../../utils/variability";
+
+export interface PlayerProps {
+  color: Color;
+  workerOptions: WorkerOptions;
+  strength?: BotStrength;
+  variability?: BotVariability;
+  moveDelay?: BotTiming;
+  paused?: boolean;
+  autoPlay?: boolean;
+  onStateChange?: (state: BotStateSnapshot) => void;
+  onThinkStart?: (fen: string, color: Color) => void;
+  onMoveSelected?: (move: BotMove) => void;
+  onMove?: (move: BotMove) => void;
+  onError?: (error: Error) => void;
+}
 
 interface ActiveSearch {
   id: number;
