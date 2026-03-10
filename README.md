@@ -112,7 +112,7 @@ function App() {
 ### Chess Puzzle
 
 ```bash
-npm install @react-chess-tools/react-chess-puzzle
+npm install @react-chess-tools/react-chess-game @react-chess-tools/react-chess-puzzle
 ```
 
 ```tsx
@@ -181,7 +181,7 @@ function App() {
 ### Chess Bot
 
 ```bash
-npm install @react-chess-tools/react-chess-game @react-chess-tools/react-chess-bot
+npm install @react-chess-tools/react-chess-game @react-chess-tools/react-chess-stockfish @react-chess-tools/react-chess-bot
 ```
 
 ```tsx
@@ -204,7 +204,7 @@ function App() {
 }
 ```
 
-`react-chess-bot` does not bundle an engine worker. Provide your own Stockfish-compatible worker file, and use `engineType: "fairy-stockfish"` for levels `1-3`.
+`react-chess-bot` depends on `@react-chess-tools/react-chess-stockfish` for its worker-backed engine integration. It does not bundle an engine worker. Provide your own Stockfish-compatible worker file, and use `engineType: "fairy-stockfish"` for levels `1-3`.
 
 ## Demo
 
