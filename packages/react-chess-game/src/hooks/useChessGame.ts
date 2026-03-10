@@ -20,6 +20,11 @@ export const useChessGame = ({
   timeControl,
   autoSwitchOnMove = true,
 }: useChessGameProps = {}) => {
+  // Track initial FEN as state for reactive updates in useMemo
+  const [initialFen, setInitialFen] = React.useState(fen);
+  // Mount guard to skip the fen effect on first render (game already initialized)
+  const isMounted = useRef(false);
+
   const [game, setGame] = React.useState(() => {
     try {
       return new Chess(fen);
@@ -29,19 +34,36 @@ export const useChessGame = ({
     }
   });
 
-  useEffect(() => {
-    try {
-      setGame(new Chess(fen));
-    } catch (e) {
-      console.error("Invalid FEN:", fen, e);
-      setGame(new Chess());
-    }
-  }, [fen]);
-
   const [orientation, setOrientation] = React.useState<Color>(
     initialOrientation ?? "w",
   );
   const [currentMoveIndex, setCurrentMoveIndex] = React.useState(-1);
+
+  // Sync game state when fen prop changes (skip on mount to avoid double initialization)
+  useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
+    try {
+      const newGame = new Chess(fen);
+      setInitialFen(fen);
+      setGame(newGame);
+      setCurrentMoveIndex(-1); // Reset move navigation when position changes externally
+    } catch (e) {
+      console.error("Invalid FEN:", fen, e);
+      setInitialFen(undefined);
+      setGame(new Chess());
+      setCurrentMoveIndex(-1);
+    }
+  }, [fen]);
+
+  // Sync orientation when prop changes
+  useEffect(() => {
+    if (initialOrientation !== undefined) {
+      setOrientation(initialOrientation);
+    }
+  }, [initialOrientation]);
 
   const history = React.useMemo(() => game.history(), [game]);
   const isLatestMove =
@@ -53,8 +75,8 @@ export const useChessGame = ({
   );
 
   const currentFen = React.useMemo(
-    () => getCurrentFen(fen, game, currentMoveIndex),
-    [fen, game, currentMoveIndex],
+    () => getCurrentFen(initialFen, game, currentMoveIndex),
+    [initialFen, game, currentMoveIndex],
   );
 
   const currentPosition = game.history()[currentMoveIndex];
@@ -71,6 +93,7 @@ export const useChessGame = ({
     try {
       const newGame = new Chess();
       newGame.load(fen);
+      setInitialFen(fen); // Update state when position is set imperatively
       setOrientation(orientation);
       setGame(newGame);
       setCurrentMoveIndex(-1);

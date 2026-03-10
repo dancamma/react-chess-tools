@@ -14,6 +14,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup src/index.ts"
   },
@@ -23,15 +26,17 @@
   "author": "Daniele Cammareri <daniele.cammareri@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@react-chess-tools/react-chess-game": "^1.0.5",
-    "@react-chess-tools/react-chess-stockfish": "^1.0.5",
     "chess.js": "^1.4.0"
   },
   "devDependencies": {
+    "@react-chess-tools/react-chess-game": "^1.0.5",
+    "@react-chess-tools/react-chess-stockfish": "^1.0.5",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
   "peerDependencies": {
+    "@react-chess-tools/react-chess-game": "^1.0.5",
+    "@react-chess-tools/react-chess-stockfish": "^1.0.5",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   }

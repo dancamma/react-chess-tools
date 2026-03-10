@@ -86,15 +86,15 @@ See the [ChessPuzzle.Root props](#chesspuzzleroot) for the `theme` prop to custo
 ## Installation
 
 ```bash
-npm install @react-chess-tools/react-chess-puzzle
+npm install @react-chess-tools/react-chess-game @react-chess-tools/react-chess-puzzle
 ```
 
 ```bash
-yarn add @react-chess-tools/react-chess-puzzle
+yarn add @react-chess-tools/react-chess-game @react-chess-tools/react-chess-puzzle
 ```
 
 ```bash
-pnpm add @react-chess-tools/react-chess-puzzle
+pnpm add @react-chess-tools/react-chess-game @react-chess-tools/react-chess-puzzle
 ```
 
 ## Quick Start

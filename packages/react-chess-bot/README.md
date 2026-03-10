@@ -59,10 +59,10 @@ The package is logic-only by design. It does not render controls, panels, or bot
 ## Installation
 
 ```bash
-npm install @react-chess-tools/react-chess-game @react-chess-tools/react-chess-bot
+npm install @react-chess-tools/react-chess-game @react-chess-tools/react-chess-stockfish @react-chess-tools/react-chess-bot
 ```
 
-If you want analysis widgets as well, install `@react-chess-tools/react-chess-stockfish` separately.
+`@react-chess-tools/react-chess-stockfish` is a required peer dependency because `react-chess-bot` reuses its engine implementation.
 
 ## Engine Setup
 
