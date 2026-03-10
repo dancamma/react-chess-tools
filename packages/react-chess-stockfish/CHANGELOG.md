@@ -1,5 +1,11 @@
 # @react-chess-tools/react-chess-stockfish
 
+## 1.0.5
+
+### Patch Changes
+
+- 333c1ff: feat: add react-chess-bot package
+
 ## 1.0.4
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@react-chess-tools/react-chess-bot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Logical CPU players for react-chess-game powered by UCI engines in Web Workers.",
   "type": "module",
   "exports": {
@@ -24,7 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "@react-chess-tools/react-chess-game": "^1.0.5",
-    "@react-chess-tools/react-chess-stockfish": "^1.0.3",
+    "@react-chess-tools/react-chess-stockfish": "^1.0.5",
     "chess.js": "^1.4.0"
   },
   "devDependencies": {
