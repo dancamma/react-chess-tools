@@ -22,7 +22,11 @@
   "author": "Daniele Cammareri <daniele.cammareri@gmail.com>",
   "license": "MIT",
   "workspaces": [
-    "packages/*"
+    "packages/react-chess-clock",
+    "packages/react-chess-stockfish",
+    "packages/react-chess-game",
+    "packages/react-chess-puzzle",
+    "packages/react-chess-bot"
   ],
   "lint-staged": {
     "**/*": "prettier . --write --ignore-unknown"
