@@ -1,8 +1,62 @@
 import { renderHook, act, RenderHookResult } from "@testing-library/react";
 import { useChessGame, useChessGameProps } from "../useChessGame";
-import { Chess } from "chess.js";
+import { Chess, Color } from "chess.js";
 
 describe("useChessGame", () => {
+  describe("prop sync", () => {
+    it("should update game state when fen prop changes", () => {
+      const initialFen =
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+      const newFen =
+        "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
+
+      const { result, rerender } = renderHook(
+        ({ fen }) => useChessGame({ fen }),
+        { initialProps: { fen: initialFen } },
+      );
+
+      expect(result.current.currentFen).toBe(initialFen);
+
+      // Make a move and navigate away from latest
+      act(() => {
+        result.current.methods.makeMove("e4");
+      });
+      expect(result.current.currentMoveIndex).toBe(0);
+
+      // Rerender with new fen - should reset game and move index
+      rerender({ fen: newFen });
+
+      expect(result.current.currentFen).toBe(newFen);
+      expect(result.current.currentMoveIndex).toBe(-1);
+    });
+
+    it("should update orientation when orientation prop changes", () => {
+      const { result, rerender } = renderHook(
+        ({ orientation }) => useChessGame({ orientation }),
+        { initialProps: { orientation: "w" as Color } },
+      );
+
+      expect(result.current.orientation).toBe("w");
+
+      rerender({ orientation: "b" });
+
+      expect(result.current.orientation).toBe("b");
+    });
+
+    it("should not change orientation when prop is undefined on rerender", () => {
+      const { result, rerender } = renderHook(
+        ({ orientation }) => useChessGame({ orientation }),
+        { initialProps: { orientation: "b" as Color | undefined } },
+      );
+
+      expect(result.current.orientation).toBe("b");
+
+      // Undefined should not override user-set orientation
+      rerender({ orientation: undefined });
+
+      expect(result.current.orientation).toBe("b");
+    });
+  });
   it("should initialize with default values", () => {
     const { result } = renderHook(() => useChessGame());
 
