@@ -27,6 +27,7 @@ export function configCompareEqual(
     a.ponder === b.ponder &&
     a.limitStrength === b.limitStrength &&
     a.elo === b.elo &&
+    a.moveTimeMs === b.moveTimeMs &&
     a.depth === b.depth
   );
 }

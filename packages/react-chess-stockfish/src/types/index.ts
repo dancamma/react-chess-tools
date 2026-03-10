@@ -28,6 +28,7 @@ export interface StockfishConfig {
   ponder?: boolean;
   limitStrength?: boolean;
   elo?: number;
+  moveTimeMs?: number;
   depth?: number;
 }
 

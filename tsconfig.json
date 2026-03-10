@@ -31,6 +31,9 @@
       ],
       "@react-chess-tools/react-chess-clock": [
         "./packages/react-chess-clock/src/index.ts"
+      ],
+      "@react-chess-tools/react-chess-bot": [
+        "./packages/react-chess-bot/src/index.ts"
       ]
     }
   },

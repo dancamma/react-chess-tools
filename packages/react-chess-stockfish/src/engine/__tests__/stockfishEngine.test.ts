@@ -210,6 +210,30 @@ describe("StockfishEngine", () => {
       expect(engine.getSnapshot().isEngineThinking).toBe(true);
     });
 
+    it("does not emit a transient ready snapshot before analyzing", () => {
+      const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+      const observedSnapshots: Array<{
+        status: string;
+        depth: number;
+        hasResults: boolean;
+      }> = [];
+
+      engine.subscribe(() => {
+        const snapshot = engine.getSnapshot();
+        observedSnapshots.push({
+          status: snapshot.status,
+          depth: snapshot.depth,
+          hasResults: snapshot.hasResults,
+        });
+      });
+
+      engine.startAnalysis(fen);
+
+      expect(observedSnapshots).toEqual([
+        { status: "analyzing", depth: 0, hasResults: false },
+      ]);
+    });
+
     it("deduplicates same FEN and config", () => {
       const fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
       const config = { multiPV: 3 };
@@ -809,6 +833,21 @@ describe("StockfishEngine", () => {
     it("returns null when no results", () => {
       const bestMove = engine.getBestMove();
       expect(bestMove).toBeNull();
+    });
+
+    it("falls back to bestmove when no PV info was emitted", () => {
+      mockWorker.simulateMessage("bestmove e2e4");
+
+      const snapshot = engine.getSnapshot();
+
+      expect(snapshot.hasResults).toBe(true);
+      expect(snapshot.bestLine).toEqual({
+        rank: 1,
+        evaluation: null,
+        moves: [{ uci: "e2e4", san: "e4" }],
+      });
+      expect(snapshot.principalVariations).toEqual([snapshot.bestLine]);
+      expect(engine.getBestMove()).toEqual({ uci: "e2e4", san: "e4" });
     });
   });
 

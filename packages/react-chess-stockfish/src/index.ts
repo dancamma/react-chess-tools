@@ -6,6 +6,7 @@ export type {
 } from "./components/ChessStockfish";
 
 export { useStockfish } from "./hooks/useStockfish";
+export { StockfishEngine } from "./engine";
 
 export {
   InvalidFenError,
@@ -24,6 +25,7 @@ export type {
   EngineStatus,
   StockfishConfig,
   AnalysisInfo,
+  AnalysisState,
   AnalysisMethods,
   WorkerOptions,
 } from "./types";
