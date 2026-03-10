@@ -1,5 +1,18 @@
 # @react-chess-tools/react-chess-puzzle
 
+## 2.0.0
+
+### Major Changes
+
+- 0c3df58: fix: prop sync and dependency restructuring
+
+### Patch Changes
+
+- ea81945: fix: sound and keyboard control improvements
+- Updated dependencies [0c3df58]
+- Updated dependencies [ea81945]
+  - @react-chess-tools/react-chess-game@2.0.0
+
 ## 1.0.6
 
 ### Patch Changes
