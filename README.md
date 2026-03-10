@@ -11,7 +11,7 @@
 
 ## Overview
 
-**react-chess-tools** is a monorepo containing React components for building chess applications. Built on top of React 19, [react-chessboard](https://github.com/Clariity/react-chessboard) v5, and [chess.js](https://github.com/jhlywa/chess.js), it provides ready-to-use, customizable components with sensible defaults.
+**react-chess-tools** is a monorepo containing React components for building chess applications. Built on top of React 19, [react-chessboard](https://github.com/Clariity/react-chessboard) v5, and [chess.js](https://github.com/jhlywa/chess.js), it provides ready-to-use, customizable components for boards, puzzles, clocks, engine analysis, and browser-based bots.
 
 ## Packages
 
@@ -21,6 +21,7 @@
 | [@react-chess-tools/react-chess-puzzle](packages/react-chess-puzzle/README.md)       | A chess puzzle component for creating interactive puzzle experiences         | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-puzzle.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-puzzle)       |
 | [@react-chess-tools/react-chess-clock](packages/react-chess-clock/README.md)         | A standalone chess clock component with multiple timing methods              | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-clock.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-clock)         |
 | [@react-chess-tools/react-chess-stockfish](packages/react-chess-stockfish/README.md) | Stockfish engine integration with evaluation bar and PV lines                | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-stockfish.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-stockfish) |
+| [@react-chess-tools/react-chess-bot](packages/react-chess-bot/README.md)             | Logical CPU players for `react-chess-game` powered by worker-based engines   | [![npm](https://img.shields.io/npm/v/@react-chess-tools/react-chess-bot.svg)](https://www.npmjs.com/package/@react-chess-tools/react-chess-bot)             |
 
 ## Features
 
@@ -30,6 +31,7 @@
 - **Ref Forwarding** - Programmatic access to component DOM nodes
 - **Full HTML Attribute Support** - Apply className, style, id, data-_, and aria-_ attributes
 - **Full-Featured** - Built-in sounds, move highlighting, keyboard controls, and more
+- **Browser Bots** - Add configurable CPU players backed by Stockfish or Fairy-Stockfish workers
 - **TypeScript** - Full TypeScript support with comprehensive type definitions
 - **Modern React** - Built for React 19 with hooks and context API
 
@@ -176,9 +178,37 @@ function App() {
 }
 ```
 
+### Chess Bot
+
+```bash
+npm install @react-chess-tools/react-chess-game @react-chess-tools/react-chess-bot
+```
+
+```tsx
+import { ChessBot } from "@react-chess-tools/react-chess-bot";
+import { ChessGame } from "@react-chess-tools/react-chess-game";
+
+function App() {
+  return (
+    <ChessGame.Root fen="r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3">
+      <ChessGame.Board />
+      <ChessBot.Player
+        color="b"
+        strength={{ level: 6 }}
+        variability="medium"
+        moveDelay={{ min: 250, max: 600 }}
+        workerOptions={{ workerPath: "/stockfish.js" }}
+      />
+    </ChessGame.Root>
+  );
+}
+```
+
+`react-chess-bot` does not bundle an engine worker. Provide your own Stockfish-compatible worker file, and use `engineType: "fairy-stockfish"` for levels `1-3`.
+
 ## Demo
 
-Visit the [live demo](https://react-chess-tools.vercel.app/) to see the components in action.
+Visit the [Storybook demo](https://react-chess-tools.vercel.app/) to see the packages in action.
 
 ## Development
 

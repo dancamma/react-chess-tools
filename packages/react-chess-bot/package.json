@@ -1,0 +1,38 @@
+{
+  "name": "@react-chess-tools/react-chess-bot",
+  "version": "1.0.0",
+  "description": "Logical CPU players for react-chess-game powered by UCI engines in Web Workers.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Daniele Cammareri <daniele.cammareri@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@react-chess-tools/react-chess-game": "^1.0.5",
+    "@react-chess-tools/react-chess-stockfish": "^1.0.3",
+    "chess.js": "^1.4.0"
+  },
+  "devDependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  }
+}

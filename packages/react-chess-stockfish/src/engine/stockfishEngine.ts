@@ -301,10 +301,12 @@ export class StockfishEngine {
     if (this.engineState.type === "destroyed") return;
     if (this.engineState.type === "error") return;
 
+    const currentState = this.engineState;
+
     // Deduplicate: skip if FEN and config are the same
     if (
       this.currentFen === fen &&
-      this.engineState.type === "analyzing" &&
+      currentState.type === "analyzing" &&
       configCompareEqual(this.mutableState.config, config)
     ) {
       return;
@@ -343,12 +345,13 @@ export class StockfishEngine {
     this.mutableState.depth = 0;
     this.mutableState.hasResults = false;
 
-    // Emit update so subscribers see the cleared state immediately
-    this.emitUpdate();
-    this.lastUpdate = Date.now(); // Reset throttle timer on FEN change
-
-    // Handle based on current state
-    const currentState = this.engineState;
+    // Emit the cleared state immediately only when we are not about to
+    // transition straight into a fresh analyzing state. Otherwise consumers
+    // can observe a transient `ready` snapshot during an active search.
+    if (currentState.type !== "idle" && currentState.type !== "ready") {
+      this.emitUpdate();
+      this.lastUpdate = Date.now(); // Reset throttle timer on FEN change
+    }
 
     if (currentState.type === "analyzing") {
       if (this.waitingForAnalysisReadyOk) {
@@ -527,6 +530,30 @@ export class StockfishEngine {
       evaluation: this.cloneEvaluation(pv.evaluation),
       moves: [...pv.moves],
     };
+  }
+
+  private setFallbackBestLine(bestMove: string): void {
+    if (
+      this.mutableState.principalVariations.length > 0 ||
+      this.currentFen.length === 0
+    ) {
+      return;
+    }
+
+    const moves = uciToPvMoves([bestMove], this.currentFen);
+
+    if (moves.length === 0) {
+      return;
+    }
+
+    const fallbackLine: PrincipalVariation = {
+      rank: 1,
+      evaluation: this.cloneEvaluation(this.mutableState.evaluation),
+      moves,
+    };
+
+    this.mutableState.principalVariations = [fallbackLine];
+    this.mutableState.bestLine = fallbackLine;
   }
 
   /**
@@ -799,6 +826,7 @@ export class StockfishEngine {
     if (bestMove && bestMove !== "(none)") {
       // We have a best move, update state
       this.mutableState.hasResults = true;
+      this.setFallbackBestLine(bestMove);
     }
 
     if (currentState.type === "stopping") {

@@ -224,6 +224,16 @@ describe("parseUciInfoLine", () => {
 });
 
 describe("buildUciGoCommand", () => {
+  it("returns movetime command when movetime is specified", () => {
+    expect(buildUciGoCommand({ moveTimeMs: 350 })).toBe("movetime 350");
+  });
+
+  it("gives movetime precedence over depth", () => {
+    expect(buildUciGoCommand({ moveTimeMs: 350, depth: 20 })).toBe(
+      "movetime 350",
+    );
+  });
+
   it("returns depth command when depth is specified", () => {
     expect(buildUciGoCommand({ depth: 20 })).toBe("depth 20");
   });

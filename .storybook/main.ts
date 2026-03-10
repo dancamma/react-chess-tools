@@ -61,6 +61,10 @@ const config: StorybookConfig = {
             __dirname,
             "../packages/react-chess-clock/src/index.ts",
           ),
+          "@react-chess-tools/react-chess-bot": resolve(
+            __dirname,
+            "../packages/react-chess-bot/src/index.ts",
+          ),
         },
       },
     });
