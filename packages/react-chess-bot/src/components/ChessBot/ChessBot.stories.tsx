@@ -374,6 +374,60 @@ export const PlainStockfish: Story = {
   ),
 };
 
+export const CustomWeakBot: Story = {
+  render: () => (
+    <BotShowcase
+      title="Human vs ultra-weak custom bot"
+      subtitle="Fairy-Stockfish with custom strength: skillLevel -5, depth 1, 100ms think time"
+      fen={FEN_POSITIONS.starting}
+      blackBot={{
+        strength: {
+          custom: {
+            skillLevel: -20,
+            depth: 1,
+            moveTimeMs: 1,
+          },
+        },
+        variability: "high",
+        moveDelay: { min: 300, max: 800 },
+        workerOptions: {
+          workerPath: FAIRY_STOCKFISH_WORKER_PATH,
+          engineType: "fairy-stockfish",
+        },
+      }}
+      note={
+        <>
+          <strong>Custom strength parameters:</strong>
+          <ul className="mt-1 ml-4 list-disc space-y-0.5">
+            <li>
+              <code className="rounded bg-surface px-1">skillLevel: -20</code> —
+              negative skill level for very weak play
+            </li>
+            <li>
+              <code className="rounded bg-surface px-1">depth: 1</code> —
+              minimal search depth
+            </li>
+            <li>
+              <code className="rounded bg-surface px-1">moveTimeMs: 1</code> —
+              very short thinking time
+            </li>
+            <li>
+              <code className="rounded bg-surface px-1">
+                variability: "high"
+              </code>{" "}
+              — high randomness in move selection
+            </li>
+          </ul>
+          <p className="mt-2">
+            This bot makes frequent blunders and is suitable for beginners or
+            children learning chess.
+          </p>
+        </>
+      }
+    />
+  ),
+};
+
 // ============================================================================
 // BotArena Story
 // ============================================================================
