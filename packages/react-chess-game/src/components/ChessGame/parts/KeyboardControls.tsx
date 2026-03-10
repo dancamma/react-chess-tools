@@ -1,4 +1,5 @@
-import type { FC } from "react";
+import type { FC, RefObject } from "react";
+import { useChessGameBoardContainerContext } from "../../../hooks/useChessGameBoardContainerContext";
 import { ChessGameContextType } from "../../../hooks/useChessGameContext";
 import { useKeyboardControls } from "../../../hooks/useKeyboardControls";
 
@@ -27,11 +28,26 @@ export const defaultKeyboardControls: KeyboardControls = {
  */
 type KeyboardControlsProps = {
   controls?: KeyboardControls;
+  /**
+   * Optional ref to a container element to scope keyboard handling.
+   * When omitted, the controls automatically scope to the ChessGame.Board rendered
+   * within the same ChessGame.Root. Pass a custom ref to override that behavior.
+   */
+  containerRef?: RefObject<HTMLElement | null>;
 };
 
-export const KeyboardControls: FC<KeyboardControlsProps> = ({ controls }) => {
-  const keyboardControls = { ...defaultKeyboardControls, ...controls };
-  useKeyboardControls(keyboardControls);
+export const KeyboardControls: FC<KeyboardControlsProps> = ({
+  controls,
+  containerRef,
+}) => {
+  const { boardContainerElement, boardContainerRef } =
+    useChessGameBoardContainerContext();
+
+  useKeyboardControls({
+    controls,
+    containerRef:
+      containerRef ?? (boardContainerElement ? boardContainerRef : undefined),
+  });
   return null;
 };
 

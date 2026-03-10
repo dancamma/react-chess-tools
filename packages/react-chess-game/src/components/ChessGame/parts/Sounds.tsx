@@ -19,7 +19,7 @@ export const Sounds: React.FC<SoundsProps> = ({ sounds }) => {
       return {} as Record<Sound, HTMLAudioElement>;
     }
 
-    return Object.entries({ ...defaultSounds, sounds }).reduce(
+    return Object.entries({ ...defaultSounds, ...sounds }).reduce(
       (acc, [name, base64]) => {
         acc[name as Sound] = new Audio(`data:audio/wav;base64,${base64}`);
         return acc;

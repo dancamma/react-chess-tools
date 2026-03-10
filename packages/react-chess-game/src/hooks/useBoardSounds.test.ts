@@ -24,6 +24,7 @@ describe("useBoardSounds", () => {
     info: {
       lastMove?: Partial<Move> | null;
       isCheckmate?: boolean;
+      isCheck?: boolean;
     };
   };
 
@@ -47,15 +48,34 @@ describe("useBoardSounds", () => {
     expect(mockSounds.move.play).not.toHaveBeenCalled();
     expect(mockSounds.capture.play).not.toHaveBeenCalled();
     expect(mockSounds.gameOver.play).not.toHaveBeenCalled();
+    expect(mockSounds.check.play).not.toHaveBeenCalled();
   });
 
-  it("should play move sound when lastMove is present", () => {
+  it("should not play sound when mounted with an existing checkmated position", () => {
+    mockContextValue.info.lastMove = {
+      from: "f3",
+      to: "g5",
+      piece: "Q" as PieceSymbol,
+    } as unknown as Partial<Move>;
+    mockContextValue.info.isCheck = true;
+    mockContextValue.info.isCheckmate = true;
+
+    renderHook(() => useBoardSounds(mockSounds));
+
+    expect(mockSounds.move.play).not.toHaveBeenCalled();
+    expect(mockSounds.capture.play).not.toHaveBeenCalled();
+    expect(mockSounds.gameOver.play).not.toHaveBeenCalled();
+    expect(mockSounds.check.play).not.toHaveBeenCalled();
+  });
+
+  it("should play move sound when lastMove changes", () => {
+    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
+
     mockContextValue.info.lastMove = {
       from: "e2",
       to: "e4",
       piece: "P" as PieceSymbol,
     } as unknown as Partial<Move>;
-    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
 
     mockedUseChessGameContext.mockReturnValue(
       mockContextValue as unknown as ReturnType<typeof useChessGameContext>,
@@ -67,7 +87,9 @@ describe("useBoardSounds", () => {
     expect(mockSounds.gameOver.play).not.toHaveBeenCalled();
   });
 
-  it("should play capture sound when lastMove includes a capture", () => {
+  it("should play capture sound when lastMove changes to a capture", () => {
+    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
+
     mockContextValue.info.lastMove = {
       from: "e4",
       to: "d5",
@@ -78,7 +100,6 @@ describe("useBoardSounds", () => {
       mockContextValue as unknown as ReturnType<typeof useChessGameContext>,
     );
 
-    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
     rerender();
 
     expect(mockSounds.capture.play).toHaveBeenCalledTimes(1);
@@ -86,7 +107,9 @@ describe("useBoardSounds", () => {
     expect(mockSounds.gameOver.play).not.toHaveBeenCalled();
   });
 
-  it("should play gameOver sound when isCheckmate is true", () => {
+  it("should play gameOver sound when a new move ends in checkmate", () => {
+    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
+
     mockContextValue.info.isCheckmate = true;
     mockContextValue.info.lastMove = {
       from: "f3",
@@ -97,7 +120,6 @@ describe("useBoardSounds", () => {
       mockContextValue as unknown as ReturnType<typeof useChessGameContext>,
     );
 
-    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
     rerender();
 
     expect(mockSounds.gameOver.play).toHaveBeenCalledTimes(1);
@@ -105,7 +127,9 @@ describe("useBoardSounds", () => {
     expect(mockSounds.capture.play).not.toHaveBeenCalled();
   });
 
-  it("should play gameOver sound even if last move was a capture", () => {
+  it("should play gameOver sound even if the checkmating move was a capture", () => {
+    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
+
     mockContextValue.info.isCheckmate = true;
     mockContextValue.info.lastMove = {
       from: "f3",
@@ -117,7 +141,6 @@ describe("useBoardSounds", () => {
       mockContextValue as unknown as ReturnType<typeof useChessGameContext>,
     );
 
-    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
     rerender();
 
     expect(mockSounds.gameOver.play).toHaveBeenCalledTimes(1);
@@ -126,6 +149,8 @@ describe("useBoardSounds", () => {
   });
 
   it("should not play sound if lastMove becomes null", () => {
+    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
+
     mockContextValue.info.lastMove = {
       from: "e2",
       to: "e4",
@@ -134,8 +159,9 @@ describe("useBoardSounds", () => {
     mockedUseChessGameContext.mockReturnValue(
       mockContextValue as unknown as ReturnType<typeof useChessGameContext>,
     );
-    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
+
     rerender();
+
     expect(mockSounds.move.play).toHaveBeenCalledTimes(1);
 
     mockContextValue.info.lastMove = null;
@@ -149,8 +175,99 @@ describe("useBoardSounds", () => {
     expect(mockSounds.gameOver.play).not.toHaveBeenCalled();
   });
 
+  it("should play check sound when a new move gives check", () => {
+    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
+
+    mockContextValue.info.lastMove = {
+      from: "f3",
+      to: "g5",
+      piece: "Q" as PieceSymbol,
+    } as unknown as Partial<Move>;
+    mockContextValue.info.isCheck = true;
+    mockedUseChessGameContext.mockReturnValue(
+      mockContextValue as unknown as ReturnType<typeof useChessGameContext>,
+    );
+
+    rerender();
+
+    expect(mockSounds.check.play).toHaveBeenCalledTimes(1);
+    expect(mockSounds.move.play).not.toHaveBeenCalled();
+    expect(mockSounds.capture.play).not.toHaveBeenCalled();
+    expect(mockSounds.gameOver.play).not.toHaveBeenCalled();
+  });
+
+  it("should play checkmate sound over check sound (checkmate takes precedence)", () => {
+    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
+
+    mockContextValue.info.lastMove = {
+      from: "f3",
+      to: "g5",
+      piece: "Q" as PieceSymbol,
+    } as unknown as Partial<Move>;
+    mockContextValue.info.isCheck = true;
+    mockContextValue.info.isCheckmate = true;
+    mockedUseChessGameContext.mockReturnValue(
+      mockContextValue as unknown as ReturnType<typeof useChessGameContext>,
+    );
+
+    rerender();
+
+    expect(mockSounds.gameOver.play).toHaveBeenCalledTimes(1);
+    expect(mockSounds.check.play).not.toHaveBeenCalled();
+    expect(mockSounds.move.play).not.toHaveBeenCalled();
+    expect(mockSounds.capture.play).not.toHaveBeenCalled();
+  });
+
+  it("should not react to check state changes without a new lastMove", () => {
+    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
+
+    mockContextValue.info.isCheck = true;
+    mockedUseChessGameContext.mockReturnValue(
+      mockContextValue as unknown as ReturnType<typeof useChessGameContext>,
+    );
+    rerender();
+
+    expect(mockSounds.check.play).not.toHaveBeenCalled();
+    expect(mockSounds.gameOver.play).not.toHaveBeenCalled();
+
+    mockContextValue.info.isCheckmate = true;
+    mockedUseChessGameContext.mockReturnValue(
+      mockContextValue as unknown as ReturnType<typeof useChessGameContext>,
+    );
+
+    rerender();
+
+    expect(mockSounds.check.play).not.toHaveBeenCalled();
+    expect(mockSounds.gameOver.play).not.toHaveBeenCalled();
+  });
+
+  it("should play capture sound over check sound (capture takes precedence)", () => {
+    const { rerender } = renderHook(() => useBoardSounds(mockSounds));
+
+    mockContextValue.info.lastMove = {
+      from: "e4",
+      to: "d5",
+      piece: "P" as PieceSymbol,
+      captured: "p" as PieceSymbol,
+    } as unknown as Partial<Move>;
+    mockContextValue.info.isCheck = true;
+    mockedUseChessGameContext.mockReturnValue(
+      mockContextValue as unknown as ReturnType<typeof useChessGameContext>,
+    );
+
+    rerender();
+
+    expect(mockSounds.capture.play).toHaveBeenCalledTimes(1);
+    expect(mockSounds.check.play).not.toHaveBeenCalled();
+    expect(mockSounds.move.play).not.toHaveBeenCalled();
+    expect(mockSounds.gameOver.play).not.toHaveBeenCalled();
+  });
+
   it("should use updated sounds when they change", () => {
-    // Setup initial sounds and render hook
+    const { rerender } = renderHook((props) => useBoardSounds(props), {
+      initialProps: mockSounds,
+    });
+
     mockContextValue.info.lastMove = {
       from: "e2",
       to: "e4",
@@ -160,20 +277,16 @@ describe("useBoardSounds", () => {
       mockContextValue as unknown as ReturnType<typeof useChessGameContext>,
     );
 
-    const { rerender } = renderHook((props) => useBoardSounds(props), {
-      initialProps: mockSounds,
-    });
+    rerender(mockSounds);
 
-    // Verify initial sound played
     expect(mockSounds.move.play).toHaveBeenCalledTimes(1);
 
-    // Create new set of mock sounds
     const newMockSounds = createMockSounds();
 
-    // Re-render with new sounds and trigger a move
     rerender(newMockSounds);
 
-    // Update lastMove to trigger sound effect with new sounds
+    expect(newMockSounds.move.play).not.toHaveBeenCalled();
+
     mockContextValue.info.lastMove = {
       from: "e7",
       to: "e5",
@@ -185,10 +298,7 @@ describe("useBoardSounds", () => {
 
     rerender(newMockSounds);
 
-    // Original sounds should not be called again
     expect(mockSounds.move.play).toHaveBeenCalledTimes(1);
-
-    // New sounds should be called
     expect(newMockSounds.move.play).toHaveBeenCalledTimes(1);
     expect(newMockSounds.capture.play).not.toHaveBeenCalled();
     expect(newMockSounds.gameOver.play).not.toHaveBeenCalled();

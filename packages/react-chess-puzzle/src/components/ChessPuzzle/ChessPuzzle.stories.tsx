@@ -40,6 +40,16 @@ const meta = {
 
 export default meta;
 
+const AutoFocusedPuzzleBoard = () => {
+  const boardRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    boardRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  return <ChessPuzzle.Board ref={boardRef} />;
+};
+
 export const Example = (args: RootProps) => {
   const [puzzleIndex, setPuzzleIndex] = React.useState(0);
   const puzzle = puzzles[puzzleIndex];
@@ -172,7 +182,7 @@ export const WithKeyboardControls = (args: RootProps) => {
           subtitle="Use keyboard shortcuts to navigate"
         />
         <BoardWrapper>
-          <ChessPuzzle.Board />
+          <AutoFocusedPuzzleBoard />
         </BoardWrapper>
         <div className="grid grid-cols-3 gap-2 justify-center mt-3">
           <div className="flex items-center gap-1.5 text-size-xs text-text">

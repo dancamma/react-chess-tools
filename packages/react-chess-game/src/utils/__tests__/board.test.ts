@@ -1,4 +1,5 @@
 import { Chess } from "chess.js";
+import type { ChessboardOptions } from "react-chessboard";
 import { getCustomSquareStyles, deepMergeChessboardOptions } from "../board";
 import { getGameInfo } from "../chess";
 import { defaultGameTheme } from "../../theme/defaults";
@@ -511,6 +512,48 @@ describe("Board Utilities", () => {
       // Functions should be replaced
       expect(result.onSquareClick).toBe(userCustomOptions.onSquareClick);
       expect(result.onSquareClick).not.toBe(baseOptions.onSquareClick);
+    });
+
+    it("should overwrite arrays instead of merging them", () => {
+      // Test the mergeWith behavior directly with array-valued options
+      // ChessboardOptions may not have array properties, but this tests the merge logic
+      const baseOptions = {
+        squareStyles: { e4: { backgroundColor: "yellow" } },
+        showNotation: true,
+        // Simulate an array property that might be added in future
+        customArray: ["a", "b", "c"],
+      } as Record<string, unknown>;
+
+      const customOptions = {
+        customArray: ["x", "y"],
+      } as Record<string, unknown>;
+
+      const result = deepMergeChessboardOptions(
+        baseOptions as unknown as ChessboardOptions,
+        customOptions as unknown as Partial<ChessboardOptions>,
+      ) as Record<string, unknown>;
+
+      // Arrays should be overwritten, NOT merged (i.e., ["x", "y"], not ["a", "b", "c", "x", "y"])
+      expect(result.customArray).toEqual(["x", "y"]);
+      expect(result.customArray).not.toEqual(["a", "b", "c", "x", "y"]);
+      expect(result.customArray).not.toEqual(["x", "y", "c"]);
+    });
+
+    it("should merge objects while preserving non-overridden properties", () => {
+      const baseOptions = {
+        squareStyles: { e4: { backgroundColor: "yellow" } },
+        showNotation: true,
+      };
+
+      const customOptions = {
+        squareStyles: { d5: { backgroundColor: "blue" } },
+      };
+
+      const result = deepMergeChessboardOptions(baseOptions, customOptions);
+
+      // Objects should be merged, not overwritten
+      expect(result.squareStyles?.e4).toEqual({ backgroundColor: "yellow" });
+      expect(result.squareStyles?.d5).toEqual({ backgroundColor: "blue" });
     });
   });
 });

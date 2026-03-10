@@ -1,5 +1,5 @@
 import React from "react";
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { ChessGame } from "../..";
 import { Board } from "../Board";
@@ -105,6 +105,22 @@ describe("ChessGame.Board", () => {
     board.click();
 
     expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  it("should focus the board container on pointer interaction", () => {
+    const { container } = render(
+      <ChessGame.Root>
+        <Board />
+      </ChessGame.Root>,
+    );
+
+    const board = container.firstElementChild as HTMLDivElement;
+
+    expect(document.activeElement).not.toBe(board);
+
+    fireEvent.pointerDown(board);
+
+    expect(document.activeElement).toBe(board);
   });
 
   it("should throw error when used outside ChessGame.Root", () => {

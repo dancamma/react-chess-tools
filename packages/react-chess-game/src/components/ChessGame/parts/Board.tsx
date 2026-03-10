@@ -11,6 +11,7 @@ import {
   deepMergeChessboardOptions,
 } from "../../../utils/board";
 import { isLegalMove, requiresPromotion } from "../../../utils/chess";
+import { useChessGameBoardContainerContext } from "../../../hooks/useChessGameBoardContainerContext";
 import { useChessGameContext } from "../../../hooks/useChessGameContext";
 import { useChessGameTheme } from "../../../theme/context";
 
@@ -19,8 +20,20 @@ export interface ChessGameProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
-  ({ options = {}, className, style: userStyle, ...rest }, ref) => {
+  (
+    {
+      options = {},
+      className,
+      style: userStyle,
+      onPointerDownCapture,
+      tabIndex = 0,
+      ...rest
+    },
+    ref,
+  ) => {
     const gameContext = useChessGameContext();
+    const { boardContainerRef, setBoardContainerElement } =
+      useChessGameBoardContainerContext();
     const theme = useChessGameTheme();
 
     if (!gameContext) {
@@ -43,7 +56,44 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
     const [promotionMove, setPromotionMove] =
       React.useState<Partial<Move> | null>(null);
 
+    // Track square width for responsive updates
+    const [squareWidth, setSquareWidth] = React.useState(80);
+
+    const focusBoardContainer = React.useCallback(() => {
+      boardContainerRef.current?.focus({ preventScroll: true });
+    }, [boardContainerRef]);
+
+    const setBoardContainerRef = React.useCallback(
+      (node: HTMLDivElement | null) => {
+        boardContainerRef.current = node;
+        setBoardContainerElement(node);
+
+        if (typeof ref === "function") {
+          ref(node);
+          return;
+        }
+
+        if (ref) {
+          ref.current = node;
+        }
+      },
+      [boardContainerRef, ref, setBoardContainerElement],
+    );
+
+    const handlePointerDownCapture = React.useCallback(
+      (event: React.PointerEvent<HTMLDivElement>) => {
+        onPointerDownCapture?.(event);
+
+        if (!event.defaultPrevented) {
+          focusBoardContainer();
+        }
+      },
+      [focusBoardContainer, onPointerDownCapture],
+    );
+
     const onSquareClick = (square: Square) => {
+      focusBoardContainer();
+
       if (isGameOver) {
         return;
       }
@@ -87,6 +137,8 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
     };
 
     const onPromotionPieceSelect = (piece: string): void => {
+      focusBoardContainer();
+
       if (promotionMove?.from && promotionMove?.to) {
         makeMove({
           from: promotionMove.from,
@@ -98,16 +150,33 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
     };
 
     const onSquareRightClick = () => {
+      focusBoardContainer();
       setActiveSquare(null);
       setPromotionMove(null);
     };
 
-    // Calculate square width for precise positioning
-    const squareWidth = React.useMemo(() => {
-      if (typeof document === "undefined") return 80;
-      const squareElement = document.querySelector(`[data-square]`);
-      return squareElement?.getBoundingClientRect()?.width ?? 80;
-    }, [promotionMove]);
+    // Use ResizeObserver for responsive square width updates
+    React.useEffect(() => {
+      if (typeof window === "undefined" || !boardContainerRef.current) return;
+
+      const updateSquareWidth = () => {
+        const squareElement =
+          boardContainerRef.current?.querySelector("[data-square]");
+        if (squareElement) {
+          setSquareWidth(squareElement.getBoundingClientRect().width);
+        }
+      };
+
+      // Initial measurement
+      updateSquareWidth();
+
+      // Only use ResizeObserver if available (not in all test environments)
+      if (typeof ResizeObserver !== "undefined" && boardContainerRef.current) {
+        const observer = new ResizeObserver(updateSquareWidth);
+        observer.observe(boardContainerRef.current);
+        return () => observer.disconnect();
+      }
+    }, []);
 
     // Calculate promotion square position
     const promotionSquareLeft = React.useMemo(() => {
@@ -137,11 +206,13 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       },
       dropSquareStyle: theme.state.dropSquare,
       onPieceDrag: ({ piece, square }) => {
+        focusBoardContainer();
         if (piece.pieceType[0] === turn) {
           setActiveSquare(square as Square);
         }
       },
       onPieceDrop: ({ sourceSquare, targetSquare }) => {
+        focusBoardContainer();
         setActiveSquare(null);
         const moveData = {
           from: sourceSquare as Square,
@@ -173,8 +244,22 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       position: "relative" as const,
     };
 
+    // Calculate promotion menu vertical position based on orientation
+    const isBlackOrientation = orientation === "b";
+    const promotionRank = promotionMove?.to?.[1];
+    const isTopRank = isBlackOrientation
+      ? promotionRank === "1"
+      : promotionRank === "8";
+
     return (
-      <div ref={ref} className={className} style={mergedStyle} {...rest}>
+      <div
+        ref={setBoardContainerRef}
+        className={className}
+        style={mergedStyle}
+        tabIndex={tabIndex}
+        onPointerDownCapture={handlePointerDownCapture}
+        {...rest}
+      >
         <Chessboard options={mergedOptions} />
         {promotionMove && (
           <>
@@ -199,8 +284,8 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
             <div
               style={{
                 position: "absolute",
-                top: promotionMove.to?.[1]?.includes("8") ? 0 : "auto",
-                bottom: promotionMove.to?.[1].includes("1") ? 0 : "auto",
+                top: isTopRank ? 0 : "auto",
+                bottom: isTopRank ? "auto" : 0,
                 left: promotionSquareLeft,
                 backgroundColor: "white",
                 width: squareWidth,

@@ -1,4 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
+import { createRef } from "react";
 import { useKeyboardControls } from "./useKeyboardControls";
 import {
   useChessGameContext,
@@ -97,7 +98,7 @@ describe("useKeyboardControls", () => {
     const customHandler = jest.fn();
     const customControls = { z: customHandler };
 
-    renderHook(() => useKeyboardControls(customControls));
+    renderHook(() => useKeyboardControls({ controls: customControls }));
 
     const event = new KeyboardEvent("keydown", { key: "z" });
     const preventDefaultSpy = jest.spyOn(event, "preventDefault");
@@ -115,7 +116,7 @@ describe("useKeyboardControls", () => {
     const customHandler = jest.fn();
     const customControls = { z: customHandler };
 
-    renderHook(() => useKeyboardControls(customControls));
+    renderHook(() => useKeyboardControls({ controls: customControls }));
 
     const event = new KeyboardEvent("keydown", { key: "ArrowRight" });
     const preventDefaultSpy = jest.spyOn(event, "preventDefault");
@@ -136,7 +137,7 @@ describe("useKeyboardControls", () => {
     const customArrowLeftHandler = jest.fn();
     const customControls = { ArrowLeft: customArrowLeftHandler };
 
-    renderHook(() => useKeyboardControls(customControls));
+    renderHook(() => useKeyboardControls({ controls: customControls }));
 
     const event = new KeyboardEvent("keydown", { key: "ArrowLeft" });
     const preventDefaultSpy = jest.spyOn(event, "preventDefault");
@@ -167,5 +168,223 @@ describe("useKeyboardControls", () => {
       }
     });
     expect(preventDefaultSpy).not.toHaveBeenCalled();
+  });
+
+  it("should not trigger when focus is on an input element", () => {
+    renderHook(() => useKeyboardControls());
+
+    // Create and focus an input element
+    const input = document.createElement("input");
+    document.body.appendChild(input);
+    input.focus();
+
+    const event = new KeyboardEvent("keydown", { key: "ArrowLeft" });
+    const preventDefaultSpy = jest.spyOn(event, "preventDefault");
+
+    act(() => {
+      window.dispatchEvent(event);
+    });
+
+    expect(mockGameContext.methods.goToPreviousMove).not.toHaveBeenCalled();
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
+
+    document.body.removeChild(input);
+  });
+
+  it("should not trigger when focus is on a textarea element", () => {
+    renderHook(() => useKeyboardControls());
+
+    // Create and focus a textarea element
+    const textarea = document.createElement("textarea");
+    document.body.appendChild(textarea);
+    textarea.focus();
+
+    const event = new KeyboardEvent("keydown", { key: "ArrowLeft" });
+    const preventDefaultSpy = jest.spyOn(event, "preventDefault");
+
+    act(() => {
+      window.dispatchEvent(event);
+    });
+
+    expect(mockGameContext.methods.goToPreviousMove).not.toHaveBeenCalled();
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
+
+    document.body.removeChild(textarea);
+  });
+
+  it("should not trigger when focus is on a select element", () => {
+    renderHook(() => useKeyboardControls());
+
+    const select = document.createElement("select");
+    document.body.appendChild(select);
+    select.focus();
+
+    const event = new KeyboardEvent("keydown", { key: "ArrowDown" });
+    const preventDefaultSpy = jest.spyOn(event, "preventDefault");
+
+    act(() => {
+      window.dispatchEvent(event);
+    });
+
+    expect(mockGameContext.methods.goToEnd).not.toHaveBeenCalled();
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
+
+    document.body.removeChild(select);
+  });
+
+  it("should not trigger when focus is on an element with isContentEditable=true", () => {
+    renderHook(() => useKeyboardControls());
+
+    // Create and focus a contenteditable element
+    const div = document.createElement("div");
+    div.setAttribute("contenteditable", "true");
+    document.body.appendChild(div);
+    div.focus();
+
+    // Mock isContentEditable since jsdom doesn't compute it automatically
+    Object.defineProperty(div, "isContentEditable", {
+      value: true,
+      writable: true,
+    });
+
+    const event = new KeyboardEvent("keydown", { key: "ArrowLeft" });
+    const preventDefaultSpy = jest.spyOn(event, "preventDefault");
+
+    act(() => {
+      window.dispatchEvent(event);
+    });
+
+    expect(mockGameContext.methods.goToPreviousMove).not.toHaveBeenCalled();
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
+
+    document.body.removeChild(div);
+  });
+
+  it("should not trigger when focus is on an element with contenteditable='plaintext-only'", () => {
+    renderHook(() => useKeyboardControls());
+
+    // Create and focus an element with plaintext-only editing
+    const div = document.createElement("div");
+    div.setAttribute("contenteditable", "plaintext-only");
+    document.body.appendChild(div);
+    div.focus();
+
+    // Mock isContentEditable since jsdom doesn't compute it automatically
+    Object.defineProperty(div, "isContentEditable", {
+      value: true,
+      writable: true,
+    });
+
+    const event = new KeyboardEvent("keydown", { key: "ArrowLeft" });
+    const preventDefaultSpy = jest.spyOn(event, "preventDefault");
+
+    act(() => {
+      window.dispatchEvent(event);
+    });
+
+    // isContentEditable should be true for plaintext-only as well
+    expect(mockGameContext.methods.goToPreviousMove).not.toHaveBeenCalled();
+    expect(preventDefaultSpy).not.toHaveBeenCalled();
+
+    document.body.removeChild(div);
+  });
+
+  it("should use updated controls after rerender", () => {
+    const initialHandler = jest.fn();
+    const updatedHandler = jest.fn();
+
+    const { rerender } = renderHook((options) => useKeyboardControls(options), {
+      initialProps: { controls: { ArrowLeft: initialHandler } },
+    });
+
+    // Trigger with initial handler
+    const event1 = new KeyboardEvent("keydown", { key: "ArrowLeft" });
+    act(() => {
+      window.dispatchEvent(event1);
+    });
+
+    expect(initialHandler).toHaveBeenCalledTimes(1);
+    expect(updatedHandler).not.toHaveBeenCalled();
+
+    // Rerender with updated handler
+    rerender({ controls: { ArrowLeft: updatedHandler } });
+
+    // Trigger with updated handler
+    const event2 = new KeyboardEvent("keydown", { key: "ArrowLeft" });
+    act(() => {
+      window.dispatchEvent(event2);
+    });
+
+    // Initial handler should still be called only once
+    expect(initialHandler).toHaveBeenCalledTimes(1);
+    // Updated handler should be called
+    expect(updatedHandler).toHaveBeenCalledTimes(1);
+  });
+
+  describe("containerRef scoping", () => {
+    it("should only trigger when focus is within the containerRef element", () => {
+      const containerRef = createRef<HTMLDivElement>();
+      const container = document.createElement("div");
+      document.body.appendChild(container);
+      containerRef.current = container;
+
+      renderHook(() => useKeyboardControls({ containerRef }));
+
+      // Focus outside the container
+      const outsideElement = document.createElement("input");
+      document.body.appendChild(outsideElement);
+      outsideElement.focus();
+
+      const event1 = new KeyboardEvent("keydown", { key: "ArrowLeft" });
+      act(() => {
+        window.dispatchEvent(event1);
+      });
+
+      // Should not trigger because focus is outside container
+      expect(mockGameContext.methods.goToPreviousMove).not.toHaveBeenCalled();
+
+      // Focus inside the container
+      const insideElement = document.createElement("button");
+      container.appendChild(insideElement);
+      insideElement.focus();
+
+      const event2 = new KeyboardEvent("keydown", { key: "ArrowLeft" });
+      act(() => {
+        window.dispatchEvent(event2);
+      });
+
+      // Should trigger because focus is inside container
+      expect(mockGameContext.methods.goToPreviousMove).toHaveBeenCalledTimes(1);
+
+      document.body.removeChild(container);
+      document.body.removeChild(outsideElement);
+    });
+
+    it("should work globally when no containerRef is provided", () => {
+      renderHook(() => useKeyboardControls());
+
+      // Even with no specific focus, should work globally
+      const event = new KeyboardEvent("keydown", { key: "ArrowLeft" });
+      act(() => {
+        window.dispatchEvent(event);
+      });
+
+      expect(mockGameContext.methods.goToPreviousMove).toHaveBeenCalledTimes(1);
+    });
+
+    it("should not trigger when containerRef.current is null", () => {
+      const containerRef = createRef<HTMLDivElement>();
+      // containerRef.current is null by default
+
+      renderHook(() => useKeyboardControls({ containerRef }));
+
+      const event = new KeyboardEvent("keydown", { key: "ArrowLeft" });
+      act(() => {
+        window.dispatchEvent(event);
+      });
+
+      // Scoped controls should stay inactive until the container ref is attached
+      expect(mockGameContext.methods.goToPreviousMove).not.toHaveBeenCalled();
+    });
   });
 });
