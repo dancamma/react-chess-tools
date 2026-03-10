@@ -1,6 +1,6 @@
 import { type Chess, type Square } from "chess.js";
 import { type CSSProperties } from "react";
-import { merge } from "lodash";
+import { mergeWith } from "lodash";
 import type { ChessboardOptions } from "react-chessboard";
 import { getDestinationSquares, type GameInfo } from "./chess";
 import type { ChessGameTheme } from "../theme/types";
@@ -87,28 +87,21 @@ export const deepMergeChessboardOptions = (
     return { ...baseOptions }; // Return a new object even when no custom options
   }
 
-  const result = merge({}, baseOptions, customOptions, {
-    customizer: (_objValue: unknown, srcValue: unknown) => {
-      // Functions should always overwrite (not merge)
-      // This is important for event handlers like onSquareClick, onPieceDrop, etc.
-      if (typeof srcValue === "function") {
-        return srcValue;
-      }
+  return mergeWith({}, baseOptions, customOptions, (_objValue, srcValue) => {
+    // Functions should always overwrite (not merge)
+    // This is important for event handlers like onSquareClick, onPieceDrop, etc.
+    if (typeof srcValue === "function") {
+      return srcValue;
+    }
 
-      // For arrays, we typically want to overwrite rather than merge
-      // This avoids unexpected behavior with array concatenation
-      if (Array.isArray(srcValue)) {
-        return srcValue;
-      }
+    // For arrays, we typically want to overwrite rather than merge
+    // This avoids unexpected behavior with array concatenation
+    if (Array.isArray(srcValue)) {
+      return srcValue;
+    }
 
-      // Let lodash handle objects with default deep merge behavior
-      // This will properly merge nested objects like squareStyles, dropSquareStyle, etc.
-      return undefined; // Use default merge behavior
-    },
+    // Let lodash handle objects with default deep merge behavior
+    // This will properly merge nested objects like squareStyles, dropSquareStyle, etc.
+    return undefined; // Use default merge behavior
   });
-
-  // Clean up any unwanted properties that lodash might add
-  delete (result as Record<string, unknown>).customizer;
-
-  return result;
 };

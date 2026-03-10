@@ -206,7 +206,7 @@ Supports **ref forwarding** and all standard **HTML div attributes** (className,
 
 ### ChessGame.Sounds
 
-Provides sound effects for the chess game. Uses built-in sounds by default, but custom sounds can be provided as base64-encoded strings.
+Provides sound effects for the chess game. Uses built-in sounds by default, but custom sounds can be provided as base64-encoded strings. Sounds are emitted for new moves only, so loading a static FEN does not trigger audio.
 
 **Note:** This is a logic-only component that returns `null`. It sets up audio functionality via hooks.
 
@@ -234,13 +234,14 @@ Provides sound effects for the chess game. Uses built-in sounds by default, but 
 
 Enables keyboard navigation through the game history.
 
-**Note:** This is a logic-only component that returns `null`. It sets up keyboard event listeners via hooks.
+**Note:** This is a logic-only component that returns `null`. It sets up keyboard event listeners via hooks. When used alongside `ChessGame.Board` in the same `ChessGame.Root`, shortcuts automatically scope to the focused board.
 
 #### Props
 
-| Name       | Type               | Default                   | Description                                   |
-| ---------- | ------------------ | ------------------------- | --------------------------------------------- |
-| `controls` | `KeyboardControls` | `defaultKeyboardControls` | Object mapping key names to handler functions |
+| Name           | Type                     | Default                   | Description                                                  |
+| -------------- | ------------------------ | ------------------------- | ------------------------------------------------------------ |
+| `controls`     | `KeyboardControls`       | `defaultKeyboardControls` | Object mapping key names to handler functions                |
+| `containerRef` | `RefObject<HTMLElement>` | Board in same root        | Override the default focus scope used for keyboard shortcuts |
 
 **Default Controls:**
 
