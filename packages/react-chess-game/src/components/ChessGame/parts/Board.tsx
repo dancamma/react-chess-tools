@@ -10,7 +10,7 @@ import {
   getCustomSquareStyles,
   deepMergeChessboardOptions,
 } from "../../../utils/board";
-import { isLegalMove, requiresPromotion } from "../../../utils/chess";
+import { requiresPromotion } from "../../../utils/chess";
 import { useChessGameBoardContainerContext } from "../../../hooks/useChessGameBoardContainerContext";
 import { useChessGameContext } from "../../../hooks/useChessGameContext";
 import { useChessGameTheme } from "../../../theme/context";
@@ -107,16 +107,6 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       }
 
       if (
-        !isLegalMove(game, {
-          from: activeSquare,
-          to: square,
-          promotion: "q",
-        })
-      ) {
-        return setActiveSquare(null);
-      }
-
-      if (
         requiresPromotion(game, {
           from: activeSquare,
           to: square,
@@ -130,7 +120,7 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       }
 
       setActiveSquare(null);
-      makeMove({
+      void makeMove({
         from: activeSquare,
         to: square,
       });

@@ -8,4 +8,7 @@ export default defineConfig({
   format: ["esm", "cjs"],
   external: ["react", "react-dom"],
   dts: true,
+  loader: {
+    ".ogg": "file",
+  },
 });

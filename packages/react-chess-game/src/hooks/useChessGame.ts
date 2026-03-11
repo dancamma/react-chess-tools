@@ -1,8 +1,10 @@
 import React, { useEffect, useRef } from "react";
-import { Chess, Color } from "chess.js";
-import { cloneGame, getCurrentFen, getGameInfo } from "../utils/chess";
 import { useOptionalChessClock } from "@react-chess-tools/react-chess-clock";
 import type { TimeControlConfig } from "@react-chess-tools/react-chess-clock";
+import { Chess, Color, type Move } from "chess.js";
+
+import { type AudioEventName, type ChessGameAudioEvent } from "../types/audio";
+import { cloneGame, getCurrentFen, getGameInfo } from "../utils/chess";
 
 export type useChessGameProps = {
   fen?: string;
@@ -38,6 +40,9 @@ export const useChessGame = ({
     initialOrientation ?? "w",
   );
   const [currentMoveIndex, setCurrentMoveIndex] = React.useState(-1);
+  const [audioEvent, setAudioEvent] =
+    React.useState<ChessGameAudioEvent | null>(null);
+  const audioEventIdRef = React.useRef(0);
 
   // Sync game state when fen prop changes (skip on mount to avoid double initialization)
   useEffect(() => {
@@ -88,6 +93,56 @@ export const useChessGame = ({
   // ticking), which would defeat the useCallback memoization.
   const clockStateRef = useRef(clockState);
   clockStateRef.current = clockState;
+  const previousTimeoutRef = React.useRef(clockState?.timeout ?? null);
+
+  const emitAudioEvent = React.useCallback((type: AudioEventName) => {
+    audioEventIdRef.current += 1;
+    setAudioEvent({
+      id: audioEventIdRef.current,
+      type,
+    });
+  }, []);
+
+  useEffect(() => {
+    const timeout = clockState?.timeout ?? null;
+
+    if (previousTimeoutRef.current === null && timeout !== null) {
+      emitAudioEvent("timeout");
+    }
+
+    previousTimeoutRef.current = timeout;
+  }, [clockState?.timeout, emitAudioEvent]);
+
+  const getAudioEventForMove = React.useCallback(
+    (nextGame: Chess, moveResult: Move): AudioEventName => {
+      if (nextGame.isCheckmate()) {
+        return "checkmate";
+      }
+
+      if (nextGame.isDraw()) {
+        return "draw";
+      }
+
+      if (moveResult.promotion) {
+        return "promotion";
+      }
+
+      if (moveResult.flags.includes("k") || moveResult.flags.includes("q")) {
+        return "castle";
+      }
+
+      if (moveResult.captured) {
+        return "capture";
+      }
+
+      if (nextGame.isCheck()) {
+        return "check";
+      }
+
+      return "move";
+    },
+    [],
+  );
 
   const setPosition = React.useCallback((fen: string, orientation: Color) => {
     try {
@@ -120,9 +175,10 @@ export const useChessGame = ({
 
       try {
         const copy = cloneGame(game);
-        copy.move(move);
+        const moveResult = copy.move(move);
         setGame(copy);
         setCurrentMoveIndex(copy.history().length - 1);
+        emitAudioEvent(getAudioEventForMove(copy, moveResult));
 
         // Auto-start clock on first move
         if (clock && clock.status === "idle") {
@@ -141,10 +197,17 @@ export const useChessGame = ({
 
         return true;
       } catch (e) {
+        emitAudioEvent("illegalMove");
         return false;
       }
     },
-    [isLatestMove, game, autoSwitchOnMove],
+    [
+      isLatestMove,
+      game,
+      autoSwitchOnMove,
+      emitAudioEvent,
+      getAudioEventForMove,
+    ],
   );
 
   const flipBoard = React.useCallback(() => {
@@ -204,6 +267,7 @@ export const useChessGame = ({
     currentMoveIndex,
     isLatestMove,
     info,
+    audioEvent,
     methods,
     clock: clockState,
   };
