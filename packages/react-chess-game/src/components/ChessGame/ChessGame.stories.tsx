@@ -62,7 +62,7 @@ export const WithSounds = () => (
   <StoryContainer>
     <StoryHeader
       title="Sound Effects"
-      subtitle="Audio feedback on every move"
+      subtitle="Audio feedback for game events"
     />
     <BoardWrapper>
       <ChessGame.Root>
@@ -71,7 +71,32 @@ export const WithSounds = () => (
       </ChessGame.Root>
     </BoardWrapper>
     <p className="text-size-xs text-text-muted text-center m-0 leading-relaxed">
-      Move pieces to hear sounds for each piece type
+      Sounds: move, capture, check, checkmate, draw, timeout, castle, promotion,
+      illegalMove
+    </p>
+  </StoryContainer>
+);
+
+export const WithCustomSounds = () => (
+  <StoryContainer>
+    <StoryHeader
+      title="Custom Sound Overrides"
+      subtitle="Override specific sounds with custom URLs"
+    />
+    <BoardWrapper>
+      <ChessGame.Root>
+        <ChessGame.Sounds
+          sounds={{
+            move: "https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Move.ogg",
+            capture:
+              "https://raw.githubusercontent.com/lichess-org/lila/master/public/sound/standard/Capture.ogg",
+          }}
+        />
+        <ChessGame.Board />
+      </ChessGame.Root>
+    </BoardWrapper>
+    <p className="text-size-xs text-text-muted text-center m-0 leading-relaxed">
+      Lichess sound files from GitHub · Other events use built-in sounds
     </p>
   </StoryContainer>
 );
