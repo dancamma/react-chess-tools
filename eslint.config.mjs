@@ -66,6 +66,7 @@ export default [
       ".storybook/**/*.{js,ts,tsx}",
       "jest.config.js",
       "jest.setup.js",
+      "jest.fileMock.js",
       "**/tsup.config.ts",
       "eslint.config.mjs",
       "tailwind.config.js",
