@@ -210,6 +210,8 @@ Provides sound effects for the chess game. Sounds are active only when `ChessGam
 
 **Note:** This is a logic-only component that returns `null`. It sets up audio functionality via hooks.
 
+Internally, the game emits domain events such as moves, illegal moves, and clock timeouts. `ChessGame.Sounds` interprets those events and maps them to audio cues.
+
 #### Props
 
 | Name     | Type                                      | Default | Description                                 |

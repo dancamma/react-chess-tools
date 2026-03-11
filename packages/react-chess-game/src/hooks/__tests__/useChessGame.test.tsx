@@ -125,7 +125,10 @@ describe("useChessGame", () => {
 
     expect(result.current.game.history().length).toBe(0);
     expect(result.current.currentMoveIndex).toBe(-1);
-    expect(result.current.audioEvent).toMatchObject({ type: "illegalMove" });
+    expect(result.current.gameEvent).toMatchObject({
+      type: "illegal-move",
+      attemptedMove: "e5",
+    });
   });
 
   it("should not allow moves when not at latest position", () => {
@@ -295,18 +298,29 @@ describe("useChessGame", () => {
     });
   });
 
-  describe("audio events", () => {
-    it("should emit a move audio event for a regular move", () => {
+  describe("game events", () => {
+    it("should emit a move-made event for a regular move", () => {
       const { result } = renderHook(() => useChessGame());
 
       act(() => {
         result.current.methods.makeMove("e4");
       });
 
-      expect(result.current.audioEvent).toMatchObject({ type: "move" });
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+        isCheck: false,
+        isCheckmate: false,
+        isDraw: false,
+        move: expect.objectContaining({
+          from: "e2",
+          to: "e4",
+          san: "e4",
+        }),
+      });
     });
 
-    it("should emit a capture audio event", () => {
+    it("should emit a move-made event with capture metadata", () => {
       const { result } = renderHook(() =>
         useChessGame({
           fen: "4k3/8/8/3p4/4P3/8/8/4K3 w - - 0 1",
@@ -317,10 +331,17 @@ describe("useChessGame", () => {
         result.current.methods.makeMove({ from: "e4", to: "d5" });
       });
 
-      expect(result.current.audioEvent).toMatchObject({ type: "capture" });
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        move: expect.objectContaining({
+          from: "e4",
+          to: "d5",
+          captured: "p",
+        }),
+      });
     });
 
-    it("should emit a check audio event", () => {
+    it("should emit a move-made event with check metadata", () => {
       const { result } = renderHook(() =>
         useChessGame({
           fen: "4k3/8/8/8/8/8/4Q3/4K3 w - - 0 1",
@@ -331,10 +352,14 @@ describe("useChessGame", () => {
         result.current.methods.makeMove({ from: "e2", to: "e7" });
       });
 
-      expect(result.current.audioEvent).toMatchObject({ type: "check" });
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        isCheck: true,
+        isCheckmate: false,
+      });
     });
 
-    it("should emit a checkmate audio event", () => {
+    it("should emit a move-made event with checkmate metadata", () => {
       const { result } = renderHook(() => useChessGame());
 
       act(() => {
@@ -353,10 +378,14 @@ describe("useChessGame", () => {
         result.current.methods.makeMove("Qh4#");
       });
 
-      expect(result.current.audioEvent).toMatchObject({ type: "checkmate" });
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        isCheck: true,
+        isCheckmate: true,
+      });
     });
 
-    it("should emit a draw audio event", () => {
+    it("should emit a move-made event with draw metadata", () => {
       const { result } = renderHook(() =>
         useChessGame({
           fen: "k7/8/2QK4/8/8/8/8/8 w - - 0 1",
@@ -367,10 +396,13 @@ describe("useChessGame", () => {
         result.current.methods.makeMove({ from: "c6", to: "b6" });
       });
 
-      expect(result.current.audioEvent).toMatchObject({ type: "draw" });
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        isDraw: true,
+      });
     });
 
-    it("should emit a castle audio event", () => {
+    it("should emit a move-made event with castle metadata", () => {
       const { result } = renderHook(() =>
         useChessGame({
           fen: "4k2r/8/8/8/8/8/8/R3K2R w KQk - 0 1",
@@ -381,10 +413,15 @@ describe("useChessGame", () => {
         result.current.methods.makeMove("O-O");
       });
 
-      expect(result.current.audioEvent).toMatchObject({ type: "castle" });
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        move: expect.objectContaining({
+          flags: expect.stringContaining("k"),
+        }),
+      });
     });
 
-    it("should emit a promotion audio event", () => {
+    it("should emit a move-made event with promotion metadata", () => {
       const { result } = renderHook(() =>
         useChessGame({
           fen: "4k3/P7/8/8/8/8/8/4K3 w - - 0 1",
@@ -399,10 +436,15 @@ describe("useChessGame", () => {
         });
       });
 
-      expect(result.current.audioEvent).toMatchObject({ type: "promotion" });
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        move: expect.objectContaining({
+          promotion: "q",
+        }),
+      });
     });
 
-    it("should emit a timeout audio event when the clock times out", () => {
+    it("should emit a clock-timeout event when the clock times out", () => {
       const clockState: {
         status: "running";
         timeout: "white" | null;
@@ -437,7 +479,10 @@ describe("useChessGame", () => {
       );
       rerender();
 
-      expect(result.current.audioEvent).toMatchObject({ type: "timeout" });
+      expect(result.current.gameEvent).toMatchObject({
+        type: "clock-timeout",
+        player: "white",
+      });
     });
   });
 });

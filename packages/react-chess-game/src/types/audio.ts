@@ -14,9 +14,4 @@ export type AudioEventName = (typeof AUDIO_EVENT_NAMES)[number];
 
 export type AudioOverrides = Partial<Record<AudioEventName, string>>;
 
-export interface ChessGameAudioEvent {
-  id: number;
-  type: AudioEventName;
-}
-
 export type ResolvedAudioSources = Record<AudioEventName, string>;

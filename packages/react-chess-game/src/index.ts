@@ -18,11 +18,14 @@ export type { ChessGameContextType } from "./hooks/useChessGameContext";
 export type { useChessGameProps } from "./hooks/useChessGame";
 
 // Audio Types
+export type { AudioEventName, AudioOverrides } from "./types/audio";
 export type {
-  AudioEventName,
-  AudioOverrides,
-  ChessGameAudioEvent,
-} from "./types/audio";
+  ChessGameClockTimeoutEvent,
+  ChessGameEvent,
+  ChessGameEventName,
+  ChessGameIllegalMoveEvent,
+  ChessGameMoveEvent,
+} from "./types/gameEvents";
 export type { SoundsProps } from "./components/ChessGame/parts/Sounds";
 
 // Keyboard Types

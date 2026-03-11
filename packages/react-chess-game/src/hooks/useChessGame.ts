@@ -3,7 +3,12 @@ import { useOptionalChessClock } from "@react-chess-tools/react-chess-clock";
 import type { TimeControlConfig } from "@react-chess-tools/react-chess-clock";
 import { Chess, Color, type Move } from "chess.js";
 
-import { type AudioEventName, type ChessGameAudioEvent } from "../types/audio";
+import type {
+  ChessGameClockTimeoutEvent,
+  ChessGameEvent,
+  ChessGameIllegalMoveEvent,
+  ChessGameMoveEvent,
+} from "../types/gameEvents";
 import { cloneGame, getCurrentFen, getGameInfo } from "../utils/chess";
 
 export type useChessGameProps = {
@@ -40,9 +45,8 @@ export const useChessGame = ({
     initialOrientation ?? "w",
   );
   const [currentMoveIndex, setCurrentMoveIndex] = React.useState(-1);
-  const [audioEvent, setAudioEvent] =
-    React.useState<ChessGameAudioEvent | null>(null);
-  const audioEventIdRef = React.useRef(0);
+  const [gameEvent, setGameEvent] = React.useState<ChessGameEvent | null>(null);
+  const gameEventIdRef = React.useRef(0);
 
   // Sync game state when fen prop changes (skip on mount to avoid double initialization)
   useEffect(() => {
@@ -95,52 +99,44 @@ export const useChessGame = ({
   clockStateRef.current = clockState;
   const previousTimeoutRef = React.useRef(clockState?.timeout ?? null);
 
-  const emitAudioEvent = React.useCallback((type: AudioEventName) => {
-    audioEventIdRef.current += 1;
-    setAudioEvent({
-      id: audioEventIdRef.current,
-      type,
-    });
-  }, []);
+  const emitGameEvent = React.useCallback(
+    (
+      event:
+        | Omit<ChessGameMoveEvent, "id">
+        | Omit<ChessGameIllegalMoveEvent, "id">
+        | Omit<ChessGameClockTimeoutEvent, "id">,
+    ) => {
+      gameEventIdRef.current += 1;
+      setGameEvent({
+        ...event,
+        id: gameEventIdRef.current,
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     const timeout = clockState?.timeout ?? null;
 
     if (previousTimeoutRef.current === null && timeout !== null) {
-      emitAudioEvent("timeout");
+      emitGameEvent({
+        type: "clock-timeout",
+        player: timeout,
+      });
     }
 
     previousTimeoutRef.current = timeout;
-  }, [clockState?.timeout, emitAudioEvent]);
+  }, [clockState?.timeout, emitGameEvent]);
 
-  const getAudioEventForMove = React.useCallback(
-    (nextGame: Chess, moveResult: Move): AudioEventName => {
-      if (nextGame.isCheckmate()) {
-        return "checkmate";
-      }
-
-      if (nextGame.isDraw()) {
-        return "draw";
-      }
-
-      if (moveResult.promotion) {
-        return "promotion";
-      }
-
-      if (moveResult.flags.includes("k") || moveResult.flags.includes("q")) {
-        return "castle";
-      }
-
-      if (moveResult.captured) {
-        return "capture";
-      }
-
-      if (nextGame.isCheck()) {
-        return "check";
-      }
-
-      return "move";
-    },
+  const getGameEventForMove = React.useCallback(
+    (nextGame: Chess, moveResult: Move): Omit<ChessGameMoveEvent, "id"> => ({
+      type: "move-made",
+      move: moveResult,
+      fen: nextGame.fen(),
+      isCheck: nextGame.isCheck(),
+      isCheckmate: nextGame.isCheckmate(),
+      isDraw: nextGame.isDraw(),
+    }),
     [],
   );
 
@@ -178,7 +174,7 @@ export const useChessGame = ({
         const moveResult = copy.move(move);
         setGame(copy);
         setCurrentMoveIndex(copy.history().length - 1);
-        emitAudioEvent(getAudioEventForMove(copy, moveResult));
+        emitGameEvent(getGameEventForMove(copy, moveResult));
 
         // Auto-start clock on first move
         if (clock && clock.status === "idle") {
@@ -197,17 +193,14 @@ export const useChessGame = ({
 
         return true;
       } catch (e) {
-        emitAudioEvent("illegalMove");
+        emitGameEvent({
+          type: "illegal-move",
+          attemptedMove: move,
+        });
         return false;
       }
     },
-    [
-      isLatestMove,
-      game,
-      autoSwitchOnMove,
-      emitAudioEvent,
-      getAudioEventForMove,
-    ],
+    [isLatestMove, game, autoSwitchOnMove, emitGameEvent, getGameEventForMove],
   );
 
   const flipBoard = React.useCallback(() => {
@@ -267,7 +260,7 @@ export const useChessGame = ({
     currentMoveIndex,
     isLatestMove,
     info,
-    audioEvent,
+    gameEvent,
     methods,
     clock: clockState,
   };
