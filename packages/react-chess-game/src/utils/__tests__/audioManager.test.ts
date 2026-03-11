@@ -92,12 +92,12 @@ describe("audioManager", () => {
     ).filter((entry) => entry.endsWith(".ogg"));
 
     // We use shared audio files for similar events (e.g., move/check/checkmate/castle/promotion all use move.ogg)
-    // Expected files: capture.ogg, error.ogg, move.ogg, notify.ogg, timeout.ogg
+    // Expected files: capture.ogg, move.ogg, notify.ogg, silence.ogg, timeout.ogg
     const expectedFiles = [
       "capture.ogg",
-      "error.ogg",
       "move.ogg",
       "notify.ogg",
+      "silence.ogg",
       "timeout.ogg",
     ];
     expect(sourceAudioFiles.sort()).toEqual(expectedFiles.sort());
