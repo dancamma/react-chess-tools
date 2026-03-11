@@ -1,85 +1,73 @@
-import { type Move } from "chess.js";
 import { useEffect, useRef } from "react";
+
+import { type AudioEventName, type ResolvedAudioSources } from "../types/audio";
+import { type ChessGameEvent } from "../types/gameEvents";
+import { createAudioManager, type AudioManager } from "../utils/audioManager";
 import { useChessGameContext } from "./useChessGameContext";
-import { type Sound } from "../assets/sounds";
 
-const playSound = async (audioElement: HTMLAudioElement) => {
-  try {
-    await audioElement.play();
-  } catch (error) {
-    console.warn("Failed to play sound:", (error as Error).message);
-  }
-};
-
-const getMoveSignature = (move: Partial<Move> | null | undefined) => {
-  if (!move?.from || !move?.to) {
-    return null;
+const getAudioEventForGameEvent = (
+  gameEvent: ChessGameEvent,
+): AudioEventName => {
+  if (gameEvent.type === "illegal-move") {
+    return "illegalMove";
   }
 
-  return [
-    move.color ?? "",
-    move.piece ?? "",
-    move.from,
-    move.to,
-    move.captured ?? "",
-    move.promotion ?? "",
-    move.san ?? "",
-  ].join(":");
+  if (gameEvent.type === "clock-timeout") {
+    return "timeout";
+  }
+
+  if (gameEvent.isCheckmate) {
+    return "checkmate";
+  }
+
+  if (gameEvent.isDraw) {
+    return "draw";
+  }
+
+  if (gameEvent.move.promotion) {
+    return "promotion";
+  }
+
+  if (
+    gameEvent.move.flags.includes("k") ||
+    gameEvent.move.flags.includes("q")
+  ) {
+    return "castle";
+  }
+
+  if (gameEvent.move.captured) {
+    return "capture";
+  }
+
+  if (gameEvent.isCheck) {
+    return "check";
+  }
+
+  return "move";
 };
 
-export const useBoardSounds = (sounds: Record<Sound, HTMLAudioElement>) => {
-  const {
-    info: { lastMove, isCheckmate, isCheck },
-  } = useChessGameContext();
-
-  // Use ref to store sounds to avoid triggering effect on every render
-  const soundsRef = useRef(sounds);
-  soundsRef.current = sounds;
-  const previousMoveSignatureRef = useRef<string | null>(null);
-  const isFirstRenderRef = useRef(true);
+export const useBoardSounds = (sources: ResolvedAudioSources) => {
+  const { gameEvent } = useChessGameContext();
+  const audioManagerRef = useRef<AudioManager | null>(null);
 
   useEffect(() => {
-    const currentSounds = soundsRef.current;
-    const currentMoveSignature = getMoveSignature(lastMove);
+    const audioManager = createAudioManager(sources);
+    audioManagerRef.current = audioManager;
 
-    if (isFirstRenderRef.current) {
-      isFirstRenderRef.current = false;
-      previousMoveSignatureRef.current = currentMoveSignature;
+    return () => {
+      audioManager.destroy();
+
+      if (audioManagerRef.current === audioManager) {
+        audioManagerRef.current = null;
+      }
+    };
+  }, [sources]);
+
+  useEffect(() => {
+    if (!gameEvent) {
       return;
     }
 
-    if (!currentMoveSignature) {
-      previousMoveSignatureRef.current = null;
-      return;
-    }
-
-    if (currentMoveSignature === previousMoveSignatureRef.current) {
-      return;
-    }
-
-    previousMoveSignatureRef.current = currentMoveSignature;
-
-    if (Object.keys(currentSounds).length === 0) {
-      return;
-    }
-
-    if (isCheckmate && currentSounds.gameOver) {
-      playSound(currentSounds.gameOver);
-      return;
-    }
-
-    if (lastMove?.captured && currentSounds.capture) {
-      playSound(currentSounds.capture);
-      return;
-    }
-
-    if (isCheck && currentSounds.check) {
-      playSound(currentSounds.check);
-      return;
-    }
-
-    if (lastMove && currentSounds.move) {
-      playSound(currentSounds.move);
-    }
-  }, [lastMove, isCheck, isCheckmate]);
+    audioManagerRef.current?.play(getAudioEventForGameEvent(gameEvent));
+  }, [gameEvent]);
 };

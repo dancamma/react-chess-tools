@@ -1,23 +1,44 @@
 import React from "react";
 import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
+
 import { ChessGame } from "../..";
 import { Sounds } from "../Sounds";
 
-// Mock Audio constructor
-const mockAudioInstances: HTMLAudioElement[] = [];
+const mockAudioInstances: MockAudio[] = [];
+
 class MockAudio {
-  src: string;
+  currentTime = 0;
+  preload = "";
+  pause = jest.fn();
   play = jest.fn().mockResolvedValue(undefined);
-  constructor(src: string) {
-    this.src = src;
-    mockAudioInstances.push(this as unknown as HTMLAudioElement);
+  load = jest.fn();
+  removeAttribute = jest.fn((attributeName: string) => {
+    if (attributeName === "src") {
+      this.src = "";
+    }
+  });
+
+  constructor(public src: string) {
+    mockAudioInstances.push(this);
   }
 }
 
 describe("ChessGame.Sounds", () => {
+  let originalAudio: typeof window.Audio;
+
+  beforeAll(() => {
+    originalAudio = window.Audio;
+  });
+
   beforeEach(() => {
+    jest.clearAllMocks();
     mockAudioInstances.length = 0;
+    (window as unknown as Record<string, unknown>).Audio = MockAudio;
+  });
+
+  afterAll(() => {
+    window.Audio = originalAudio;
   });
 
   it("should have correct displayName", () => {
@@ -31,48 +52,62 @@ describe("ChessGame.Sounds", () => {
       </ChessGame.Root>,
     );
 
-    // Sounds should not render any DOM elements
     expect(container.querySelector("*")).toBeNull();
   });
 
-  describe("sound override merging", () => {
-    let originalAudio: typeof window.Audio;
+  it("should initialize the built-in sounds by default", () => {
+    render(
+      <ChessGame.Root>
+        <ChessGame.Sounds />
+      </ChessGame.Root>,
+    );
 
-    beforeAll(() => {
-      originalAudio = window.Audio;
-      (window as unknown as Record<string, unknown>).Audio = MockAudio;
-    });
+    expect(mockAudioInstances).toHaveLength(9);
+    expect(
+      mockAudioInstances.every((audio) => audio.src.endsWith(".ogg")),
+    ).toBe(true);
+  });
 
-    afterAll(() => {
-      window.Audio = originalAudio;
-    });
+  it("should apply custom overrides per event", () => {
+    render(
+      <ChessGame.Root>
+        <ChessGame.Sounds
+          sounds={{
+            move: "https://example.com/custom-move.ogg",
+          }}
+        />
+      </ChessGame.Root>,
+    );
 
-    it("should properly merge custom sounds with default sounds", () => {
-      const customMoveSound = "customMoveBase64";
-      render(
-        <ChessGame.Root>
-          <ChessGame.Sounds sounds={{ move: customMoveSound }} />
-        </ChessGame.Root>,
-      );
+    expect(
+      mockAudioInstances.some(
+        (audio) => audio.src === "https://example.com/custom-move.ogg",
+      ),
+    ).toBe(true);
+    expect(
+      mockAudioInstances.some((audio) => audio.src === "audio-file-stub.ogg"),
+    ).toBe(true);
+  });
 
-      // Find the audio instance for the move sound
-      const moveAudio = mockAudioInstances.find(
-        (audio) => audio.src === `data:audio/wav;base64,${customMoveSound}`,
-      );
+  it("should not create audio elements when ChessGame.Sounds is not mounted", () => {
+    render(
+      <ChessGame.Root>
+        <div>silent game</div>
+      </ChessGame.Root>,
+    );
 
-      // Should have created an audio element with the custom sound
-      expect(moveAudio).toBeDefined();
-    });
+    expect(mockAudioInstances).toHaveLength(0);
+  });
 
-    it("should include default sounds not overridden", () => {
+  it("should not fail when Audio is unavailable", () => {
+    (window as unknown as Record<string, unknown>).Audio = undefined;
+
+    expect(() =>
       render(
         <ChessGame.Root>
           <ChessGame.Sounds />
         </ChessGame.Root>,
-      );
-
-      // All default sounds should be created
-      expect(mockAudioInstances.length).toBe(4); // move, capture, gameOver, check
-    });
+      ),
+    ).not.toThrow();
   });
 });
