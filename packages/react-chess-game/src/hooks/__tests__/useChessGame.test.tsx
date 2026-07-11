@@ -55,6 +55,34 @@ describe("useChessGame", () => {
       expect(result.current.orientation).toBe("b");
     });
 
+    it("should change positionId when a position is loaded, but not on moves", () => {
+      const initialFen =
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+      const newFen =
+        "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2";
+
+      const { result, rerender } = renderHook(
+        ({ fen }) => useChessGame({ fen }),
+        { initialProps: { fen: initialFen } },
+      );
+
+      const initialPositionId = result.current.positionId;
+
+      act(() => {
+        result.current.methods.makeMove("e4");
+      });
+      expect(result.current.positionId).toBe(initialPositionId);
+
+      rerender({ fen: newFen });
+      expect(result.current.positionId).not.toBe(initialPositionId);
+
+      const afterFenChange = result.current.positionId;
+      act(() => {
+        result.current.methods.setPosition(initialFen, "w");
+      });
+      expect(result.current.positionId).not.toBe(afterFenChange);
+    });
+
     it("should not change orientation when prop is undefined on rerender", () => {
       const { result, rerender } = renderHook(
         ({ orientation }) => useChessGame({ orientation }),

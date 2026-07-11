@@ -46,6 +46,7 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       orientation,
       info,
       isLatestMove,
+      positionId,
       methods: { makeMove },
     } = gameContext;
 
@@ -262,7 +263,10 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
         onPointerDownCapture={handlePointerDownCapture}
         {...rest}
       >
-        <Chessboard options={mergedOptions} />
+        {/* Remounting on positionId discards react-chessboard's in-flight
+            animation timers, which would otherwise replay the previous
+            position over a newly loaded one (#83) */}
+        <Chessboard key={positionId} options={mergedOptions} />
         {promotionMove && (
           <>
             {/* Backdrop overlay - click to cancel */}

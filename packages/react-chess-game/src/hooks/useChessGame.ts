@@ -47,6 +47,10 @@ export const useChessGame = ({
   const [currentMoveIndex, setCurrentMoveIndex] = React.useState(-1);
   const [gameEvent, setGameEvent] = React.useState<ChessGameEvent | null>(null);
   const gameEventIdRef = React.useRef(0);
+  // Incremented every time a new position is loaded (fen prop change or
+  // setPosition), but not on moves. Consumers can key the board on it to
+  // discard in-flight move animations that would replay over the new position
+  const [positionId, setPositionId] = React.useState(0);
 
   // Sync game state when fen prop changes (skip on mount to avoid double initialization)
   useEffect(() => {
@@ -59,11 +63,13 @@ export const useChessGame = ({
       setInitialFen(fen);
       setGame(newGame);
       setCurrentMoveIndex(-1); // Reset move navigation when position changes externally
+      setPositionId((id) => id + 1);
     } catch (e) {
       console.error("Invalid FEN:", fen, e);
       setInitialFen(undefined);
       setGame(new Chess());
       setCurrentMoveIndex(-1);
+      setPositionId((id) => id + 1);
     }
   }, [fen]);
 
@@ -148,6 +154,7 @@ export const useChessGame = ({
       setOrientation(orientation);
       setGame(newGame);
       setCurrentMoveIndex(-1);
+      setPositionId((id) => id + 1);
     } catch (e) {
       console.error("Failed to load FEN:", fen, e);
     }
@@ -259,6 +266,7 @@ export const useChessGame = ({
     orientation,
     currentMoveIndex,
     isLatestMove,
+    positionId,
     info,
     gameEvent,
     methods,
