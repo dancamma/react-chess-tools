@@ -1,5 +1,20 @@
 # @react-chess-tools/react-chess-game
 
+## 2.0.0
+
+### Major Changes
+
+- 0c3df58: fix: prop sync and dependency restructuring
+- da6ce4d: feat(react-chess-game): redesign sound system with AudioManager
+
+### Patch Changes
+
+- 5db15e8: fix: inline bundled audio as data URIs so default sounds work in consumer apps, restore deselection clicks not emitting illegal-move events, and skip replaying stale game events when Sounds mounts mid-game
+- fb50ea5: Fix the board replaying the previous position when a new position is loaded while a move animation is still in flight (e.g. solving a puzzle with a promotion move and immediately loading the next puzzle, #83). The board now remounts when a new position is loaded, discarding stale animation timers.
+- ea81945: fix: sound and keyboard control improvements
+- Updated dependencies [0c3df58]
+  - @react-chess-tools/react-chess-clock@2.0.0
+
 ## 1.0.5
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@react-chess-tools/react-chess-bot",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Logical CPU players for react-chess-game powered by UCI engines in Web Workers.",
   "type": "module",
   "exports": {
@@ -29,14 +29,14 @@
     "chess.js": "^1.4.0"
   },
   "devDependencies": {
-    "@react-chess-tools/react-chess-game": "^1.0.5",
-    "@react-chess-tools/react-chess-stockfish": "^1.0.5",
+    "@react-chess-tools/react-chess-game": "^2.0.0",
+    "@react-chess-tools/react-chess-stockfish": "^2.0.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
   "peerDependencies": {
-    "@react-chess-tools/react-chess-game": "^1.0.5",
-    "@react-chess-tools/react-chess-stockfish": "^1.0.5",
+    "@react-chess-tools/react-chess-game": "^2.0.0",
+    "@react-chess-tools/react-chess-stockfish": "^2.0.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   }
