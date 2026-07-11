@@ -49,6 +49,8 @@ const getAudioEventForGameEvent = (
 export const useBoardSounds = (sources: ResolvedAudioSources) => {
   const { gameEvent } = useChessGameContext();
   const audioManagerRef = useRef<AudioManager | null>(null);
+  // Events emitted before mount must not replay when the hook mounts mid-game
+  const lastHandledEventIdRef = useRef(gameEvent?.id ?? null);
 
   useEffect(() => {
     const audioManager = createAudioManager(sources);
@@ -64,10 +66,11 @@ export const useBoardSounds = (sources: ResolvedAudioSources) => {
   }, [sources]);
 
   useEffect(() => {
-    if (!gameEvent) {
+    if (!gameEvent || gameEvent.id === lastHandledEventIdRef.current) {
       return;
     }
 
+    lastHandledEventIdRef.current = gameEvent.id;
     audioManagerRef.current?.play(getAudioEventForGameEvent(gameEvent));
   }, [gameEvent]);
 };

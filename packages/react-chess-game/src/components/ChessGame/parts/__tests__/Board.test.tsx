@@ -3,6 +3,16 @@ import { fireEvent, render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { ChessGame } from "../..";
 import { Board } from "../Board";
+import { useChessGameContext } from "../../../../hooks/useChessGameContext";
+import type { ChessGameEvent } from "../../../../types/gameEvents";
+
+const GameEventProbe = ({ events }: { events: (ChessGameEvent | null)[] }) => {
+  const { gameEvent } = useChessGameContext();
+  React.useEffect(() => {
+    events.push(gameEvent);
+  }, [gameEvent, events]);
+  return null;
+};
 
 describe("ChessGame.Board", () => {
   it("should have correct displayName", () => {
@@ -121,6 +131,38 @@ describe("ChessGame.Board", () => {
     fireEvent.pointerDown(board);
 
     expect(document.activeElement).toBe(board);
+  });
+
+  it("should not emit an illegal-move event when a click deselects the piece", () => {
+    const events: (ChessGameEvent | null)[] = [];
+    const { container } = render(
+      <ChessGame.Root>
+        <Board />
+        <GameEventProbe events={events} />
+      </ChessGame.Root>,
+    );
+
+    fireEvent.click(container.querySelector('[data-square="e2"]')!);
+    fireEvent.click(container.querySelector('[data-square="d5"]')!);
+
+    expect(events.filter(Boolean)).toEqual([]);
+  });
+
+  it("should emit a move-made event when a legal move is played by click", () => {
+    const events: (ChessGameEvent | null)[] = [];
+    const { container } = render(
+      <ChessGame.Root>
+        <Board options={{ showAnimations: false }} />
+        <GameEventProbe events={events} />
+      </ChessGame.Root>,
+    );
+
+    fireEvent.click(container.querySelector('[data-square="e2"]')!);
+    fireEvent.click(container.querySelector('[data-square="e4"]')!);
+
+    const emitted = events.filter(Boolean) as ChessGameEvent[];
+    expect(emitted).toHaveLength(1);
+    expect(emitted[0]).toMatchObject({ type: "move-made" });
   });
 
   it("should throw error when used outside ChessGame.Root", () => {
