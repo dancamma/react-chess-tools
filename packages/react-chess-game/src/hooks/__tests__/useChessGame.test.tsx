@@ -1,8 +1,20 @@
 import { renderHook, act, RenderHookResult } from "@testing-library/react";
+import { useOptionalChessClock } from "@react-chess-tools/react-chess-clock";
 import { useChessGame, useChessGameProps } from "../useChessGame";
 import { Chess, Color } from "chess.js";
 
+jest.mock("@react-chess-tools/react-chess-clock", () => ({
+  useOptionalChessClock: jest.fn(),
+}));
+
+const mockedUseOptionalChessClock =
+  useOptionalChessClock as jest.MockedFunction<typeof useOptionalChessClock>;
+
 describe("useChessGame", () => {
+  beforeEach(() => {
+    mockedUseOptionalChessClock.mockReturnValue(null);
+  });
+
   describe("prop sync", () => {
     it("should update game state when fen prop changes", () => {
       const initialFen =
@@ -113,6 +125,10 @@ describe("useChessGame", () => {
 
     expect(result.current.game.history().length).toBe(0);
     expect(result.current.currentMoveIndex).toBe(-1);
+    expect(result.current.gameEvent).toMatchObject({
+      type: "illegal-move",
+      attemptedMove: "e5",
+    });
   });
 
   it("should not allow moves when not at latest position", () => {
@@ -279,6 +295,194 @@ describe("useChessGame", () => {
       });
 
       expect(hookResult.result.current.currentMoveIndex).toBe(3);
+    });
+  });
+
+  describe("game events", () => {
+    it("should emit a move-made event for a regular move", () => {
+      const { result } = renderHook(() => useChessGame());
+
+      act(() => {
+        result.current.methods.makeMove("e4");
+      });
+
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        fen: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
+        isCheck: false,
+        isCheckmate: false,
+        isDraw: false,
+        move: expect.objectContaining({
+          from: "e2",
+          to: "e4",
+          san: "e4",
+        }),
+      });
+    });
+
+    it("should emit a move-made event with capture metadata", () => {
+      const { result } = renderHook(() =>
+        useChessGame({
+          fen: "4k3/8/8/3p4/4P3/8/8/4K3 w - - 0 1",
+        }),
+      );
+
+      act(() => {
+        result.current.methods.makeMove({ from: "e4", to: "d5" });
+      });
+
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        move: expect.objectContaining({
+          from: "e4",
+          to: "d5",
+          captured: "p",
+        }),
+      });
+    });
+
+    it("should emit a move-made event with check metadata", () => {
+      const { result } = renderHook(() =>
+        useChessGame({
+          fen: "4k3/8/8/8/8/8/4Q3/4K3 w - - 0 1",
+        }),
+      );
+
+      act(() => {
+        result.current.methods.makeMove({ from: "e2", to: "e7" });
+      });
+
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        isCheck: true,
+        isCheckmate: false,
+      });
+    });
+
+    it("should emit a move-made event with checkmate metadata", () => {
+      const { result } = renderHook(() => useChessGame());
+
+      act(() => {
+        result.current.methods.makeMove("f3");
+      });
+
+      act(() => {
+        result.current.methods.makeMove("e5");
+      });
+
+      act(() => {
+        result.current.methods.makeMove("g4");
+      });
+
+      act(() => {
+        result.current.methods.makeMove("Qh4#");
+      });
+
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        isCheck: true,
+        isCheckmate: true,
+      });
+    });
+
+    it("should emit a move-made event with draw metadata", () => {
+      const { result } = renderHook(() =>
+        useChessGame({
+          fen: "k7/8/2QK4/8/8/8/8/8 w - - 0 1",
+        }),
+      );
+
+      act(() => {
+        result.current.methods.makeMove({ from: "c6", to: "b6" });
+      });
+
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        isDraw: true,
+      });
+    });
+
+    it("should emit a move-made event with castle metadata", () => {
+      const { result } = renderHook(() =>
+        useChessGame({
+          fen: "4k2r/8/8/8/8/8/8/R3K2R w KQk - 0 1",
+        }),
+      );
+
+      act(() => {
+        result.current.methods.makeMove("O-O");
+      });
+
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        move: expect.objectContaining({
+          flags: expect.stringContaining("k"),
+        }),
+      });
+    });
+
+    it("should emit a move-made event with promotion metadata", () => {
+      const { result } = renderHook(() =>
+        useChessGame({
+          fen: "4k3/P7/8/8/8/8/8/4K3 w - - 0 1",
+        }),
+      );
+
+      act(() => {
+        result.current.methods.makeMove({
+          from: "a7",
+          to: "a8",
+          promotion: "q",
+        });
+      });
+
+      expect(result.current.gameEvent).toMatchObject({
+        type: "move-made",
+        move: expect.objectContaining({
+          promotion: "q",
+        }),
+      });
+    });
+
+    it("should emit a clock-timeout event when the clock times out", () => {
+      const clockState: {
+        status: "running";
+        timeout: "white" | null;
+        methods: {
+          start: jest.Mock;
+          pause: jest.Mock;
+          switch: jest.Mock;
+        };
+      } = {
+        status: "running",
+        timeout: null,
+        methods: {
+          start: jest.fn(),
+          pause: jest.fn(),
+          switch: jest.fn(),
+        },
+      };
+
+      mockedUseOptionalChessClock.mockReturnValue(
+        clockState as unknown as ReturnType<typeof useOptionalChessClock>,
+      );
+
+      const { result, rerender } = renderHook(() =>
+        useChessGame({
+          timeControl: { time: "1+0" },
+        }),
+      );
+
+      clockState.timeout = "white";
+      mockedUseOptionalChessClock.mockReturnValue(
+        clockState as unknown as ReturnType<typeof useOptionalChessClock>,
+      );
+      rerender();
+
+      expect(result.current.gameEvent).toMatchObject({
+        type: "clock-timeout",
+        player: "white",
+      });
     });
   });
 });

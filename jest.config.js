@@ -10,6 +10,7 @@ module.exports = {
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   moduleNameMapper: {
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+    "\\.ogg$": "<rootDir>/jest.fileMock.js",
     "^@react-chess-tools/react-chess-game$":
       "<rootDir>/packages/react-chess-game/src/index.ts",
     "^@react-chess-tools/react-chess-puzzle$":

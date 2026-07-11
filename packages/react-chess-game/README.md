@@ -42,7 +42,7 @@ The package now includes integrated chess clock functionality powered by [`@reac
 ## Features
 
 - **Move-by-click** - Click to select and move pieces
-- **Sound effects** - Built-in sounds for moves, captures, check, and game over
+- **Sound effects** - Built-in `.ogg` sounds for game audio events, with per-event overrides
 - **Square highlighting** - Visual feedback for valid moves and last move
 - **Keyboard controls** - Navigate through game history with arrow keys
 - **Integrated Chess Clock** - Built-in clock support with multiple timing methods
@@ -206,24 +206,49 @@ Supports **ref forwarding** and all standard **HTML div attributes** (className,
 
 ### ChessGame.Sounds
 
-Provides sound effects for the chess game. Uses built-in sounds by default, but custom sounds can be provided as base64-encoded strings. Sounds are emitted for new moves only, so loading a static FEN does not trigger audio.
+Provides sound effects for the chess game. Sounds are active only when `ChessGame.Sounds` is mounted. By default the component uses built-in `.ogg` files shipped with the package, and you can override individual events with custom URLs.
 
 **Note:** This is a logic-only component that returns `null`. It sets up audio functionality via hooks.
 
+Internally, the game emits domain events such as moves, illegal moves, and clock timeouts. `ChessGame.Sounds` interprets those events and maps them to audio cues.
+
 #### Props
 
-| Name     | Type                             | Default | Description                                                               |
-| -------- | -------------------------------- | ------- | ------------------------------------------------------------------------- |
-| `sounds` | `Partial<Record<Sound, string>>` | -       | Custom sounds configuration. Keys: `move`, `capture`, `check`, `gameOver` |
+| Name     | Type                                      | Default | Description                                 |
+| -------- | ----------------------------------------- | ------- | ------------------------------------------- |
+| `sounds` | `Partial<Record<AudioEventName, string>>` | -       | Override one or more sounds per audio event |
 
-#### Example
+#### Supported events
+
+- `move`
+- `capture`
+- `check`
+- `checkmate`
+- `draw`
+- `timeout`
+- `castle`
+- `promotion`
+- `illegalMove`
+
+`ChessGame.Sounds` does not expose global controls such as `enabled`, `muted`, or `volume`.
+
+#### Example with built-in sounds
+
+```tsx
+<ChessGame.Root>
+  <ChessGame.Sounds />
+  <ChessGame.Board />
+</ChessGame.Root>
+```
+
+#### Example with custom overrides
 
 ```tsx
 <ChessGame.Root>
   <ChessGame.Sounds
     sounds={{
-      move: customMoveSound,
-      capture: customCaptureSound,
+      move: "/sounds/move.ogg",
+      checkmate: "/sounds/checkmate.ogg",
     }}
   />
   <ChessGame.Board />

@@ -1,8 +1,15 @@
 import React, { useEffect, useRef } from "react";
-import { Chess, Color } from "chess.js";
-import { cloneGame, getCurrentFen, getGameInfo } from "../utils/chess";
 import { useOptionalChessClock } from "@react-chess-tools/react-chess-clock";
 import type { TimeControlConfig } from "@react-chess-tools/react-chess-clock";
+import { Chess, Color, type Move } from "chess.js";
+
+import type {
+  ChessGameClockTimeoutEvent,
+  ChessGameEvent,
+  ChessGameIllegalMoveEvent,
+  ChessGameMoveEvent,
+} from "../types/gameEvents";
+import { cloneGame, getCurrentFen, getGameInfo } from "../utils/chess";
 
 export type useChessGameProps = {
   fen?: string;
@@ -38,6 +45,8 @@ export const useChessGame = ({
     initialOrientation ?? "w",
   );
   const [currentMoveIndex, setCurrentMoveIndex] = React.useState(-1);
+  const [gameEvent, setGameEvent] = React.useState<ChessGameEvent | null>(null);
+  const gameEventIdRef = React.useRef(0);
 
   // Sync game state when fen prop changes (skip on mount to avoid double initialization)
   useEffect(() => {
@@ -88,6 +97,48 @@ export const useChessGame = ({
   // ticking), which would defeat the useCallback memoization.
   const clockStateRef = useRef(clockState);
   clockStateRef.current = clockState;
+  const previousTimeoutRef = React.useRef(clockState?.timeout ?? null);
+
+  const emitGameEvent = React.useCallback(
+    (
+      event:
+        | Omit<ChessGameMoveEvent, "id">
+        | Omit<ChessGameIllegalMoveEvent, "id">
+        | Omit<ChessGameClockTimeoutEvent, "id">,
+    ) => {
+      gameEventIdRef.current += 1;
+      setGameEvent({
+        ...event,
+        id: gameEventIdRef.current,
+      });
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const timeout = clockState?.timeout ?? null;
+
+    if (previousTimeoutRef.current === null && timeout !== null) {
+      emitGameEvent({
+        type: "clock-timeout",
+        player: timeout,
+      });
+    }
+
+    previousTimeoutRef.current = timeout;
+  }, [clockState?.timeout, emitGameEvent]);
+
+  const getGameEventForMove = React.useCallback(
+    (nextGame: Chess, moveResult: Move): Omit<ChessGameMoveEvent, "id"> => ({
+      type: "move-made",
+      move: moveResult,
+      fen: nextGame.fen(),
+      isCheck: nextGame.isCheck(),
+      isCheckmate: nextGame.isCheckmate(),
+      isDraw: nextGame.isDraw(),
+    }),
+    [],
+  );
 
   const setPosition = React.useCallback((fen: string, orientation: Color) => {
     try {
@@ -120,9 +171,10 @@ export const useChessGame = ({
 
       try {
         const copy = cloneGame(game);
-        copy.move(move);
+        const moveResult = copy.move(move);
         setGame(copy);
         setCurrentMoveIndex(copy.history().length - 1);
+        emitGameEvent(getGameEventForMove(copy, moveResult));
 
         // Auto-start clock on first move
         if (clock && clock.status === "idle") {
@@ -141,10 +193,14 @@ export const useChessGame = ({
 
         return true;
       } catch (e) {
+        emitGameEvent({
+          type: "illegal-move",
+          attemptedMove: move,
+        });
         return false;
       }
     },
-    [isLatestMove, game, autoSwitchOnMove],
+    [isLatestMove, game, autoSwitchOnMove, emitGameEvent, getGameEventForMove],
   );
 
   const flipBoard = React.useCallback(() => {
@@ -204,6 +260,7 @@ export const useChessGame = ({
     currentMoveIndex,
     isLatestMove,
     info,
+    gameEvent,
     methods,
     clock: clockState,
   };
