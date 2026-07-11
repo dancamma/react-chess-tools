@@ -10,7 +10,7 @@ import {
   getCustomSquareStyles,
   deepMergeChessboardOptions,
 } from "../../../utils/board";
-import { requiresPromotion } from "../../../utils/chess";
+import { isLegalMove, requiresPromotion } from "../../../utils/chess";
 import { useChessGameBoardContainerContext } from "../../../hooks/useChessGameBoardContainerContext";
 import { useChessGameContext } from "../../../hooks/useChessGameContext";
 import { useChessGameTheme } from "../../../theme/context";
@@ -104,6 +104,18 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
           return setActiveSquare(square);
         }
         return;
+      }
+
+      // Deselecting (clicking an unreachable square) is not an attempted
+      // move: it must not emit an illegal-move event
+      if (
+        !isLegalMove(game, {
+          from: activeSquare,
+          to: square,
+          promotion: "q",
+        })
+      ) {
+        return setActiveSquare(null);
       }
 
       if (

@@ -211,6 +211,36 @@ describe("useBoardSounds", () => {
     expect(mockPlay).toHaveBeenNthCalledWith(2, "move");
   });
 
+  it("should not replay an event that predates the mount", () => {
+    mockContextValue.gameEvent = {
+      id: 5,
+      type: "move-made",
+      fen: "fen",
+      isCheck: false,
+      isCheckmate: false,
+      isDraw: false,
+      move: { san: "e4", flags: "b" } as never,
+    };
+
+    const { rerender } = renderHook(() => useBoardSounds(sources));
+
+    expect(mockPlay).not.toHaveBeenCalled();
+
+    mockContextValue.gameEvent = {
+      id: 6,
+      type: "move-made",
+      fen: "fen-2",
+      isCheck: false,
+      isCheckmate: false,
+      isDraw: false,
+      move: { san: "e5", flags: "b" } as never,
+    };
+    rerender();
+
+    expect(mockPlay).toHaveBeenCalledTimes(1);
+    expect(mockPlay).toHaveBeenCalledWith("move");
+  });
+
   it("should destroy the audio manager on unmount", () => {
     const { unmount } = renderHook(() => useBoardSounds(sources));
 

@@ -9,6 +9,6 @@ export default defineConfig({
   external: ["react", "react-dom"],
   dts: true,
   loader: {
-    ".ogg": "file",
+    ".ogg": "dataurl",
   },
 });
