@@ -13,7 +13,7 @@ export interface PuzzleBoardProps extends React.ComponentProps<
 > {}
 
 export const PuzzleBoard = React.forwardRef<HTMLDivElement, PuzzleBoardProps>(
-  ({ options, ...rest }, ref) => {
+  ({ options, style, ...rest }, ref) => {
     const puzzleContext = useChessPuzzleContext();
     const gameContext = useChessGameContext();
     const theme = useChessPuzzleTheme();
@@ -27,6 +27,8 @@ export const PuzzleBoard = React.forwardRef<HTMLDivElement, PuzzleBoardProps>(
 
     const { game } = gameContext;
     const { status, hint, isPlayerTurn, nextMove } = puzzleContext;
+    const isPuzzlePlayable =
+      isPlayerTurn && (status === "not-started" || status === "in-progress");
 
     const mergedOptions = deepMergeChessboardOptions(options || {}, {
       squareStyles: getCustomSquareStyles(
@@ -37,9 +39,20 @@ export const PuzzleBoard = React.forwardRef<HTMLDivElement, PuzzleBoardProps>(
         stringToMove(game, nextMove),
         theme,
       ),
+      ...(!isPuzzlePlayable ? { canDragPiece: () => false } : {}),
     });
 
-    return <ChessGame.Board ref={ref} {...rest} options={mergedOptions} />;
+    return (
+      <ChessGame.Board
+        ref={ref}
+        {...rest}
+        style={{
+          ...style,
+          ...(!isPuzzlePlayable ? { pointerEvents: "none" } : {}),
+        }}
+        options={mergedOptions}
+      />
+    );
   },
 );
 

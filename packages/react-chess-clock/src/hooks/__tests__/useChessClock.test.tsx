@@ -906,6 +906,36 @@ describe("useChessClock - multi-period time controls", () => {
       });
     });
 
+    it("should apply the current period increment after advancing", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: [
+            { baseTime: 300, increment: 5, moves: 1 },
+            { baseTime: 180, increment: 3 },
+          ],
+          timingMethod: "fischer",
+          clockStart: "immediate",
+        }),
+      );
+
+      act(() => {
+        result.current.methods.switch();
+      });
+
+      expect(result.current.currentPeriodIndex.white).toBe(1);
+      const whiteTimeAfterAdvance = result.current.times.white;
+
+      act(() => {
+        result.current.methods.switch();
+      });
+      act(() => {
+        result.current.methods.switch();
+      });
+
+      // White's second switch is in period 1 (increment 3s), with no elapsed time
+      expect(result.current.times.white).toBe(whiteTimeAfterAdvance + 3_000);
+    });
+
     it("should handle both players advancing simultaneously", () => {
       const { result } = renderHook(() =>
         useChessClock({

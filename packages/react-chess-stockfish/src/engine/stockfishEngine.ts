@@ -816,6 +816,14 @@ export class StockfishEngine {
   private handleBestMove(line: string): void {
     if (this.engineState.type === "destroyed") return;
 
+    // Consume stale bestmoves from stopAnalysis even after we already
+    // transitioned to ready. Skipping only while analyzing left the counter
+    // stuck, so the next search's real bestmove was swallowed.
+    if (this.skipBestMoveCount > 0) {
+      this.skipBestMoveCount--;
+      return;
+    }
+
     const currentState = this.engineState;
 
     // Parse bestmove
@@ -852,11 +860,6 @@ export class StockfishEngine {
       }
     } else if (currentState.type === "analyzing") {
       // Natural completion (e.g., depth limit reached)
-      // Skip this bestmove if we're expecting to skip stale responses
-      if (this.skipBestMoveCount > 0) {
-        this.skipBestMoveCount--;
-        return;
-      }
       this.transition({ type: "ready" });
       this.mutableState.status = "ready";
       this.mutableState.isEngineThinking = false;

@@ -213,9 +213,11 @@ export function clockReducer(
         }
 
         // Check for period advancement
+        let delayedTimes = state.times;
         if (newPeriodState) {
           const advanced = maybeAdvancePeriod(state.times, newPeriodState);
           newPeriodState = advanced.periodState;
+          delayedTimes = advanced.times;
         }
 
         const newStateStatus = newCount >= 2 ? "running" : "delayed";
@@ -223,6 +225,7 @@ export function clockReducer(
         return {
           ...state,
           activePlayer: newPlayer,
+          times: delayedTimes,
           switchCount: newCount,
           status: newStateStatus,
           periodState: newPeriodState,
@@ -287,14 +290,7 @@ export function clockReducer(
       const initialTimes = getInitialTimes(config);
       const now = action.payload.now;
 
-      // Compute period state for multi-period time controls
-      const periodState: PeriodState | undefined = config.periods
-        ? {
-            periodIndex: { white: 0, black: 0 },
-            periodMoves: { white: 0, black: 0 },
-            periods: config.periods,
-          }
-        : undefined;
+      const periodState = buildPeriodState(config);
 
       return createInitialClockState(
         initialTimes,
@@ -308,12 +304,12 @@ export function clockReducer(
 
     case "ADD_TIME": {
       const { player, milliseconds } = action.payload;
-      const now = action.payload.now ?? Date.now();
       const newTimes = {
         ...state.times,
         [player]: state.times[player] + milliseconds,
       };
-      // Reset timing so display interpolation restarts from the new base time.
+      // Keep moveStartTime so display interpolation continues from the existing
+      // move start. Resetting it while running refunds elapsed time.
       // When paused and modifying the active player's time, reset elapsedAtPause
       // so RESUME doesn't use a stale offset that ignores the time change.
       const resetElapsed =
@@ -321,7 +317,6 @@ export function clockReducer(
       return {
         ...state,
         times: newTimes,
-        moveStartTime: state.status === "running" ? now : null,
         ...(resetElapsed && { elapsedAtPause: 0 }),
       };
     }
@@ -354,6 +349,24 @@ export function clockReducer(
 // ============================================================================
 // Initial State Factory
 // ============================================================================
+
+/**
+ * Period tracking is only stored when there are two or more periods.
+ * A one-period array is equivalent to a single-period control.
+ */
+export function buildPeriodState(
+  config: NormalizedTimeControl,
+): PeriodState | undefined {
+  if (!config.periods || config.periods.length <= 1) {
+    return undefined;
+  }
+
+  return {
+    periodIndex: { white: 0, black: 0 },
+    periodMoves: { white: 0, black: 0 },
+    periods: config.periods,
+  };
+}
 
 export function createInitialClockState(
   initialTimes: ClockTimes,

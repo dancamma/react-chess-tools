@@ -46,11 +46,12 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       orientation,
       info,
       isLatestMove,
+      isPlayable,
       positionId,
       methods: { makeMove },
     } = gameContext;
 
-    const { turn, isGameOver } = info;
+    const { turn } = info;
 
     const [activeSquare, setActiveSquare] = React.useState<Square | null>(null);
 
@@ -95,7 +96,7 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
     const onSquareClick = (square: Square) => {
       focusBoardContainer();
 
-      if (isGameOver) {
+      if (!isPlayable) {
         return;
       }
 
@@ -204,7 +205,7 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       lightSquareStyle: theme.board.lightSquare,
       darkSquareStyle: theme.board.darkSquare,
       canDragPiece: ({ piece }) => {
-        if (isGameOver) return false;
+        if (!isPlayable) return false;
         return piece.pieceType[0] === turn;
       },
       dropSquareStyle: theme.state.dropSquare,

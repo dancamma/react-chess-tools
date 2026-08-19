@@ -404,6 +404,22 @@ describe("clockReducer", () => {
       });
       expect(state.moveStartTime).toBe(resumeTime);
     });
+
+    it("should keep moveStartTime when adding time while running", () => {
+      const startTime = 1000000;
+      const state = createState({
+        status: "running",
+        activePlayer: "white",
+        moveStartTime: startTime,
+      });
+      const result = clockReducer(state, {
+        type: "ADD_TIME",
+        payload: { player: "white", milliseconds: 5000, now: startTime + 2000 },
+      });
+
+      expect(result.times.white).toBe(305000);
+      expect(result.moveStartTime).toBe(startTime);
+    });
   });
 
   describe("SET_TIME", () => {
@@ -935,6 +951,32 @@ describe("clockReducer - multi-period time controls", () => {
       expect(result.periodState?.periodIndex).toEqual({ white: 1, black: 0 });
       expect(result.periodState?.periodMoves).toEqual({ white: 0, black: 1 });
     });
+
+    it("should add the next period's time when advancing during delayed mode", () => {
+      const periods = [
+        { baseTime: 300_000, increment: 5_000, moves: 1 },
+        { baseTime: 180_000, increment: 3_000 },
+      ];
+
+      const periodState = createPeriodState(
+        { white: 0, black: 0 },
+        { white: 0, black: 0 },
+        periods,
+      );
+
+      const state = createInitialClockState(
+        { white: 300000, black: 300000 },
+        "delayed",
+        null,
+        multiPeriodConfig,
+        periodState,
+      );
+
+      const result = clockReducer(state, { type: "SWITCH", payload: {} });
+
+      expect(result.periodState?.periodIndex.white).toBe(1);
+      expect(result.times.white).toBe(480000);
+    });
   });
 
   describe("RESET with multi-period state", () => {
@@ -980,6 +1022,23 @@ describe("clockReducer - multi-period time controls", () => {
       expect(result.activePlayer).toBeNull();
       expect(result.periodState?.periodIndex).toEqual({ white: 0, black: 0 });
       expect(result.periodState?.periodMoves).toEqual({ white: 0, black: 0 });
+    });
+
+    it("should not store period state for a one-period array", () => {
+      const state = createState({
+        status: "running",
+        activePlayer: "white",
+      });
+
+      const result = clockReducer(state, {
+        type: "RESET",
+        payload: {
+          time: [{ baseTime: 300, increment: 5 }],
+          clockStart: "delayed",
+        },
+      });
+
+      expect(result.periodState).toBeUndefined();
     });
   });
 });

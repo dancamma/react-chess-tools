@@ -46,13 +46,12 @@ export const useChessPuzzle = (
 
   useEffect(() => {
     if (gameContext && game.fen() === puzzle.fen && state.needCpuMove) {
-      setTimeout(
-        () =>
-          dispatch({
-            type: "CPU_MOVE",
-          }),
-        0,
-      );
+      const timeoutId = setTimeout(() => {
+        dispatch({
+          type: "CPU_MOVE",
+        });
+      }, 0);
+      return () => clearTimeout(timeoutId);
     }
   }, [gameContext, state.needCpuMove]);
 

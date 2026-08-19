@@ -97,6 +97,10 @@ export const reducer = (state: State, action: Action): State => {
       };
 
     case "PLAYER_MOVE": {
+      if (state.status === "solved" || state.status === "failed") {
+        return state;
+      }
+
       const { move, game, solveOnCheckmate } = action.payload;
 
       if (move && solveOnCheckmate !== false && game.isCheckmate()) {

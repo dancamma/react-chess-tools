@@ -16,6 +16,22 @@ describe("ChessPuzzle.PuzzleBoard", () => {
     expect(PuzzleBoard.displayName).toBe("ChessPuzzle.PuzzleBoard");
   });
 
+  it("should block interaction while waiting for the CPU first move", () => {
+    const cpuFirstPuzzle: Puzzle = {
+      ...mockPuzzle,
+      makeFirstMove: true,
+    };
+
+    const { container } = render(
+      <ChessPuzzle.Root puzzle={cpuFirstPuzzle}>
+        <PuzzleBoard />
+      </ChessPuzzle.Root>,
+    );
+
+    const board = container.querySelector('[style*="position: relative"]');
+    expect(board).toHaveStyle({ pointerEvents: "none" });
+  });
+
   it("should forward ref to underlying Board component", () => {
     const ref = React.createRef<HTMLDivElement>();
 
