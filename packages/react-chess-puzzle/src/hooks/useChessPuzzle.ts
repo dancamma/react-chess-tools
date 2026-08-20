@@ -53,7 +53,10 @@ export const useChessPuzzle = (
       }, 0);
       return () => clearTimeout(timeoutId);
     }
-  }, [gameContext, state.needCpuMove]);
+    // gameContext is a fresh object every render: keeping it in the deps
+    // would cancel and reschedule the pending timer on every re-render,
+    // which can starve the CPU first move under fast re-rendering.
+  }, [state.needCpuMove]);
 
   useEffect(() => {
     if (state.cpuMove) {

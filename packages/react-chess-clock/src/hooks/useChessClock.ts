@@ -44,10 +44,12 @@ function getPeriodTiming(
     return { increment: config.increment, delay: config.delay };
   }
 
+  // config.increment/delay mirror period 1's values, so falling back to them
+  // would leak period 1's timing into periods that declare none.
   const period = periodState.periods[periodState.periodIndex[player]];
   return {
-    increment: period?.increment ?? config.increment,
-    delay: period?.delay ?? config.delay,
+    increment: period?.increment ?? 0,
+    delay: period?.delay ?? 0,
   };
 }
 

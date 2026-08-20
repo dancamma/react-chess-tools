@@ -936,6 +936,33 @@ describe("useChessClock - multi-period time controls", () => {
       expect(result.current.times.white).toBe(whiteTimeAfterAdvance + 3_000);
     });
 
+    it("should not inherit period 1's increment in a period that declares none", () => {
+      const { result } = renderHook(() =>
+        useChessClock({
+          time: [{ baseTime: 300, increment: 5, moves: 1 }, { baseTime: 180 }],
+          timingMethod: "fischer",
+          clockStart: "immediate",
+        }),
+      );
+
+      act(() => {
+        result.current.methods.switch();
+      });
+
+      expect(result.current.currentPeriodIndex.white).toBe(1);
+      const whiteTimeAfterAdvance = result.current.times.white;
+
+      act(() => {
+        result.current.methods.switch();
+      });
+      act(() => {
+        result.current.methods.switch();
+      });
+
+      // Period 1 has no increment: white's switch must not add period 0's 5s
+      expect(result.current.times.white).toBe(whiteTimeAfterAdvance);
+    });
+
     it("should handle both players advancing simultaneously", () => {
       const { result } = renderHook(() =>
         useChessClock({

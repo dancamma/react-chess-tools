@@ -308,16 +308,16 @@ export function clockReducer(
         ...state.times,
         [player]: state.times[player] + milliseconds,
       };
-      // Keep moveStartTime so display interpolation continues from the existing
-      // move start. Resetting it while running refunds elapsed time.
-      // When paused and modifying the active player's time, reset elapsedAtPause
-      // so RESUME doesn't use a stale offset that ignores the time change.
-      const resetElapsed =
-        state.status === "paused" && player === state.activePlayer;
+      // While running, keep moveStartTime so display interpolation continues
+      // from the existing move start (resetting it would refund elapsed time).
+      // While paused, keep elapsedAtPause for the same reason: the time already
+      // spent on the move still counts after the addition.
+      // When not running, null moveStartTime so a stale timestamp (e.g. left
+      // by TIMEOUT) doesn't keep eating the added time in the display.
       return {
         ...state,
         times: newTimes,
-        ...(resetElapsed && { elapsedAtPause: 0 }),
+        moveStartTime: state.status === "running" ? state.moveStartTime : null,
       };
     }
 

@@ -96,7 +96,9 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
     const onSquareClick = (square: Square) => {
       focusBoardContainer();
 
-      if (!isPlayable) {
+      // During history review the live game and the rendered position differ:
+      // selecting would paint legal-move dots for a position the user can't see
+      if (!isPlayable || !isLatestMove) {
         return;
       }
 
@@ -205,7 +207,7 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       lightSquareStyle: theme.board.lightSquare,
       darkSquareStyle: theme.board.darkSquare,
       canDragPiece: ({ piece }) => {
-        if (!isPlayable) return false;
+        if (!isPlayable || !isLatestMove) return false;
         return piece.pieceType[0] === turn;
       },
       dropSquareStyle: theme.state.dropSquare,

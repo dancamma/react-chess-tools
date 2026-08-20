@@ -342,7 +342,7 @@ describe("clockReducer", () => {
       expect(result.times.black).toBe(250000);
     });
 
-    it("should reset elapsedAtPause when adding time to active player while paused", () => {
+    it("should keep elapsedAtPause when adding time to active player while paused", () => {
       const state = createState({
         status: "paused",
         activePlayer: "white",
@@ -353,8 +353,10 @@ describe("clockReducer", () => {
         payload: { player: "white", milliseconds: 5000 },
       });
 
+      // Time already spent on the move still counts: zeroing elapsedAtPause
+      // would refund it on resume.
       expect(result.times.white).toBe(305000);
-      expect(result.elapsedAtPause).toBe(0);
+      expect(result.elapsedAtPause).toBe(2000);
     });
 
     it("should not reset elapsedAtPause when adding time to non-active player while paused", () => {
@@ -389,20 +391,43 @@ describe("clockReducer", () => {
       });
       expect(state.elapsedAtPause).toBe(2000);
 
-      // Add 5 seconds while paused
+      // Add 5 seconds while paused - the 2s already spent must not be refunded
       state = clockReducer(state, {
         type: "ADD_TIME",
         payload: { player: "white", milliseconds: 5000 },
       });
-      expect(state.elapsedAtPause).toBe(0);
+      expect(state.times.white).toBe(305000);
+      expect(state.elapsedAtPause).toBe(2000);
 
-      // Resume - moveStartTime should equal now (no stale offset)
+      // Resume - elapsed offset carries over so display shows 303000, not 305000
       const resumeTime = pauseTime + 1000;
       state = clockReducer(state, {
         type: "RESUME",
         payload: { now: resumeTime },
       });
-      expect(state.moveStartTime).toBe(resumeTime);
+      expect(state.moveStartTime).toBe(resumeTime - 2000);
+    });
+
+    it("should null moveStartTime when adding time after a timeout", () => {
+      let state = createState({
+        status: "running",
+        activePlayer: "white",
+        moveStartTime: 1000000,
+      });
+      state = clockReducer(state, {
+        type: "TIMEOUT",
+        payload: { player: "white" },
+      });
+      expect(state.moveStartTime).toBe(1000000);
+
+      state = clockReducer(state, {
+        type: "ADD_TIME",
+        payload: { player: "white", milliseconds: 30000 },
+      });
+
+      // A stale moveStartTime would keep eating the added time in the display
+      expect(state.moveStartTime).toBeNull();
+      expect(state.times.white).toBe(30000);
     });
 
     it("should keep moveStartTime when adding time while running", () => {

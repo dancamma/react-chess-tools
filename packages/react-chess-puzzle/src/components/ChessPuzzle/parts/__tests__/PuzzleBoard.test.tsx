@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { ChessPuzzle } from "../..";
 import { PuzzleBoard } from "../PuzzleBoard";
@@ -16,7 +16,7 @@ describe("ChessPuzzle.PuzzleBoard", () => {
     expect(PuzzleBoard.displayName).toBe("ChessPuzzle.PuzzleBoard");
   });
 
-  it("should block interaction while waiting for the CPU first move", () => {
+  it("should block click-to-move while waiting for the CPU first move", () => {
     const cpuFirstPuzzle: Puzzle = {
       ...mockPuzzle,
       makeFirstMove: true,
@@ -28,8 +28,35 @@ describe("ChessPuzzle.PuzzleBoard", () => {
       </ChessPuzzle.Root>,
     );
 
-    const board = container.querySelector('[style*="position: relative"]');
-    expect(board).toHaveStyle({ pointerEvents: "none" });
+    fireEvent.click(container.querySelector('[data-square="e2"]')!);
+    fireEvent.click(container.querySelector('[data-square="e4"]')!);
+
+    expect(
+      container.querySelector('[data-square="e4"] [data-piece]'),
+    ).toBeNull();
+    expect(
+      container.querySelector('[data-square="e2"] [data-piece]'),
+    ).not.toBeNull();
+  });
+
+  it("should keep the board focusable while locked", () => {
+    const cpuFirstPuzzle: Puzzle = {
+      ...mockPuzzle,
+      makeFirstMove: true,
+    };
+
+    const { container } = render(
+      <ChessPuzzle.Root puzzle={cpuFirstPuzzle}>
+        <PuzzleBoard />
+      </ChessPuzzle.Root>,
+    );
+
+    const board = container.querySelector(
+      '[style*="position: relative"]',
+    ) as HTMLDivElement;
+    fireEvent.pointerDown(board);
+
+    expect(document.activeElement).toBe(board);
   });
 
   it("should forward ref to underlying Board component", () => {

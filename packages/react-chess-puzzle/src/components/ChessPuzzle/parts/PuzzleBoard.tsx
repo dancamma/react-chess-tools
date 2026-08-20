@@ -39,17 +39,19 @@ export const PuzzleBoard = React.forwardRef<HTMLDivElement, PuzzleBoardProps>(
         stringToMove(game, nextMove),
         theme,
       ),
-      ...(!isPuzzlePlayable ? { canDragPiece: () => false } : {}),
+      // Block dragging and click-to-move without disabling pointer events:
+      // the board container must stay clickable so it can take focus for
+      // keyboard history review, and right-click arrows must keep working.
+      ...(!isPuzzlePlayable
+        ? { canDragPiece: () => false, onSquareClick: () => {} }
+        : {}),
     });
 
     return (
       <ChessGame.Board
         ref={ref}
         {...rest}
-        style={{
-          ...style,
-          ...(!isPuzzlePlayable ? { pointerEvents: "none" } : {}),
-        }}
+        style={style}
         options={mergedOptions}
       />
     );
