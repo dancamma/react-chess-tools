@@ -95,4 +95,33 @@ describe("ChessPuzzle.Root puzzle prop changes", () => {
     });
     await waitFor(() => expect(handleSolve).toHaveBeenCalledTimes(2));
   });
+
+  it("should make the CPU first move after switching between CPU-first puzzles", async () => {
+    const firstPuzzle: Puzzle = {
+      fen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      moves: ["e2e4"],
+      makeFirstMove: true,
+    };
+    const secondPuzzle: Puzzle = {
+      fen: "rnbqkbnr/pppp1ppp/8/4p3/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 2",
+      moves: ["g1f3"],
+      makeFirstMove: true,
+    };
+
+    const { rerender } = render(
+      <ChessPuzzle.Root puzzle={firstPuzzle}>
+        <ContextProbe />
+      </ChessPuzzle.Root>,
+    );
+
+    rerender(
+      <ChessPuzzle.Root puzzle={secondPuzzle}>
+        <ContextProbe />
+      </ChessPuzzle.Root>,
+    );
+
+    await waitFor(() => {
+      expect(contexts.game!.game.history()).toEqual(["Nf3"]);
+    });
+  });
 });

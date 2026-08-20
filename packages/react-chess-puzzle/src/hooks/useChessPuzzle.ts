@@ -31,6 +31,7 @@ export const useChessPuzzle = (
     game,
     methods: { makeMove, setPosition },
   } = gameContext;
+  const gameFen = game.fen();
 
   const changePuzzle = useCallback(
     (puzzle: Puzzle) => {
@@ -45,7 +46,7 @@ export const useChessPuzzle = (
   }, [JSON.stringify(puzzle), changePuzzle]);
 
   useEffect(() => {
-    if (gameContext && game.fen() === puzzle.fen && state.needCpuMove) {
+    if (gameFen === puzzle.fen && state.needCpuMove) {
       const timeoutId = setTimeout(() => {
         dispatch({
           type: "CPU_MOVE",
@@ -53,10 +54,10 @@ export const useChessPuzzle = (
       }, 0);
       return () => clearTimeout(timeoutId);
     }
-    // gameContext is a fresh object every render: keeping it in the deps
-    // would cancel and reschedule the pending timer on every re-render,
-    // which can starve the CPU first move under fast re-rendering.
-  }, [state.needCpuMove]);
+    // Depend on stable position values rather than the fresh gameContext object.
+    // Both are needed so changing between CPU-first puzzles first cancels the old
+    // timer, then schedules a new one once the game has loaded the new FEN.
+  }, [gameFen, puzzle.fen, state.needCpuMove]);
 
   useEffect(() => {
     if (state.cpuMove) {
