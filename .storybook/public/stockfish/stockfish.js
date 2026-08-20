@@ -152,9 +152,9 @@
           "undefined" != typeof TextDecoder ? new TextDecoder("utf8") : void 0;
       function X(e, n, t) {
         var r = n + t;
-        for (t = n; e[t] && !(r <= t); ) ++t;
+        for (t = n; e[t] && !(r <= t);) ++t;
         if (16 < t - n && e.subarray && K) return K.decode(e.subarray(n, t));
-        for (r = ""; n < t; ) {
+        for (r = ""; n < t;) {
           var o,
             i,
             a = e[n++];
@@ -293,7 +293,7 @@
         },
       };
       function D(e) {
-        for (; 0 < e.length; ) {
+        for (; 0 < e.length;) {
           var n,
             t = e.shift();
           "function" == typeof t
@@ -362,7 +362,7 @@
       var M = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
         R = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
       function x(e, n) {
-        for (e = new Date(e.getTime()); 0 < n; ) {
+        for (e = new Date(e.getTime()); 0 < n;) {
           var t = e.getMonth(),
             r = (C(e.getFullYear()) ? M : R)[t];
           if (!(n > r - e.getDate())) {
@@ -379,10 +379,7 @@
       }
       function ge(e, n, t, r) {
         function o(e, n, t) {
-          for (
-            e = "number" == typeof e ? e.toString() : e || "";
-            e.length < n;
-          )
+          for (e = "number" == typeof e ? e.toString() : e || ""; e.length < n;)
             e = t[0] + e;
           return e;
         }
@@ -757,7 +754,7 @@
           },
           j: function (e, n, t) {
             var r;
-            for (le.length = 0, t >>= 2; (r = y[n++]); )
+            for (le.length = 0, t >>= 2; (r = y[n++]);)
               ((r = r < 105) && 1 & t && t++,
                 le.push(r ? N[t++ >> 1] : g[t]),
                 ++t);
@@ -1129,7 +1126,7 @@
     }
   }
   function c() {
-    for (; n.length && (!r._isSearching || !r._isSearching()); ) i(n.shift());
+    for (; n.length && (!r._isSearching || !r._isSearching());) i(n.shift());
   }
   function f(e) {
     ("go" === (e = e.trim()).substring(0, 2) ||
@@ -1150,7 +1147,7 @@
       o.length &&
         ((t = 0),
         (function e() {
-          for (var n; t < o.length; ) {
+          for (var n; t < o.length;) {
             if ((n = o[t++]).startsWith("sleep "))
               return setTimeout(e, n.slice(6));
             f(n);

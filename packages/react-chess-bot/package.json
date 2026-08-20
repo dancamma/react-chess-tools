@@ -31,8 +31,8 @@
   "devDependencies": {
     "@react-chess-tools/react-chess-game": "^2.0.0",
     "@react-chess-tools/react-chess-stockfish": "^2.0.0",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "peerDependencies": {
     "@react-chess-tools/react-chess-game": "^2.0.0",

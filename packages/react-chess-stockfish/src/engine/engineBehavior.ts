@@ -1,12 +1,7 @@
 import type { EngineType, StockfishConfig, WorkerOptions } from "../types";
 
 type NumericConfigKey =
-  | "threads"
-  | "hash"
-  | "skillLevel"
-  | "multiPV"
-  | "moveOverhead"
-  | "elo";
+  "threads" | "hash" | "skillLevel" | "multiPV" | "moveOverhead" | "elo";
 
 type BooleanConfigKey = "ponder" | "limitStrength";
 

@@ -59,7 +59,7 @@ interface DelayedMove {
 interface RuntimeContext {
   currentFen: string;
   isLatestMove: boolean;
-  isGameOver: boolean;
+  isPlayable: boolean;
   turn: Color;
   paused: boolean;
   autoPlay: boolean;
@@ -119,7 +119,7 @@ export const Player: React.FC<PlayerProps> = ({
   onMove,
   onError,
 }) => {
-  const { game, currentFen, info, isLatestMove, methods } =
+  const { game, currentFen, isLatestMove, isPlayable, methods } =
     useChessGameContext();
 
   const resolvedStrength = React.useMemo(
@@ -178,7 +178,7 @@ export const Player: React.FC<PlayerProps> = ({
   const runtimeContextRef = React.useRef<RuntimeContext>({
     currentFen,
     isLatestMove,
-    isGameOver: info.isGameOver,
+    isPlayable,
     turn: game.turn(),
     paused,
     autoPlay,
@@ -188,7 +188,7 @@ export const Player: React.FC<PlayerProps> = ({
   runtimeContextRef.current = {
     currentFen,
     isLatestMove,
-    isGameOver: info.isGameOver,
+    isPlayable,
     turn: game.turn(),
     paused,
     autoPlay,
@@ -292,7 +292,7 @@ export const Player: React.FC<PlayerProps> = ({
         runtimeContext.paused ||
         !runtimeContext.autoPlay ||
         !runtimeContext.isLatestMove ||
-        runtimeContext.isGameOver ||
+        !runtimeContext.isPlayable ||
         runtimeContext.currentFen !== move.fenBefore ||
         runtimeContext.turn !== color
       ) {
@@ -555,7 +555,7 @@ export const Player: React.FC<PlayerProps> = ({
     }
 
     const canPlay =
-      !paused && autoPlay && isLatestMove && !info.isGameOver && isBotTurn;
+      !paused && autoPlay && isLatestMove && isPlayable && isBotTurn;
 
     if (!canPlay) {
       cancelPendingWork();
@@ -604,7 +604,7 @@ export const Player: React.FC<PlayerProps> = ({
     cancelPendingWork,
     color,
     currentFen,
-    info.isGameOver,
+    isPlayable,
     isBotTurn,
     isLatestMove,
     paused,

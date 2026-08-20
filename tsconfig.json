@@ -16,6 +16,8 @@
     "preserveWatchOutput": true,
     "skipLibCheck": true,
     "strict": true,
+    "types": ["node", "jest"],
+    "ignoreDeprecations": "6.0",
     "jsx": "react",
     "paths": {
       "@story-helpers": ["./.storybook/helpers"],

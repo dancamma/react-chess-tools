@@ -46,11 +46,12 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       orientation,
       info,
       isLatestMove,
+      isPlayable,
       positionId,
       methods: { makeMove },
     } = gameContext;
 
-    const { turn, isGameOver } = info;
+    const { turn } = info;
 
     const [activeSquare, setActiveSquare] = React.useState<Square | null>(null);
 
@@ -95,7 +96,9 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
     const onSquareClick = (square: Square) => {
       focusBoardContainer();
 
-      if (isGameOver) {
+      // During history review the live game and the rendered position differ:
+      // selecting would paint legal-move dots for a position the user can't see
+      if (!isPlayable || !isLatestMove) {
         return;
       }
 
@@ -204,7 +207,7 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       lightSquareStyle: theme.board.lightSquare,
       darkSquareStyle: theme.board.darkSquare,
       canDragPiece: ({ piece }) => {
-        if (isGameOver) return false;
+        if (!isPlayable || !isLatestMove) return false;
         return piece.pieceType[0] === turn;
       },
       dropSquareStyle: theme.state.dropSquare,
@@ -214,9 +217,22 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
           setActiveSquare(square as Square);
         }
       },
+      // Escape / right-click cancel does not call onPieceDrop (5.12). Clear
+      // the drag selection so move dots do not stay on the board.
+      onPieceDragCancel: () => {
+        focusBoardContainer();
+        setActiveSquare(null);
+      },
       onPieceDrop: ({ sourceSquare, targetSquare }) => {
         focusBoardContainer();
         setActiveSquare(null);
+
+        // Off-board drop is not a cancel; it still hits onPieceDrop with a
+        // null target. Do not treat that as an attempted move.
+        if (!targetSquare || !targetSquare.match(/^[a-h][1-8]$/)) {
+          return false;
+        }
+
         const moveData = {
           from: sourceSquare as Square,
           to: targetSquare as Square,

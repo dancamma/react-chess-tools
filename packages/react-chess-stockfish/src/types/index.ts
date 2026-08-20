@@ -3,8 +3,7 @@ export type { Color } from "chess.js";
 export type EngineType = "stockfish" | "fairy-stockfish";
 
 export type Evaluation =
-  | { type: "cp"; value: number }
-  | { type: "mate"; value: number };
+  { type: "cp"; value: number } | { type: "mate"; value: number };
 
 export interface PVMove {
   uci: string;

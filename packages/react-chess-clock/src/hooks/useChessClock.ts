@@ -11,6 +11,7 @@ import type {
   ClockInfo,
   ClockMethods,
   ClockTimes,
+  NormalizedTimeControl,
   PeriodState,
   TimeControlConfig,
   TimeControlInput,
@@ -23,12 +24,34 @@ import {
   getInitialActivePlayer,
   getInitialStatus,
 } from "../utils/timingMethods";
-import { clockReducer, createInitialClockState } from "./clockReducer";
+import {
+  clockReducer,
+  createInitialClockState,
+  buildPeriodState,
+} from "./clockReducer";
 
 /** Default config used internally when clock is disabled */
 const DISABLED_CLOCK_CONFIG: TimeControlConfig = {
   time: { baseTime: 0 },
 };
+
+function getPeriodTiming(
+  config: NormalizedTimeControl,
+  periodState: PeriodState | undefined,
+  player: ClockColor | null,
+): { increment: number; delay: number } {
+  if (!periodState || player === null) {
+    return { increment: config.increment, delay: config.delay };
+  }
+
+  // config.increment/delay mirror period 1's values, so falling back to them
+  // would leak period 1's timing into periods that declare none.
+  const period = periodState.periods[periodState.periodIndex[player]];
+  return {
+    increment: period?.increment ?? 0,
+    delay: period?.delay ?? 0,
+  };
+}
 
 /**
  * Serializes time-relevant config for change detection.
@@ -97,15 +120,7 @@ export function useChessClock(options: TimeControlConfig): UseChessClockReturn {
     const initialConfig = parseTimeControlConfig(options);
     const initialTimesValue = getInitialTimes(initialConfig);
 
-    // Initialize period state for multi-period time controls
-    const initialPeriodState: PeriodState | undefined =
-      initialConfig.periods && initialConfig.periods.length > 1
-        ? {
-            periodIndex: { white: 0, black: 0 },
-            periodMoves: { white: 0, black: 0 },
-            periods: initialConfig.periods,
-          }
-        : undefined;
+    const initialPeriodState = buildPeriodState(initialConfig);
 
     return createInitialClockState(
       initialTimesValue,
@@ -157,7 +172,8 @@ export function useChessClock(options: TimeControlConfig): UseChessClockReturn {
             state.moveStartTime,
             state.elapsedAtPause,
             state.config.timingMethod,
-            state.config.delay,
+            getPeriodTiming(state.config, state.periodState, state.activePlayer)
+              .delay,
           ),
         };
 
@@ -261,12 +277,17 @@ export function useChessClock(options: TimeControlConfig): UseChessClockReturn {
     ) {
       const timeSpent = now - currentState.moveStartTime;
       const currentTime = currentState.times[currentState.activePlayer];
-
-      const newTime = calculateSwitchTime(
-        currentTime,
-        timeSpent,
+      const periodTiming = getPeriodTiming(
         currentState.config,
+        currentState.periodState,
+        currentState.activePlayer,
       );
+
+      const newTime = calculateSwitchTime(currentTime, timeSpent, {
+        ...currentState.config,
+        increment: periodTiming.increment,
+        delay: periodTiming.delay,
+      });
 
       newTimes = {
         ...currentState.times,

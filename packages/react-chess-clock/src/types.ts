@@ -33,9 +33,7 @@ export interface TimeControlPhase extends TimeControl {
  * Time control input - accepts string notation, object configuration, or multi-period array
  */
 export type TimeControlInput =
-  | TimeControlString
-  | TimeControl
-  | TimeControlPhase[];
+  TimeControlString | TimeControl | TimeControlPhase[];
 
 /**
  * Clock timing method
@@ -57,11 +55,7 @@ export type ClockStartMode = "delayed" | "immediate" | "manual";
  * Clock status
  */
 export type ClockStatus =
-  | "idle"
-  | "delayed"
-  | "running"
-  | "paused"
-  | "finished";
+  "idle" | "delayed" | "running" | "paused" | "finished";
 
 /**
  * Player color
