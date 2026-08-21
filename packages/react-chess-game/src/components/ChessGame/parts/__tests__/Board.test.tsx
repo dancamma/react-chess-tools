@@ -5,6 +5,7 @@ import { ChessGame } from "../..";
 import { Board } from "../Board";
 import { useChessGameContext } from "../../../../hooks/useChessGameContext";
 import type { ChessGameEvent } from "../../../../types/gameEvents";
+import { defaultGameTheme } from "../../../../theme/defaults";
 
 const GameEventProbe = ({ events }: { events: (ChessGameEvent | null)[] }) => {
   const { gameEvent } = useChessGameContext();
@@ -15,6 +16,66 @@ const GameEventProbe = ({ events }: { events: (ChessGameEvent | null)[] }) => {
 };
 
 describe("ChessGame.Board", () => {
+  it("should not keep the live position's highlights while reviewing history", () => {
+    const LAST_MOVE = defaultGameTheme.state.lastMove;
+    const CHECK = defaultGameTheme.state.check;
+
+    const Nav = () => {
+      const { methods } = useChessGameContext();
+      return (
+        <>
+          <button onClick={() => methods.makeMove("e4")} type="button">
+            e4
+          </button>
+          <button onClick={() => methods.makeMove("e5")} type="button">
+            e5
+          </button>
+          <button onClick={() => methods.makeMove("Qh5")} type="button">
+            Qh5
+          </button>
+          <button onClick={() => methods.makeMove("Nc6")} type="button">
+            Nc6
+          </button>
+          <button onClick={() => methods.makeMove("Qxf7+")} type="button">
+            Qxf7
+          </button>
+          <button onClick={() => methods.goToPreviousMove()} type="button">
+            Prev
+          </button>
+        </>
+      );
+    };
+
+    const { container, getByText } = render(
+      <ChessGame.Root>
+        <Board options={{ showAnimations: false }} />
+        <Nav />
+      </ChessGame.Root>,
+    );
+
+    // react-chessboard renders squareStyles on the overlay div inside the square
+    const highlight = (name: string) =>
+      (container.querySelector(`[data-square="${name}"] > div`) as HTMLElement)
+        .style.backgroundColor;
+
+    ["e4", "e5", "Qh5", "Nc6", "Qxf7"].forEach((move) =>
+      fireEvent.click(getByText(move)),
+    );
+
+    // Live position: last move h5-f7, black king in check on e8
+    expect(highlight("f7")).toBe(LAST_MOVE);
+    expect(highlight("e8")).toBe(CHECK);
+
+    // Step back to the position after 2.Qh5: neither highlight belongs there
+    fireEvent.click(getByText("Prev"));
+    fireEvent.click(getByText("Prev"));
+
+    expect(highlight("e8")).not.toBe(CHECK);
+    // the move that actually led here is 2.Qh5, so d1-h5 is the last move
+    expect(highlight("d1")).toBe(LAST_MOVE);
+    expect(highlight("h5")).toBe(LAST_MOVE);
+  });
+
   it("should have correct displayName", () => {
     expect(Board.displayName).toBe("ChessGame.Board");
   });

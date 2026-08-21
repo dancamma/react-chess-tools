@@ -5,12 +5,16 @@ import {
   defaultPieces,
   chessColumnToColumnIndex,
 } from "react-chessboard";
-import { Move, Square } from "chess.js";
+import { Chess, Move, Square } from "chess.js";
 import {
   getCustomSquareStyles,
   deepMergeChessboardOptions,
 } from "../../../utils/board";
-import { isLegalMove, requiresPromotion } from "../../../utils/chess";
+import {
+  getGameInfo,
+  isLegalMove,
+  requiresPromotion,
+} from "../../../utils/chess";
 import { useChessGameBoardContainerContext } from "../../../hooks/useChessGameBoardContainerContext";
 import { useChessGameContext } from "../../../hooks/useChessGameContext";
 import { useChessGameTheme } from "../../../theme/context";
@@ -48,8 +52,19 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       isLatestMove,
       isPlayable,
       positionId,
+      currentMoveIndex,
       methods: { makeMove },
     } = gameContext;
+
+    // While reviewing history the board renders `currentFen`, so the highlights
+    // must describe that position, not the live one.
+    const currentGame = isLatestMove ? game : new Chess(currentFen);
+    const currentInfo = isLatestMove
+      ? info
+      : {
+          ...getGameInfo(currentGame, orientation),
+          lastMove: game.history({ verbose: true })[currentMoveIndex],
+        };
 
     const { turn } = info;
 
@@ -199,7 +214,12 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
     }, [promotionMove, squareWidth, orientation]);
 
     const baseOptions: ChessboardOptions = {
-      squareStyles: getCustomSquareStyles(game, info, activeSquare, theme),
+      squareStyles: getCustomSquareStyles(
+        currentGame,
+        currentInfo,
+        activeSquare,
+        theme,
+      ),
       boardOrientation: orientation === "b" ? "black" : "white",
       position: currentFen,
       showNotation: true,

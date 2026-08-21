@@ -131,6 +131,42 @@ describe("ChessBot.Player", () => {
     jest.restoreAllMocks();
   });
 
+  it("keeps one engine across re-renders when onError is an inline callback", async () => {
+    const user = userEvent.setup();
+
+    // An inline onError changes identity on every parent render. Before the fix
+    // it was a dependency of the engine effect, so the worker was destroyed and
+    // rebuilt on each render and WASM init never completed.
+    const Host = () => {
+      const [, setTick] = React.useState(0);
+
+      return (
+        <ChessGame.Root>
+          <Player
+            color="b"
+            workerOptions={{
+              ...workerOptions,
+              onError: () => {},
+            }}
+          />
+          <button onClick={() => setTick((tick) => tick + 1)} type="button">
+            Re-render
+          </button>
+        </ChessGame.Root>
+      );
+    };
+
+    render(<Host />);
+
+    await waitFor(() => expect(MockedStockfishEngine).toHaveBeenCalledTimes(1));
+
+    await user.click(screen.getByRole("button", { name: "Re-render" }));
+    await user.click(screen.getByRole("button", { name: "Re-render" }));
+
+    expect(MockedStockfishEngine).toHaveBeenCalledTimes(1);
+    expect(controllers[0].engine.destroy).not.toHaveBeenCalled();
+  });
+
   it("plays a move when it becomes the bot's turn", async () => {
     const user = userEvent.setup();
     const onMove = jest.fn();

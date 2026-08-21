@@ -831,7 +831,12 @@ export class StockfishEngine {
     const parts = line.split(" ");
     const bestMove = parts[1];
 
-    if (bestMove && bestMove !== "(none)") {
+    // A bestmove that arrives while a replacement analysis is already queued
+    // belongs to the interrupted position, not to the one now in `currentFen`.
+    const isSupersededResult =
+      currentState.type === "stopping" && !!currentState.pendingAnalysis;
+
+    if (bestMove && bestMove !== "(none)" && !isSupersededResult) {
       // We have a best move, update state
       this.mutableState.hasResults = true;
       this.setFallbackBestLine(bestMove);

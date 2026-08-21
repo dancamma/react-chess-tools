@@ -61,7 +61,11 @@ export interface ChessClockPlayPauseProps extends Omit<
   pauseContent?: ReactNode;
   /** Content shown when clock is paused - clicking will resume */
   resumeContent?: ReactNode;
-  /** Content shown when clock is in delayed mode - clicking will start the clock immediately */
+  /**
+   * Content shown while the clock waits for the first Switch (`clockStart: "delayed"`,
+   * the default). The default button render is disabled in this state: use
+   * `clockStart: "manual"` if you want it to start the clock.
+   */
   delayedContent?: ReactNode;
   /** Content shown when clock is finished - button is disabled but shows this content */
   finishedContent?: ReactNode;

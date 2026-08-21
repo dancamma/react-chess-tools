@@ -13,7 +13,7 @@ import { Reset } from "./parts/Reset";
  *
  * function ClockApp() {
  *   return (
- *     <ChessClock.Root timeControl={{ time: "5+3" }}>
+ *     <ChessClock.Root timeControl={{ time: "5+3", clockStart: "manual" }}>
  *       <ChessClock.Display color="black" />
  *       <ChessClock.Display color="white" />
  *       <ChessClock.Switch>Switch</ChessClock.Switch>
