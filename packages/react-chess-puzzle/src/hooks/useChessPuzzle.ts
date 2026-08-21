@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useCallback, useMemo } from "react";
+import { Chess } from "chess.js";
 import { initializePuzzle, reducer } from "./reducer";
 import { getOrientation, type Puzzle, type Hint, type Status } from "../utils";
 import { useChessGameContext } from "@react-chess-tools/react-chess-game";
@@ -32,6 +33,10 @@ export const useChessPuzzle = (
     methods: { makeMove, setPosition },
   } = gameContext;
   const gameFen = game.fen();
+  const activePuzzle = state.puzzle;
+  // chess.js re-serializes the FEN it is given (it drops an en-passant square
+  // when no ep capture is legal), so compare against the normalized form.
+  const activeFen = new Chess(activePuzzle.fen).fen();
 
   const changePuzzle = useCallback(
     (puzzle: Puzzle) => {
@@ -46,7 +51,7 @@ export const useChessPuzzle = (
   }, [JSON.stringify(puzzle), changePuzzle]);
 
   useEffect(() => {
-    if (gameFen === puzzle.fen && state.needCpuMove) {
+    if (gameFen === activeFen && state.needCpuMove) {
       const timeoutId = setTimeout(() => {
         dispatch({
           type: "CPU_MOVE",
@@ -57,7 +62,7 @@ export const useChessPuzzle = (
     // Depend on stable position values rather than the fresh gameContext object.
     // Both are needed so changing between CPU-first puzzles first cancels the old
     // timer, then schedules a new one once the game has loaded the new FEN.
-  }, [gameFen, puzzle.fen, state.needCpuMove]);
+  }, [gameFen, activeFen, state.needCpuMove]);
 
   useEffect(() => {
     if (state.cpuMove) {
@@ -74,28 +79,28 @@ export const useChessPuzzle = (
   }, []);
 
   const resetPuzzle = useCallback(() => {
-    changePuzzle(puzzle);
-  }, [changePuzzle, puzzle]);
+    changePuzzle(activePuzzle);
+  }, [changePuzzle, activePuzzle]);
 
   const puzzleContext: ChessPuzzleContextType = useMemo(
     () => ({
       status: state.status,
       changePuzzle,
       resetPuzzle,
-      puzzle,
+      puzzle: activePuzzle,
       hint: state.hint,
       onHint,
       nextMove: state.nextMove,
       isPlayerTurn: state.isPlayerTurn,
       puzzleState: state.status,
       movesPlayed: state.currentMoveIndex,
-      totalMoves: puzzle.moves.length,
+      totalMoves: activePuzzle.moves.length,
     }),
     [
       state.status,
       changePuzzle,
       resetPuzzle,
-      puzzle,
+      activePuzzle,
       state.hint,
       onHint,
       state.nextMove,
@@ -105,10 +110,10 @@ export const useChessPuzzle = (
   );
 
   useEffect(() => {
-    if (game?.history()?.length <= 0 + (puzzle.makeFirstMove ? 1 : 0)) {
+    if (game?.history()?.length <= 0 + (activePuzzle.makeFirstMove ? 1 : 0)) {
       return;
     }
-    if (game.history().length % 2 === (puzzle.makeFirstMove ? 0 : 1)) {
+    if (game.history().length % 2 === (activePuzzle.makeFirstMove ? 0 : 1)) {
       dispatch({
         type: "PLAYER_MOVE",
         payload: {

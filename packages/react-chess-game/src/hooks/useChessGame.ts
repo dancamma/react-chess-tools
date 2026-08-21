@@ -225,18 +225,18 @@ export const useChessGame = ({
     [history.length],
   );
 
-  const goToStart = React.useCallback(() => goToMove(-1), []);
+  const goToStart = React.useCallback(() => goToMove(-1), [goToMove]);
   const goToEnd = React.useCallback(
     () => goToMove(history.length - 1),
-    [history.length],
+    [goToMove, history.length],
   );
   const goToPreviousMove = React.useCallback(
     () => goToMove(currentMoveIndex - 1),
-    [currentMoveIndex],
+    [goToMove, currentMoveIndex],
   );
   const goToNextMove = React.useCallback(
     () => goToMove(currentMoveIndex + 1),
-    [currentMoveIndex],
+    [goToMove, currentMoveIndex],
   );
 
   const methods = React.useMemo(

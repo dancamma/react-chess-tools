@@ -1152,6 +1152,31 @@ describe("StockfishEngine", () => {
         jest.useRealTimers();
       });
 
+      it("does not publish the interrupted position's bestmove as the new position's result", () => {
+        jest.useFakeTimers();
+
+        const fen1 = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        const fen2 =
+          "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
+
+        engine.startAnalysis(fen1);
+        mockWorker.simulateMessage("readyok");
+
+        // Interrupts the live search; the queued analysis is for fen2
+        engine.startAnalysis(fen2);
+
+        // This bestmove belongs to fen1 and is illegal in fen2
+        mockWorker.simulateMessage("bestmove e2e4");
+
+        const snapshot = engine.getSnapshot();
+        expect(snapshot.fen).toBe(fen2);
+        expect(snapshot.hasResults).toBe(false);
+        expect(snapshot.bestLine).toBeNull();
+        expect(engine.getBestMove()).toBeNull();
+
+        jest.useRealTimers();
+      });
+
       it("restarts analysis when stop is triggered by startAnalysis", () => {
         jest.useFakeTimers();
 

@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts",
-    "test": "jest"
+    "test": "npm test --prefix ../.. -- packages/react-chess-clock"
   },
   "keywords": [
     "chess",

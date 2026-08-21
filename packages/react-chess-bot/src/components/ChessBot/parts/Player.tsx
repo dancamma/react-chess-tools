@@ -67,15 +67,6 @@ interface RuntimeContext {
   moveDelayMax: number;
 }
 
-function getWorkerOptionsKey(props: PlayerProps["workerOptions"]): string {
-  return [
-    props.workerPath,
-    props.engineType ?? "stockfish",
-    props.throttleMs ?? "",
-    props.timeout ?? "",
-  ].join("|");
-}
-
 function buildBotState(
   previousState: BotStateSnapshot,
   patch: Partial<BotStateSnapshot>,
@@ -134,38 +125,13 @@ export const Player: React.FC<PlayerProps> = ({
     () => normalizeBotTiming(moveDelay),
     [moveDelay],
   );
-  const stableWorkerOptions = React.useMemo(
-    () => ({
-      workerPath: workerOptions.workerPath,
-      engineType: workerOptions.engineType,
-      throttleMs: workerOptions.throttleMs,
-      timeout: workerOptions.timeout,
-      onError: workerOptions.onError,
-    }),
-    [
-      workerOptions.engineType,
-      workerOptions.onError,
-      workerOptions.throttleMs,
-      workerOptions.timeout,
-      workerOptions.workerPath,
-    ],
-  );
-  const workerOptionsKey = React.useMemo(
-    () => getWorkerOptionsKey(workerOptions),
-    [
-      workerOptions.engineType,
-      workerOptions.throttleMs,
-      workerOptions.timeout,
-      workerOptions.workerPath,
-    ],
-  );
-
   const callbacksRef = React.useRef({
     onStateChange,
     onThinkStart,
     onMoveSelected,
     onMove,
     onError,
+    workerOnError: workerOptions.onError,
   });
   callbacksRef.current = {
     onStateChange,
@@ -173,7 +139,26 @@ export const Player: React.FC<PlayerProps> = ({
     onMoveSelected,
     onMove,
     onError,
+    workerOnError: workerOptions.onError,
   };
+
+  // Read through the ref so an inline workerOptions.onError does not change this
+  // object's identity and re-create the engine on every render.
+  const stableWorkerOptions = React.useMemo(
+    () => ({
+      workerPath: workerOptions.workerPath,
+      engineType: workerOptions.engineType,
+      throttleMs: workerOptions.throttleMs,
+      timeout: workerOptions.timeout,
+      onError: (error: Error) => callbacksRef.current.workerOnError?.(error),
+    }),
+    [
+      workerOptions.engineType,
+      workerOptions.throttleMs,
+      workerOptions.timeout,
+      workerOptions.workerPath,
+    ],
+  );
 
   const runtimeContextRef = React.useRef<RuntimeContext>({
     currentFen,
@@ -518,12 +503,7 @@ export const Player: React.FC<PlayerProps> = ({
         engineReadyRef.current = false;
       }
     };
-  }, [
-    cancelPendingWork,
-    stableWorkerOptions,
-    updateBotState,
-    workerOptionsKey,
-  ]);
+  }, [cancelPendingWork, stableWorkerOptions, updateBotState]);
 
   const searchConfig = React.useMemo<StockfishConfig>(
     () => ({

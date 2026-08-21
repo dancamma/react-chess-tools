@@ -345,6 +345,42 @@ describe("useChessGame", () => {
     });
   });
 
+  describe("navigation after setPosition", () => {
+    it("should not advance past an empty history when setPosition follows goToStart", () => {
+      const { result } = renderHook(() => useChessGame());
+
+      act(() => {
+        result.current.methods.makeMove("e4");
+      });
+      act(() => {
+        result.current.methods.makeMove("e5");
+      });
+      act(() => {
+        result.current.methods.makeMove("Nf3");
+      });
+      act(() => {
+        result.current.methods.goToStart();
+      });
+      expect(result.current.currentMoveIndex).toBe(-1);
+
+      // The new position has no history, so Next has nowhere to go. Before the
+      // fix goToNextMove still held a goToMove bound to the old history length
+      // and set index 0, which left every piece undraggable.
+      act(() => {
+        result.current.methods.setPosition(
+          "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "w",
+        );
+      });
+      act(() => {
+        result.current.methods.goToNextMove();
+      });
+
+      expect(result.current.currentMoveIndex).toBe(-1);
+      expect(result.current.isLatestMove).toBe(true);
+    });
+  });
+
   describe("game events", () => {
     it("should emit a move-made event for a regular move", () => {
       const { result } = renderHook(() => useChessGame());
