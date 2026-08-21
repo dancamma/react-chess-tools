@@ -165,6 +165,40 @@ describe("ChessGame.Board", () => {
     expect(emitted[0]).toMatchObject({ type: "move-made" });
   });
 
+  it("should not react to clicks while reviewing history", () => {
+    const events: (ChessGameEvent | null)[] = [];
+    const NavigateBack = () => {
+      const {
+        methods: { goToStart },
+        game,
+      } = useChessGameContext();
+      React.useEffect(() => {
+        if (game.history().length > 0) {
+          goToStart();
+        }
+      }, [game.history().length, goToStart]);
+      return null;
+    };
+
+    const { container } = render(
+      <ChessGame.Root>
+        <Board options={{ showAnimations: false }} />
+        <GameEventProbe events={events} />
+        <NavigateBack />
+      </ChessGame.Root>,
+    );
+
+    fireEvent.click(container.querySelector('[data-square="e2"]')!);
+    fireEvent.click(container.querySelector('[data-square="e4"]')!);
+    events.length = 0;
+
+    // Now at the start position in review mode: clicks must be inert
+    fireEvent.click(container.querySelector('[data-square="d2"]')!);
+    fireEvent.click(container.querySelector('[data-square="d4"]')!);
+
+    expect(events.filter(Boolean)).toEqual([]);
+  });
+
   it("should throw error when used outside ChessGame.Root", () => {
     // Suppress console.error for this test
     const consoleError = jest

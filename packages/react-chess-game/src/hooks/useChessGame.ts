@@ -81,8 +81,10 @@ export const useChessGame = ({
   }, [initialOrientation]);
 
   const history = React.useMemo(() => game.history(), [game]);
-  const isLatestMove =
-    currentMoveIndex === history.length - 1 || currentMoveIndex === -1;
+  // Empty history: length - 1 is -1, which matches the initial index.
+  // After moves, goToStart() writes -1 for the starting FEN — that is review,
+  // not the live position, so it must not count as latest.
+  const isLatestMove = currentMoveIndex === history.length - 1;
 
   const info = React.useMemo(
     () => getGameInfo(game, orientation),
@@ -97,6 +99,7 @@ export const useChessGame = ({
   const currentPosition = game.history()[currentMoveIndex];
 
   const clockState = useOptionalChessClock(timeControl);
+  const isPlayable = !info.isGameOver && (clockState?.timeout ?? null) === null;
 
   // Keep clockState in a ref to avoid re-creating makeMove on every clock tick.
   // The clock state object is recreated on every render (especially during active
@@ -266,6 +269,7 @@ export const useChessGame = ({
     orientation,
     currentMoveIndex,
     isLatestMove,
+    isPlayable,
     positionId,
     info,
     gameEvent,

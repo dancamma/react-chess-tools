@@ -104,6 +104,7 @@ describe("useChessGame", () => {
     expect(result.current.orientation).toBe("w");
     expect(result.current.currentMoveIndex).toBe(-1);
     expect(result.current.isLatestMove).toBe(true);
+    expect(result.current.isPlayable).toBe(true);
     expect(result.current.info.turn).toBe("w");
   });
 
@@ -263,10 +264,28 @@ describe("useChessGame", () => {
       });
 
       expect(hookResult.result.current.currentMoveIndex).toBe(-1);
-      expect(hookResult.result.current.isLatestMove).toBe(true);
+      expect(hookResult.result.current.isLatestMove).toBe(false);
       expect(hookResult.result.current.currentFen).toContain(
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w",
       );
+    });
+
+    it("should not allow moves from the start position once history exists", () => {
+      act(() => {
+        hookResult.result.current.methods.goToStart();
+      });
+
+      act(() => {
+        const success = hookResult.result.current.methods.makeMove("e5");
+        expect(success).toBe(false);
+      });
+
+      expect(hookResult.result.current.game.history()).toEqual([
+        "e4",
+        "e5",
+        "Nf3",
+        "Nc6",
+      ]);
     });
 
     it("should go to the end position", () => {
@@ -510,6 +529,11 @@ describe("useChessGame", () => {
       expect(result.current.gameEvent).toMatchObject({
         type: "clock-timeout",
         player: "white",
+      });
+      expect(result.current.isPlayable).toBe(false);
+
+      act(() => {
+        expect(result.current.methods.makeMove("e4")).toBe(false);
       });
     });
   });

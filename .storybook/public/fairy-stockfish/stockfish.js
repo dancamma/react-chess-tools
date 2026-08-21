@@ -227,9 +227,9 @@ var Stockfish = (function () {
     var Ea = "undefined" !== typeof TextDecoder ? new Da("utf8") : void 0;
     function Fa(a, b, c) {
       var d = b + c;
-      for (c = b; a[c] && !(c >= d); ) ++c;
+      for (c = b; a[c] && !(c >= d);) ++c;
       if (16 < c - b && a.subarray && Ea) return Ea.decode(a.subarray(b, c));
-      for (d = ""; b < c; ) {
+      for (d = ""; b < c;) {
         var f = a[b++];
         if (f & 128) {
           var g = a[b++] & 63;
@@ -429,7 +429,7 @@ var Stockfish = (function () {
         },
       };
     function Ta(a) {
-      for (; 0 < a.length; ) {
+      for (; 0 < a.length;) {
         var b = a.shift();
         if ("function" == typeof b) b(A);
         else {
@@ -493,7 +493,7 @@ var Stockfish = (function () {
       Ka: {},
       dc: [],
       Cc: function () {
-        for (; 0 < B.dc.length; ) B.dc.pop()();
+        for (; 0 < B.dc.length;) B.dc.pop()();
         ib();
       },
       Dc: function (a, b) {
@@ -660,7 +660,7 @@ var Stockfish = (function () {
         return B.Xa.pop();
       },
       Pd: function (a) {
-        for (a = performance.now() + a; performance.now() < a; );
+        for (a = performance.now() + a; performance.now() < a;);
       },
     };
     A.establishStackSpace = function (a, b) {
@@ -727,7 +727,7 @@ var Stockfish = (function () {
         if (Atomics.load(w(), a >> 2) != b) return -6;
         var d = performance.now();
         c = d + c;
-        for (Atomics.exchange(w(), eb >> 2, a); ; ) {
+        for (Atomics.exchange(w(), eb >> 2, a); ;) {
           d = performance.now();
           if (d > c) return (Atomics.exchange(w(), eb >> 2, 0), -73);
           d = Atomics.exchange(w(), eb >> 2, 0);
@@ -782,7 +782,7 @@ var Stockfish = (function () {
           N("Attempted to join thread " + a + ", which was already detached!"),
           28
         );
-      for (vb(); ; ) {
+      for (vb(); ;) {
         var c = Atomics.load(x(), (a + 0) >> 2);
         if (1 == c)
           return (
@@ -1275,7 +1275,7 @@ var Stockfish = (function () {
             c = Cb(c, a[d]);
             P.$a(f) && (!g || (g && b.Mb)) && (f = f.qb.root);
             if (!g || b.La)
-              for (g = 0; P.fb(f.mode); )
+              for (g = 0; P.fb(f.mode);)
                 if (
                   ((f = P.readlink(c)),
                   (c = Eb(Bb(c), f)),
@@ -1287,7 +1287,7 @@ var Stockfish = (function () {
           return { path: c, node: f };
         },
         Wa: function (a) {
-          for (var b; ; ) {
+          for (var b; ;) {
             if (P.yb(a))
               return (
                 (a = a.Da.zc),
@@ -1311,7 +1311,7 @@ var Stockfish = (function () {
           var b = P.Rb(a.parent.id, a.name);
           if (P.Oa[b] === a) P.Oa[b] = a.bb;
           else
-            for (b = P.Oa[b]; b; ) {
+            for (b = P.Oa[b]; b;) {
               if (b.bb === a) {
                 b.bb = a.bb;
                 break;
@@ -1477,7 +1477,7 @@ var Stockfish = (function () {
         },
         uc: function (a) {
           var b = [];
-          for (a = [a]; a.length; ) {
+          for (a = [a]; a.length;) {
             var c = a.pop();
             b.push(c);
             a.push.apply(a, c.rb);
@@ -1534,7 +1534,7 @@ var Stockfish = (function () {
           var b = a.qb,
             c = P.uc(b);
           Object.keys(P.Oa).forEach(function (d) {
-            for (d = P.Oa[d]; d; ) {
+            for (d = P.Oa[d]; d;) {
               var f = d.bb;
               c.includes(d.Da) && P.Lb(d);
               d = f;
@@ -2123,7 +2123,7 @@ var Stockfish = (function () {
         },
         Td: function (a, b) {
           a = "string" === typeof a ? a : P.Wa(a);
-          for (b = b.split("/").reverse(); b.length; ) {
+          for (b = b.split("/").reverse(); b.length;) {
             var c = b.pop();
             if (c) {
               var d = Cb(a, c);
@@ -3007,7 +3007,7 @@ var Stockfish = (function () {
     var Ic = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
       Jc = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     function Kc(a, b) {
-      for (a = new Date(a.getTime()); 0 < b; ) {
+      for (a = new Date(a.getTime()); 0 < b;) {
         var c = a.getMonth(),
           d = (Gc(a.getFullYear()) ? Ic : Jc)[c];
         if (b > d - a.getDate())
@@ -3025,7 +3025,7 @@ var Stockfish = (function () {
     }
     function Lc(a, b, c, d) {
       function f(l, u, y) {
-        for (l = "number" === typeof l ? l.toString() : l || ""; l.length < u; )
+        for (l = "number" === typeof l ? l.toString() : l || ""; l.length < u;)
           l = y[0] + l;
         return l;
       }
@@ -3561,7 +3561,7 @@ var Stockfish = (function () {
       m: function (a, b, c) {
         cc.length = 0;
         var d;
-        for (c >>= 2; (d = v()[b++]); )
+        for (c >>= 2; (d = v()[b++]);)
           ((d = 105 > d) && c & 1 && c++,
             cc.push(d ? ea()[c++ >> 1] : w()[c]),
             ++c);

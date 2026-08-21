@@ -213,9 +213,11 @@ export function clockReducer(
         }
 
         // Check for period advancement
+        let delayedTimes = state.times;
         if (newPeriodState) {
           const advanced = maybeAdvancePeriod(state.times, newPeriodState);
           newPeriodState = advanced.periodState;
+          delayedTimes = advanced.times;
         }
 
         const newStateStatus = newCount >= 2 ? "running" : "delayed";
@@ -223,6 +225,7 @@ export function clockReducer(
         return {
           ...state,
           activePlayer: newPlayer,
+          times: delayedTimes,
           switchCount: newCount,
           status: newStateStatus,
           periodState: newPeriodState,
@@ -287,14 +290,7 @@ export function clockReducer(
       const initialTimes = getInitialTimes(config);
       const now = action.payload.now;
 
-      // Compute period state for multi-period time controls
-      const periodState: PeriodState | undefined = config.periods
-        ? {
-            periodIndex: { white: 0, black: 0 },
-            periodMoves: { white: 0, black: 0 },
-            periods: config.periods,
-          }
-        : undefined;
+      const periodState = buildPeriodState(config);
 
       return createInitialClockState(
         initialTimes,
@@ -308,21 +304,20 @@ export function clockReducer(
 
     case "ADD_TIME": {
       const { player, milliseconds } = action.payload;
-      const now = action.payload.now ?? Date.now();
       const newTimes = {
         ...state.times,
         [player]: state.times[player] + milliseconds,
       };
-      // Reset timing so display interpolation restarts from the new base time.
-      // When paused and modifying the active player's time, reset elapsedAtPause
-      // so RESUME doesn't use a stale offset that ignores the time change.
-      const resetElapsed =
-        state.status === "paused" && player === state.activePlayer;
+      // While running, keep moveStartTime so display interpolation continues
+      // from the existing move start (resetting it would refund elapsed time).
+      // While paused, keep elapsedAtPause for the same reason: the time already
+      // spent on the move still counts after the addition.
+      // When not running, null moveStartTime so a stale timestamp (e.g. left
+      // by TIMEOUT) doesn't keep eating the added time in the display.
       return {
         ...state,
         times: newTimes,
-        moveStartTime: state.status === "running" ? now : null,
-        ...(resetElapsed && { elapsedAtPause: 0 }),
+        moveStartTime: state.status === "running" ? state.moveStartTime : null,
       };
     }
 
@@ -354,6 +349,24 @@ export function clockReducer(
 // ============================================================================
 // Initial State Factory
 // ============================================================================
+
+/**
+ * Period tracking is only stored when there are two or more periods.
+ * A one-period array is equivalent to a single-period control.
+ */
+export function buildPeriodState(
+  config: NormalizedTimeControl,
+): PeriodState | undefined {
+  if (!config.periods || config.periods.length <= 1) {
+    return undefined;
+  }
+
+  return {
+    periodIndex: { white: 0, black: 0 },
+    periodMoves: { white: 0, black: 0 },
+    periods: config.periods,
+  };
+}
 
 export function createInitialClockState(
   initialTimes: ClockTimes,

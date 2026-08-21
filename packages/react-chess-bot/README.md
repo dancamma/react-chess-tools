@@ -143,12 +143,7 @@ It must be rendered inside `ChessGame.Root`.
 type BotStateSnapshot = {
   color: "w" | "b";
   status:
-    | "initializing"
-    | "idle"
-    | "thinking"
-    | "delaying"
-    | "paused"
-    | "error";
+    "initializing" | "idle" | "thinking" | "delaying" | "paused" | "error";
   isThinking: boolean;
   isReady: boolean;
   currentFen: string;

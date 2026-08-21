@@ -230,6 +230,49 @@ describe("reducer", () => {
       expect(newState.isPlayerTurn).toBe(false);
     });
 
+    it("should ignore further player moves after the puzzle is failed", () => {
+      const failedState: State = {
+        ...initialState,
+        status: "failed",
+        nextMove: null,
+        isPlayerTurn: false,
+      };
+      const move = { san: "e4", lan: "e2e4" } as Move;
+
+      const newState = reducer(failedState, {
+        type: "PLAYER_MOVE",
+        payload: {
+          move,
+          puzzleContext: mockContext,
+          game,
+        },
+      });
+
+      expect(newState).toBe(failedState);
+    });
+
+    it("should ignore further player moves after the puzzle is solved", () => {
+      const solvedState: State = {
+        ...initialState,
+        status: "solved",
+        nextMove: null,
+        isPlayerTurn: false,
+        onSolveInvoked: true,
+      };
+      const move = { san: "d4", lan: "d2d4" } as Move;
+
+      const newState = reducer(solvedState, {
+        type: "PLAYER_MOVE",
+        payload: {
+          move,
+          puzzleContext: mockContext,
+          game,
+        },
+      });
+
+      expect(newState).toBe(solvedState);
+    });
+
     it("should handle solving the puzzle", () => {
       const move = { san: "Bb5", lan: "f1b5" } as Move;
 

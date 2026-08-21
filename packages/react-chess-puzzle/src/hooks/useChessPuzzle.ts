@@ -31,6 +31,7 @@ export const useChessPuzzle = (
     game,
     methods: { makeMove, setPosition },
   } = gameContext;
+  const gameFen = game.fen();
 
   const changePuzzle = useCallback(
     (puzzle: Puzzle) => {
@@ -45,16 +46,18 @@ export const useChessPuzzle = (
   }, [JSON.stringify(puzzle), changePuzzle]);
 
   useEffect(() => {
-    if (gameContext && game.fen() === puzzle.fen && state.needCpuMove) {
-      setTimeout(
-        () =>
-          dispatch({
-            type: "CPU_MOVE",
-          }),
-        0,
-      );
+    if (gameFen === puzzle.fen && state.needCpuMove) {
+      const timeoutId = setTimeout(() => {
+        dispatch({
+          type: "CPU_MOVE",
+        });
+      }, 0);
+      return () => clearTimeout(timeoutId);
     }
-  }, [gameContext, state.needCpuMove]);
+    // Depend on stable position values rather than the fresh gameContext object.
+    // Both are needed so changing between CPU-first puzzles first cancels the old
+    // timer, then schedules a new one once the game has loaded the new FEN.
+  }, [gameFen, puzzle.fen, state.needCpuMove]);
 
   useEffect(() => {
     if (state.cpuMove) {

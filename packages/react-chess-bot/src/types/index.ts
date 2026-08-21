@@ -47,12 +47,7 @@ export type BotTiming =
     };
 
 export type BotStatus =
-  | "initializing"
-  | "idle"
-  | "thinking"
-  | "delaying"
-  | "paused"
-  | "error";
+  "initializing" | "idle" | "thinking" | "delaying" | "paused" | "error";
 
 export interface BotMove {
   color: Color;

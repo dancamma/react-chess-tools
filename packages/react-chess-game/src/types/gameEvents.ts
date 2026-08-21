@@ -31,6 +31,4 @@ export interface ChessGameClockTimeoutEvent {
 }
 
 export type ChessGameEvent =
-  | ChessGameMoveEvent
-  | ChessGameIllegalMoveEvent
-  | ChessGameClockTimeoutEvent;
+  ChessGameMoveEvent | ChessGameIllegalMoveEvent | ChessGameClockTimeoutEvent;

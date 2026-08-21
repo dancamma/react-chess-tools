@@ -793,6 +793,21 @@ describe("StockfishEngine", () => {
       expect(engine.getSnapshot().status).toBe("ready");
     });
 
+    it("does not swallow the next search's bestmove after a stale stop ack in ready", () => {
+      engine.stopAnalysis();
+      mockWorker.simulateMessage("bestmove e2e4");
+
+      const nextFen =
+        "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
+      engine.startAnalysis(nextFen);
+      mockWorker.simulateMessage("readyok");
+      mockWorker.simulateMessage("bestmove e7e5");
+
+      const snapshot = engine.getSnapshot();
+      expect(snapshot.status).toBe("ready");
+      expect(snapshot.isEngineThinking).toBe(false);
+    });
+
     it("ignores info lines after stop without crashing", () => {
       engine.stopAnalysis();
 
