@@ -1,6 +1,6 @@
 {
   "name": "@react-chess-tools/react-chess-game",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "react-chess-game is a React component bridging chess.js with react-chessboard to offer a full-featured, ready-to-integrate chess board experience.",
   "type": "module",
   "exports": {
@@ -42,7 +42,7 @@
   "license": "MIT",
   "dependencies": {
     "@radix-ui/react-slot": "^1.3.3",
-    "@react-chess-tools/react-chess-clock": "^2.0.0",
+    "@react-chess-tools/react-chess-clock": "^2.0.1",
     "chess.js": "^1.4.0",
     "lodash": "^4.18.1",
     "react-chessboard": "^5.12.1"
