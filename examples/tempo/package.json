@@ -1,0 +1,30 @@
+{
+  "name": "@react-chess-tools/tempo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test:e2e": "npm run build && playwright test"
+  },
+  "dependencies": {
+    "@react-chess-tools/react-chess-clock": "^2.0.2",
+    "@react-chess-tools/react-chess-game": "^2.1.0",
+    "@react-chess-tools/react-chess-puzzle": "^2.1.0",
+    "chess.js": "^1.4.0",
+    "lucide-react": "^1.33.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^25.9.5",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "typescript": "6.0.3",
+    "vite": "^7.3.1"
+  }
+}

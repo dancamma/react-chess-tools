@@ -26,6 +26,18 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Verify packed ESM and CommonJS exports
+        run: npm run test:packages
+
+      - name: Test Tempo content and persistence
+        run: npm run test --workspace @react-chess-tools/tempo
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Test Tempo in production browsers
+        run: npm run test:e2e --workspace @react-chess-tools/tempo
+
       - name: Run linting
         run: npm run lint
 

@@ -116,6 +116,10 @@ The context provider that manages game state. Wrap all other ChessGame component
 
 The visual chess board with pieces.
 
+`ChessGame.Root disabled` blocks both board input and `methods.makeMove` while preserving the position. It does not change the clock; use the clock's pause/resume methods separately.
+
+The board accepts `promotionLabels` (a partial map with keys `q`, `r`, `n`, `b`) and `promotionDialogLabel` for localized accessible names. Promotion focuses the first choice, contains Tab/Shift+Tab inside the menu, cancels with Escape, and returns focus to the board. Disabling input or loading another position dismisses an open promotion.
+
 <table>
   <thead>
     <tr>

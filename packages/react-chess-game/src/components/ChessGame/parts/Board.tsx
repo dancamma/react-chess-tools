@@ -19,17 +19,30 @@ import { useChessGameBoardContainerContext } from "../../../hooks/useChessGameBo
 import { useChessGameContext } from "../../../hooks/useChessGameContext";
 import { useChessGameTheme } from "../../../theme/context";
 
+const PROMOTION_PIECES = ["q", "r", "n", "b"] as const;
+const DEFAULT_PROMOTION_LABELS = {
+  q: "Queen",
+  r: "Rook",
+  n: "Knight",
+  b: "Bishop",
+};
+
 export interface ChessGameProps extends React.HTMLAttributes<HTMLDivElement> {
   options?: ChessboardOptions;
+  promotionLabels?: Partial<Record<"q" | "r" | "n" | "b", string>>;
+  promotionDialogLabel?: string;
 }
 
 export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
   (
     {
       options = {},
+      promotionLabels,
+      promotionDialogLabel = "Choose a promotion piece",
       className,
       style: userStyle,
       onPointerDownCapture,
+      onKeyDownCapture,
       tabIndex = 0,
       ...rest
     },
@@ -72,6 +85,17 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
 
     const [promotionMove, setPromotionMove] =
       React.useState<Partial<Move> | null>(null);
+    const promotionMenuRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+      if (promotionMove)
+        promotionMenuRef.current?.querySelector("button")?.focus();
+    }, [promotionMove]);
+
+    React.useEffect(() => {
+      setActiveSquare(null);
+      setPromotionMove(null);
+    }, [positionId, isPlayable]);
 
     // Track square width for responsive updates
     const [squareWidth, setSquareWidth] = React.useState(80);
@@ -79,6 +103,12 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
     const focusBoardContainer = React.useCallback(() => {
       boardContainerRef.current?.focus({ preventScroll: true });
     }, [boardContainerRef]);
+
+    const cancelPromotion = React.useCallback(() => {
+      setActiveSquare(null);
+      setPromotionMove(null);
+      focusBoardContainer();
+    }, [focusBoardContainer]);
 
     const setBoardContainerRef = React.useCallback(
       (node: HTMLDivElement | null) => {
@@ -107,6 +137,30 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       },
       [focusBoardContainer, onPointerDownCapture],
     );
+
+    const handleKeyDownCapture = (
+      event: React.KeyboardEvent<HTMLDivElement>,
+    ) => {
+      onKeyDownCapture?.(event);
+      if (event.defaultPrevented || !promotionMove) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        cancelPromotion();
+      } else if (event.key === "Tab") {
+        const buttons = Array.from(
+          promotionMenuRef.current?.querySelectorAll("button") ?? [],
+        );
+        const current = buttons.indexOf(
+          document.activeElement as HTMLButtonElement,
+        );
+        const next =
+          (current + (event.shiftKey ? -1 : 1) + buttons.length) %
+          buttons.length;
+        event.preventDefault();
+        buttons[next]?.focus();
+      }
+    };
 
     const onSquareClick = (square: Square) => {
       focusBoardContainer();
@@ -161,6 +215,7 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
       focusBoardContainer();
 
       if (promotionMove?.from && promotionMove?.to) {
+        setActiveSquare(null);
         makeMove({
           from: promotionMove.from,
           to: promotionMove.to,
@@ -297,6 +352,7 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
         style={mergedStyle}
         tabIndex={tabIndex}
         onPointerDownCapture={handlePointerDownCapture}
+        onKeyDownCapture={handleKeyDownCapture}
         {...rest}
       >
         {/* Remounting on positionId discards react-chessboard's in-flight
@@ -307,7 +363,7 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
           <>
             {/* Backdrop overlay - click to cancel */}
             <div
-              onClick={() => setPromotionMove(null)}
+              onClick={cancelPromotion}
               onContextMenu={(e) => {
                 e.preventDefault();
                 setPromotionMove(null);
@@ -324,6 +380,10 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
             />
             {/* Promotion piece selection */}
             <div
+              ref={promotionMenuRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={promotionDialogLabel}
               style={{
                 position: "absolute",
                 top: isTopRank ? 0 : "auto",
@@ -337,9 +397,13 @@ export const Board = React.forwardRef<HTMLDivElement, ChessGameProps>(
                 boxShadow: "0 0 10px 0 rgba(0, 0, 0, 0.5)",
               }}
             >
-              {["q", "r", "n", "b"].map((piece) => (
+              {PROMOTION_PIECES.map((piece) => (
                 <button
                   key={piece}
+                  type="button"
+                  aria-label={
+                    promotionLabels?.[piece] ?? DEFAULT_PROMOTION_LABELS[piece]
+                  }
                   onClick={() => onPromotionPieceSelect(piece)}
                   onContextMenu={(e) => {
                     e.preventDefault();

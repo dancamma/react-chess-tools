@@ -145,14 +145,15 @@ The root component that provides `ChessGameContext` to all child components. It 
 
 #### Props
 
-| Name               | Type                    | Default           | Description                                              |
-| ------------------ | ----------------------- | ----------------- | -------------------------------------------------------- |
-| `children`         | `ReactNode`             | -                 | Child components                                         |
-| `fen`              | `string`                | Starting position | Initial FEN string for the chess game                    |
-| `orientation`      | `"w" \| "b"`            | `"w"`             | Board orientation (white or black at bottom)             |
-| `theme`            | `PartialChessGameTheme` | -                 | Optional theme configuration                             |
-| `timeControl`      | `TimeControlConfig`     | -                 | Optional clock configuration to enable chess clock       |
-| `autoSwitchOnMove` | `boolean`               | `true`            | Auto-switch clock on move (when timeControl is provided) |
+| Name               | Type                    | Default           | Description                                                           |
+| ------------------ | ----------------------- | ----------------- | --------------------------------------------------------------------- |
+| `children`         | `ReactNode`             | -                 | Child components                                                      |
+| `disabled`         | `boolean`               | `false`           | Block board and programmatic moves without changing position or clock |
+| `fen`              | `string`                | Starting position | Initial FEN string for the chess game                                 |
+| `orientation`      | `"w" \| "b"`            | `"w"`             | Board orientation (white or black at bottom)                          |
+| `theme`            | `PartialChessGameTheme` | -                 | Optional theme configuration                                          |
+| `timeControl`      | `TimeControlConfig`     | -                 | Optional clock configuration to enable chess clock                    |
+| `autoSwitchOnMove` | `boolean`               | `true`            | Auto-switch clock on move (when timeControl is provided)              |
 
 #### Example
 
@@ -174,13 +175,15 @@ Supports **ref forwarding** and all standard **HTML div attributes** (className,
 
 #### Props
 
-| Name        | Type                             | Description                                                               |
-| ----------- | -------------------------------- | ------------------------------------------------------------------------- |
-| `options`   | `ChessboardOptions`              | Options forwarded to `react-chessboard`. Your values merge with defaults. |
-| `ref`       | `Ref<HTMLDivElement>`            | Forwarded ref to the wrapper div element                                  |
-| `className` | `string`                         | Custom CSS class names                                                    |
-| `style`     | `CSSProperties`                  | Custom inline styles                                                      |
-| `...`       | `HTMLAttributes<HTMLDivElement>` | All standard HTML div attributes                                          |
+| Name                   | Type                                                | Description                                                                               |
+| ---------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `options`              | `ChessboardOptions`                                 | Options forwarded to `react-chessboard`. Your values merge with defaults.                 |
+| `promotionLabels`      | `Partial<Record<"q" \| "r" \| "n" \| "b", string>>` | Localized accessible names for promotion choices; defaults to Queen, Rook, Knight, Bishop |
+| `promotionDialogLabel` | `string`                                            | Accessible dialog name; defaults to "Choose a promotion piece"                            |
+| `ref`                  | `Ref<HTMLDivElement>`                               | Forwarded ref to the wrapper div element                                                  |
+| `className`            | `string`                                            | Custom CSS class names                                                                    |
+| `style`                | `CSSProperties`                                     | Custom inline styles                                                                      |
+| `...`                  | `HTMLAttributes<HTMLDivElement>`                    | All standard HTML div attributes                                                          |
 
 #### Example
 
@@ -203,6 +206,8 @@ Supports **ref forwarding** and all standard **HTML div attributes** (className,
   />
 </ChessGame.Root>
 ```
+
+Promotion focuses the first choice, contains Tab/Shift+Tab within the menu, and cancels with Escape. Selecting or cancelling returns focus to the board. `disabled` clears an open promotion and blocks `methods.makeMove`; it does not pause a clock, which remains independently controlled.
 
 ### ChessGame.Sounds
 

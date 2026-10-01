@@ -25,7 +25,7 @@ export const Hint = React.forwardRef<
   if (!puzzleContext) {
     throw new Error("PuzzleContext not found");
   }
-  const { onHint, status } = puzzleContext;
+  const { onHint, status, disabled } = puzzleContext;
 
   const handleClick = React.useCallback(() => {
     onHint();
@@ -36,7 +36,13 @@ export const Hint = React.forwardRef<
   }
 
   return asChild ? (
-    <Slot ref={ref} onClick={handleClick} className={className} {...rest}>
+    <Slot
+      ref={ref}
+      onClick={handleClick}
+      className={className}
+      {...rest}
+      {...{ disabled: disabled || rest.disabled }}
+    >
       {children}
     </Slot>
   ) : (
@@ -46,6 +52,7 @@ export const Hint = React.forwardRef<
       className={className}
       onClick={handleClick}
       {...rest}
+      disabled={disabled || rest.disabled}
     >
       {children}
     </button>

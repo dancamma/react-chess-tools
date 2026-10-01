@@ -16,7 +16,8 @@
     "prerelease": "npm run build",
     "release": "changeset publish",
     "lint": "eslint .",
-    "test-types": "tsc --noEmit"
+    "test-types": "tsc --noEmit",
+    "test:packages": "node scripts/test-package-exports.mjs"
   },
   "keywords": [],
   "author": "Daniele Cammareri <daniele.cammareri@gmail.com>",
@@ -26,7 +27,8 @@
     "packages/react-chess-stockfish",
     "packages/react-chess-game",
     "packages/react-chess-puzzle",
-    "packages/react-chess-bot"
+    "packages/react-chess-bot",
+    "examples/tempo"
   ],
   "lint-staged": {
     "**/*": "prettier . --write --ignore-unknown"

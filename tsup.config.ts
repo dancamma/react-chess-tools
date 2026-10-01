@@ -7,6 +7,8 @@ export default defineConfig({
   clean: true,
   format: ["esm", "cjs"],
   external: ["react", "react-dom"],
+  // The dependency ships a CommonJS .js entry inside a type:module package.
+  noExternal: ["react-chessboard"],
   dts: true,
   loader: {
     ".ogg": "dataurl",

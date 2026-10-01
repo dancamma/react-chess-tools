@@ -1,5 +1,5 @@
 import React from "react";
-import { Puzzle, getOrientation } from "../../../utils";
+import { Puzzle, Hint, getOrientation } from "../../../utils";
 import {
   ChessPuzzleContextType,
   useChessPuzzle,
@@ -12,6 +12,8 @@ import type { PartialChessPuzzleTheme } from "../../../theme/types";
 
 export interface RootProps {
   puzzle: Puzzle;
+  disabled?: boolean;
+  onHint?: (hint: Exclude<Hint, "none">) => void;
   onSolve?: (puzzleContext: ChessPuzzleContextType) => void;
   onFail?: (puzzleContext: ChessPuzzleContextType) => void;
   /** Optional theme configuration. Supports partial themes - only override the colors you need. */
@@ -22,6 +24,8 @@ export interface RootProps {
 
 interface PuzzleRootInnerProps {
   puzzle: Puzzle;
+  disabled?: boolean;
+  onHint?: (hint: Exclude<Hint, "none">) => void;
   onSolve?: (puzzleContext: ChessPuzzleContextType) => void;
   onFail?: (puzzleContext: ChessPuzzleContextType) => void;
   solveOnCheckmate: boolean;
@@ -30,12 +34,21 @@ interface PuzzleRootInnerProps {
 
 const PuzzleRootInner: React.FC<PuzzleRootInnerProps> = ({
   puzzle,
+  disabled = false,
+  onHint,
   onSolve,
   onFail,
   solveOnCheckmate,
   children,
 }) => {
-  const context = useChessPuzzle(puzzle, onSolve, onFail, solveOnCheckmate);
+  const context = useChessPuzzle(
+    puzzle,
+    onSolve,
+    onFail,
+    solveOnCheckmate,
+    disabled,
+    onHint,
+  );
 
   return (
     <ChessPuzzleContext.Provider value={context}>
@@ -46,6 +59,8 @@ const PuzzleRootInner: React.FC<PuzzleRootInnerProps> = ({
 
 export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
   puzzle,
+  disabled = false,
+  onHint,
   onSolve,
   onFail,
   theme,
@@ -57,6 +72,7 @@ export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
 
   return (
     <ChessGame.Root
+      disabled={disabled}
       fen={puzzle.fen}
       orientation={getOrientation(puzzle)}
       theme={mergedTheme}
@@ -64,6 +80,8 @@ export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
       <PuzzleThemeProvider theme={mergedTheme}>
         <PuzzleRootInner
           puzzle={puzzle}
+          disabled={disabled}
+          onHint={onHint}
           onSolve={onSolve}
           onFail={onFail}
           solveOnCheckmate={solveOnCheckmate}

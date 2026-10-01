@@ -69,6 +69,7 @@ export default [
       "jest.fileMock.js",
       "**/tsup.config.ts",
       "eslint.config.mjs",
+      "scripts/**/*.mjs",
       "tailwind.config.js",
       "**/*.stories.tsx",
     ],

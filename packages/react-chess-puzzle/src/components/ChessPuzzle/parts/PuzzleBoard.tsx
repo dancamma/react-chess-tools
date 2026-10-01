@@ -26,9 +26,11 @@ export const PuzzleBoard = React.forwardRef<HTMLDivElement, PuzzleBoardProps>(
     }
 
     const { game } = gameContext;
-    const { status, hint, isPlayerTurn, nextMove } = puzzleContext;
+    const { status, hint, isPlayerTurn, nextMove, disabled } = puzzleContext;
     const isPuzzlePlayable =
-      isPlayerTurn && (status === "not-started" || status === "in-progress");
+      !disabled &&
+      isPlayerTurn &&
+      (status === "not-started" || status === "in-progress");
 
     const mergedOptions = deepMergeChessboardOptions(options || {}, {
       squareStyles: getCustomSquareStyles(

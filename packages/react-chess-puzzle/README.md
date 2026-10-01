@@ -143,14 +143,18 @@ The root component that provides puzzle context to all child components.
 
 #### Props
 
-| Name               | Type                                    | Default | Description                                     |
-| ------------------ | --------------------------------------- | ------- | ----------------------------------------------- |
-| `puzzle`           | `Puzzle`                                | -       | The puzzle configuration (required)             |
-| `onSolve`          | `(ctx: ChessPuzzleContextType) => void` | -       | Callback when puzzle is solved                  |
-| `onFail`           | `(ctx: ChessPuzzleContextType) => void` | -       | Callback when an incorrect move is made         |
-| `solveOnCheckmate` | `boolean`                               | `true`  | When true, any checkmate move solves the puzzle |
-| `theme`            | `PartialChessPuzzleTheme`               | -       | Optional theme configuration                    |
-| `children`         | `ReactNode`                             | -       | Child components                                |
+| Name               | Type                                    | Default | Description                                            |
+| ------------------ | --------------------------------------- | ------- | ------------------------------------------------------ |
+| `puzzle`           | `Puzzle`                                | -       | The puzzle configuration (required)                    |
+| `disabled`         | `boolean`                               | `false` | Block moves and hints; defer CPU replies until enabled |
+| `onHint`           | `(hint: "piece" \| "move") => void`     | -       | Called when a new hint level is revealed               |
+| `onSolve`          | `(ctx: ChessPuzzleContextType) => void` | -       | Callback when puzzle is solved                         |
+| `onFail`           | `(ctx: ChessPuzzleContextType) => void` | -       | Callback when an incorrect move is made                |
+| `solveOnCheckmate` | `boolean`                               | `true`  | When true, any checkmate move solves the puzzle        |
+| `theme`            | `PartialChessPuzzleTheme`               | -       | Optional theme configuration                           |
+| `children`         | `ReactNode`                             | -       | Child components                                       |
+
+Disabling a puzzle preserves its position and hint state. `ChessPuzzle.Hint` is disabled automatically; hook calls to `onHint` and programmatic game moves are also blocked. CPU replies resume when enabled. An incorrect move does not increase `movesPlayed`; an alternative checkmate accepted by `solveOnCheckmate` counts as one accepted ply. `onHint` fires only when the level changes to `piece` or `move`, not on reset or repeated requests for an already revealed move.
 
 #### Puzzle Object
 
@@ -344,19 +348,20 @@ function PuzzleStatus() {
 
 #### Return Values
 
-| Property       | Type                       | Description                            |
-| -------------- | -------------------------- | -------------------------------------- |
-| `status`       | `Status`                   | Current puzzle state                   |
-| `puzzleState`  | `Status`                   | Alias for `status`                     |
-| `movesPlayed`  | `number`                   | Number of correct moves made           |
-| `totalMoves`   | `number`                   | Total moves in the solution            |
-| `puzzle`       | `Puzzle`                   | The current puzzle object              |
-| `hint`         | `Hint`                     | Current hint state                     |
-| `nextMove`     | `string \| null`           | The next correct move                  |
-| `isPlayerTurn` | `boolean`                  | Whether it's the player's turn to move |
-| `changePuzzle` | `(puzzle: Puzzle) => void` | Load a new puzzle                      |
-| `resetPuzzle`  | `() => void`               | Reset the current puzzle               |
-| `onHint`       | `() => void`               | Show hint for next move                |
+| Property       | Type                       | Description                                                              |
+| -------------- | -------------------------- | ------------------------------------------------------------------------ |
+| `disabled`     | `boolean`                  | Whether puzzle input is disabled                                         |
+| `status`       | `Status`                   | Current puzzle state                                                     |
+| `puzzleState`  | `Status`                   | Alias for `status`                                                       |
+| `movesPlayed`  | `number`                   | Accepted solution plies, including CPU replies and the final player move |
+| `totalMoves`   | `number`                   | Total moves in the solution                                              |
+| `puzzle`       | `Puzzle`                   | The current puzzle object                                                |
+| `hint`         | `Hint`                     | Current hint state                                                       |
+| `nextMove`     | `string \| null`           | The next correct move                                                    |
+| `isPlayerTurn` | `boolean`                  | Whether it's the player's turn to move                                   |
+| `changePuzzle` | `(puzzle: Puzzle) => void` | Load a new puzzle                                                        |
+| `resetPuzzle`  | `() => void`               | Reset the current puzzle                                                 |
+| `onHint`       | `() => void`               | Show hint for next move                                                  |
 
 ### useChessGameContext
 
