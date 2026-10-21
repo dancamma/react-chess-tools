@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@react-chess-tools/react-chess-clock": "^2.0.2",
-    "@react-chess-tools/react-chess-game": "^2.1.0",
-    "@react-chess-tools/react-chess-puzzle": "^2.1.0",
+    "@react-chess-tools/react-chess-game": "^2.2.0",
+    "@react-chess-tools/react-chess-puzzle": "^2.2.0",
     "chess.js": "^1.4.0",
     "lucide-react": "^1.33.0",
     "react": "^19.2.8",
