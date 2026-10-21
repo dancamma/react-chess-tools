@@ -5,6 +5,7 @@ import { ChessPuzzleContextType } from "./useChessPuzzle";
 export type State = {
   puzzle: Puzzle;
   currentMoveIndex: number;
+  movesPlayed: number;
   status: Status;
   cpuMove?: string | null;
   nextMove?: string | null;
@@ -45,6 +46,7 @@ export const initializePuzzle = ({ puzzle }: { puzzle: Puzzle }): State => {
   return {
     puzzle,
     currentMoveIndex: 0,
+    movesPlayed: 0,
     status: "not-started",
     nextMove: puzzle.moves[0],
     hint: "none",
@@ -86,6 +88,7 @@ export const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         currentMoveIndex: state.currentMoveIndex + 1,
+        movesPlayed: state.movesPlayed + 1,
         cpuMove: state.puzzle.moves[state.currentMoveIndex],
         nextMove:
           state.currentMoveIndex < state.puzzle.moves.length - 1
@@ -107,6 +110,7 @@ export const reducer = (state: State, action: Action): State => {
         return {
           ...state,
           status: "solved",
+          movesPlayed: state.movesPlayed + 1,
           nextMove: null,
           hint: "none",
           isPlayerTurn: false,
@@ -135,6 +139,7 @@ export const reducer = (state: State, action: Action): State => {
         return {
           ...state,
           status: "solved",
+          movesPlayed: state.movesPlayed + 1,
           nextMove: null,
           hint: "none",
           isPlayerTurn: false,
@@ -145,7 +150,9 @@ export const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         hint: "none",
+        cpuMove: null,
         currentMoveIndex: state.currentMoveIndex + 1,
+        movesPlayed: state.movesPlayed + 1,
         nextMove: state.puzzle.moves[state.currentMoveIndex + 1],
         status: "in-progress",
         needCpuMove: true,

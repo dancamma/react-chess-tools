@@ -1,6 +1,6 @@
 import { type Chess, type Square } from "chess.js";
 import { type CSSProperties } from "react";
-import { mergeWith } from "lodash";
+import _ from "lodash";
 import type { ChessboardOptions } from "react-chessboard";
 import { getDestinationSquares, type GameInfo } from "./chess";
 import type { ChessGameTheme } from "../theme/types";
@@ -87,7 +87,7 @@ export const deepMergeChessboardOptions = (
     return { ...baseOptions }; // Return a new object even when no custom options
   }
 
-  return mergeWith({}, baseOptions, customOptions, (_objValue, srcValue) => {
+  return _.mergeWith({}, baseOptions, customOptions, (_objValue, srcValue) => {
     // Functions should always overwrite (not merge)
     // This is important for event handlers like onSquareClick, onPieceDrop, etc.
     if (typeof srcValue === "function") {

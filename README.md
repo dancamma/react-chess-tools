@@ -210,6 +210,8 @@ function App() {
 
 Visit the [Storybook demo](https://react-chess-tools.vercel.app/) to see the packages in action.
 
+For a complete consumer application, see [Tempo](examples/tempo/README.md): a small Italian chess training club with curated lessons, solution replay, a timed sprint, and local progress. It uses the compiled public package exports and includes production browser tests.
+
 ## Development
 
 This project uses npm workspaces. To get started:

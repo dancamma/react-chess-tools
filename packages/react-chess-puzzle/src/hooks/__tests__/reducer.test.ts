@@ -21,6 +21,7 @@ describe("reducer", () => {
   const initialState: State = {
     puzzle: mockPuzzle,
     currentMoveIndex: 0,
+    movesPlayed: 0,
     status: "not-started",
     nextMove: "e4",
     hint: "none",
@@ -38,6 +39,7 @@ describe("reducer", () => {
       expect(state).toEqual({
         puzzle: mockPuzzle,
         currentMoveIndex: 0,
+        movesPlayed: 0,
         status: "not-started",
         nextMove: "e4",
         hint: "none",
@@ -326,6 +328,7 @@ describe("reducer", () => {
     const multiMateInitialState: State = {
       puzzle: multiMatePuzzle,
       currentMoveIndex: 0,
+      movesPlayed: 0,
       status: "not-started",
       nextMove: "a7a8",
       hint: "none",

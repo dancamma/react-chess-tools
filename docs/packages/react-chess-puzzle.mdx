@@ -77,6 +77,12 @@ UCI is the canonical format used by chess databases and the Lichess puzzle API. 
 
 The context provider that manages puzzle state.
 
+Use `disabled` to block moves and hints while preserving the current attempt. CPU replies are deferred until input is enabled again. `ChessPuzzle.Hint` is automatically disabled, and the context's `onHint()` also honors this setting.
+
+`Root.onHint={(level) => ...}` observes newly revealed hint levels (`"piece"` or `"move"`). Repeated requests at the final level and resetting the puzzle do not emit a hint notification.
+
+`movesPlayed` counts all accepted solution plies, including CPU replies and the final player move. Wrong moves do not increase it. An alternative checkmate accepted by `solveOnCheckmate` increases it by one, even if it completes the puzzle earlier than the canonical line.
+
 <table>
   <thead>
     <tr>

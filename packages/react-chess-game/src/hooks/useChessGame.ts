@@ -13,6 +13,8 @@ import { cloneGame, getCurrentFen, getGameInfo } from "../utils/chess";
 
 export type useChessGameProps = {
   fen?: string;
+  /** Block board and programmatic moves without resetting the position. */
+  disabled?: boolean;
   orientation?: Color;
   /** Optional clock configuration to enable chess clock functionality */
   timeControl?: TimeControlConfig;
@@ -23,6 +25,7 @@ export type useChessGameProps = {
 
 export const useChessGame = ({
   fen,
+  disabled = false,
   orientation: initialOrientation,
   timeControl,
   autoSwitchOnMove = true,
@@ -99,7 +102,8 @@ export const useChessGame = ({
   const currentPosition = game.history()[currentMoveIndex];
 
   const clockState = useOptionalChessClock(timeControl);
-  const isPlayable = !info.isGameOver && (clockState?.timeout ?? null) === null;
+  const isPlayable =
+    !disabled && !info.isGameOver && (clockState?.timeout ?? null) === null;
 
   // Keep clockState in a ref to avoid re-creating makeMove on every clock tick.
   // The clock state object is recreated on every render (especially during active
@@ -166,7 +170,7 @@ export const useChessGame = ({
   const makeMove = React.useCallback(
     (move: Parameters<Chess["move"]>[0]): boolean => {
       // Only allow moves when we're at the latest position
-      if (!isLatestMove) {
+      if (disabled || !isLatestMove) {
         return false;
       }
 
@@ -210,7 +214,14 @@ export const useChessGame = ({
         return false;
       }
     },
-    [isLatestMove, game, autoSwitchOnMove, emitGameEvent, getGameEventForMove],
+    [
+      disabled,
+      isLatestMove,
+      game,
+      autoSwitchOnMove,
+      emitGameEvent,
+      getGameEventForMove,
+    ],
   );
 
   const flipBoard = React.useCallback(() => {

@@ -1,4 +1,4 @@
-import { merge } from "lodash";
+import _ from "lodash";
 import type { ChessPuzzleTheme, PartialChessPuzzleTheme } from "./types";
 import { defaultPuzzleTheme } from "./defaults";
 
@@ -24,5 +24,5 @@ export const mergePuzzleTheme = (
     return { ...defaultPuzzleTheme };
   }
 
-  return merge({}, defaultPuzzleTheme, partialTheme);
+  return _.merge({}, defaultPuzzleTheme, partialTheme);
 };

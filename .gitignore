@@ -44,3 +44,7 @@ _bmad-output
 .claude
 
 telemetry-id
+
+.playwright-mcp/
+**/test-results/
+**/playwright-report/

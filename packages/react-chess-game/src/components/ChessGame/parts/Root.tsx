@@ -10,6 +10,8 @@ import type { TimeControlConfig } from "@react-chess-tools/react-chess-clock";
 
 export interface RootProps {
   fen?: string;
+  /** Block moves without resetting the game or changing its clock. */
+  disabled?: boolean;
   orientation?: Color;
   /** Optional theme configuration. Supports partial themes - only override the colors you need. */
   theme?: PartialChessGameTheme;
@@ -21,6 +23,7 @@ export interface RootProps {
 
 export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
   fen,
+  disabled,
   orientation,
   theme,
   timeControl,
@@ -29,6 +32,7 @@ export const Root: React.FC<React.PropsWithChildren<RootProps>> = ({
 }) => {
   const context = useChessGame({
     fen,
+    disabled,
     orientation,
     timeControl,
     autoSwitchOnMove,

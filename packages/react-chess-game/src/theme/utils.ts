@@ -1,4 +1,4 @@
-import { merge } from "lodash";
+import _ from "lodash";
 import type { ChessGameTheme, PartialChessGameTheme } from "./types";
 import { defaultGameTheme } from "./defaults";
 
@@ -24,7 +24,7 @@ export const mergeTheme = (
     return { ...defaultGameTheme };
   }
 
-  return merge({}, defaultGameTheme, partialTheme);
+  return _.merge({}, defaultGameTheme, partialTheme);
 };
 
 /**
@@ -43,5 +43,5 @@ export const mergeThemeWith = (
     return { ...baseTheme };
   }
 
-  return merge({}, baseTheme, partialTheme);
+  return _.merge({}, baseTheme, partialTheme);
 };
